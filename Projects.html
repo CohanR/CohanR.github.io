@@ -6,23 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Remy Cohan's current neuroscience projects.">
     <title>Current Project | Remy Cohan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.7;
             color: #333;
-            background: #f7f9fc;
+            background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
         }
 
         header {
             background: #2E86C1;
             color: white;
             text-align: center;
-            padding: 1rem 0;
-            font-size: 2rem;
+            padding: 2rem 0;
+            font-size: 2.5rem;
             font-weight: 600;
+            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
         }
 
         nav {
@@ -31,18 +33,20 @@
             gap: 20px;
             padding: 10px 0;
             background-color: #333;
+            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
         }
 
         nav a {
             color: white;
             text-decoration: none;
-            padding: 5px 15px;
+            padding: 10px 20px;
             border-radius: 5px;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
         }
 
         nav a:hover {
             background-color: #555;
+            transform: scale(1.05);
         }
 
         .sidebar {
@@ -62,16 +66,25 @@
             margin-left: 20px;
             text-decoration: none;
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            transition: color 0.3s;
         }
 
         .sidebar a:hover {
-            text-decoration: underline;
+            color: #bdc3c7;
         }
 
         main {
-            margin-left: 270px; /* Considering the sidebar width and some margin */
-            padding: 20px;
+            margin-left: 270px;
+            padding: 40px;
+            background-color: #ffffff;
+            box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 20px;
         }
 
     </style>
@@ -84,7 +97,7 @@
     <!-- Navigation -->
     <nav>
         <a href="index.html">Home</a>
-        <a href="Projects.html">Current Project</a>
+        <a href="projects.html">Current Project</a>
         <a href="simulations_ml.html">Simulations and ML</a>
         <a href="plots.html">Publication-Quality Plots</a>
         <a href="posters.html">Conference Posters</a>
