@@ -17,10 +17,11 @@
         }
 
         header {
-            background: #2E86C1;
+            background: url('path_to_neuron_gif.gif') no-repeat center center;
+            background-size: cover;
             color: white;
             text-align: center;
-            padding: 1rem 0;
+            padding: 4rem 0;
             font-size: 2rem;
             font-weight: 600;
         }
@@ -46,8 +47,6 @@
         }
 
         main {
-            margin: 20px auto;
-            max-width: 800px;
             padding: 20px;
             background: #fff;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
@@ -56,6 +55,23 @@
         h2 {
             border-bottom: 2px solid #2E86C1;
             padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        .img-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        img.profile-pic {
+            max-width: 300px;
+            border-radius: 50%;
+            margin-right: 30px;
+        }
+
+        img.neuron-pic {
+            max-width: 500px;
         }
 
         a.email-link {
@@ -67,6 +83,7 @@
         a.email-link:hover {
             color: #2E86C1;
         }
+
     </style>
 </head>
 
@@ -96,6 +113,10 @@
 
         <section id="about">
             <h2>About Me</h2>
+            <div class="img-wrapper">
+                <img src="path_to_your_profile_picture.jpg" alt="Remy Cohan" class="profile-pic">
+                <img src="path_to_neuron_picture.jpg" alt="Neuron" class="neuron-pic">
+            </div>
             <p>
                 I also study the effects of brain stimulation on various cortical regions and neural populations using machine
                 learning and simulations to quantify biomarkers of brain stimulation.
