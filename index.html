@@ -4,44 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Remy Cohan's current neuroscience projects.">
-    <title>Current Project | Remy Cohan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <meta name="description" content="Remy Cohan - Neuroscience Researcher specialising in neural plasticity in health and disease, fMRI, TMS, and machine learning.">
+    <title>Remy Cohan | Neuroscience Research</title>
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.7;
             color: #333;
-            background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
+            background: #f7f9fc;
         }
 
         header {
-            background: #2E86C1;
+            background: linear-gradient(to bottom, #2E86C1, #3498db), url('images/neuron.gif') no-repeat center center;
+            background-size: cover;
             color: white;
             text-align: center;
-            padding: 2rem 0;
+            padding: 6rem 0;
             font-size: 2.5rem;
-            font-weight: 600;
-            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+            font-weight: 700;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         nav {
             display: flex;
             justify-content: center;
             gap: 20px;
-            padding: 10px 0;
+            padding: 15px 0;
             background-color: #333;
-            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
         }
 
         nav a {
             color: white;
             text-decoration: none;
             padding: 10px 20px;
-            border-radius: 5px;
-            transition: background-color 0.3s, transform 0.2s;
+            border-radius: 20px;
+            transition: background-color 0.3s, transform 0.3s;
         }
 
         nav a:hover {
@@ -49,42 +48,53 @@
             transform: scale(1.05);
         }
 
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 250px;
-            background-color: #34495e;
-            padding: 20px 0;
-            box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar h3,
-        .sidebar a {
-            color: white;
-            margin-left: 20px;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 20px;
-            transition: color 0.3s;
-        }
-
-        .sidebar a:hover {
-            color: #bdc3c7;
-        }
-
         main {
-            margin-left: 270px;
-            padding: 40px;
-            background-color: #ffffff;
-            box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            padding: 30px 20px;
+            background: #fff;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
+        h2 {
+            border-bottom: 3px solid #2E86C1;
+            padding-bottom: 10px;
+            margin-top: 40px;
             font-weight: 600;
-            margin-bottom: 20px;
+        }
+
+        .img-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .profile-pic {
+            max-width: 320px;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        a.email-link {
+            color: #3498db;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 10px;
+            background-color: #f2f4f7;
+            transition: color 0.3s ease;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        a.email-link:hover {
+            color: #2E86C1;
+        }
+
+        section#contact {
+            background-color: #f2f4f7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
         }
 
     </style>
@@ -96,26 +106,40 @@
 
     <!-- Navigation -->
     <nav>
-        <a href="index.html">Home</a>
-        <a href="projects.html">Current Project</a>
-        <a href="simulations_ml.html">Simulations and ML</a>
-        <a href="plots.html">Publication-Quality Plots</a>
+        <a href="Projects.html">Current Projects</a>
+        <a href="simulations_ml.html">Simulation and ML</a>
+        <a href="plots.html">Statistics and plotting in Python & R</a>
         <a href="posters.html">Conference Posters</a>
-        <a href="index.html#contact">Contact</a>
+        <a href="#contact">Contact</a>
     </nav>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <h3>Quick Links</h3>
-        <a href="#">Link 1</a>
-        <a href="#">Link 2</a>
-        <a href="#">Link 3</a>
-    </aside>
+    <!-- Profile Pic -->
+    <div class="img-wrapper">
+        <img src="images/RC_profile.png" alt="Remy Cohan's Profile Picture" class="profile-pic">
+    </div>
 
     <!-- Main Content -->
     <main>
-        <h1>Current Project</h1>
-        <p>Description of the current project goes here.</p>
+        <section>
+            <p>
+                I study how the brain changes and reorganises itself both in health and disease using different non-invasive brain
+                stimulation modalities such as transcranial magnetic stimulation and various neuroimaging techniques including
+                functional MRI, MR spectroscopy, and EEG.
+            </p>
+        </section>
+
+        <section id="projects">
+            <h2>Projects</h2>
+            <p>Currently, I am investigating the effects of theta burst stimulation on various cortical regions and neural populations (in vivo). In addition, I use machine
+                learning and simulation to identify biomarkers of brain stimulation and evaluate biophysical factors to optimise stimulation protocols.
+            </p>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Feel free to reach out to me at:</p>
+            <a href="mailto:rcohan@yorku.ca" class="email-link">rcohan@yorku.ca</a>
+        </section>
     </main>
 </body>
 
