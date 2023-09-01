@@ -13,3 +13,146 @@
     <!-- Add navigation bar and other content as needed -->
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Remy's conference posters presented in various neuroscience forumss.">
+    <title>Abstracts & Posters | Remy Cohan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            color: #333;
+            background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
+        }
+
+        header {
+            background: #2E86C1;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px 0;
+            background-color: #333;
+            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        nav a:hover {
+            background-color: #555;
+            transform: scale(1.05);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            background-color: #34495e;
+            padding: 20px 0;
+            box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h3,
+        .sidebar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+
+        .sidebar a:hover {
+            color: #bdc3c7;
+        }
+
+        main {
+            margin-left: 270px;
+            padding: 40px;
+            background-color: #ffffff;
+            box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>Remy Cohan</header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="Projects.html">Current Projects</a>
+        <a href="simulations_ml.html">Simulation and ML</a>
+        <a href="plots.html">Statistics and Plotting in Python & R</a>
+        <a href="neuro_analysis.html">Neuroimaging Analysis Scripts</a>
+        <a href="posters.html">Conference Posters</a>
+        <a href="#contact">Contact</a>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h3>Quick Links</h3>
+        <a href="#">Link 1</a>
+        <a href="#">Link 2</a>
+        <a href="#">Link 3</a>
+    </aside>
+
+<!-- Main Content -->
+<main>
+    <h1>Abstracts & Posters</h1>
+    <p>Below are some of my abstracts and posters:</p>
+
+    <!-- Example for a GitHub repository link -->
+    <section>
+        <h2>Neural Network Analysis in Python</h2>
+        <p>This project analyses multi-echo resting state functional magnetic resonance imaging.</p>
+        <a href="https://github.com/remycohan/neural-network-analysis" target="_blank">View Code on GitHub</a>
+    </section>
+
+    <!-- Example for a direct code snippet using Prism (assuming you have included Prism's CSS and JS) -->
+    <section>
+        <h2>Sample Code: Basic Neural Network in Python</h2>
+        <pre><code class="language-python">
+import numpy as np
+import tensorflow as tf
+
+# Define a simple feed-forward neural network
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(10)
+])
+        </code></pre>
+    </section>
+</main>
