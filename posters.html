@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Remy's conference posters presented in various neuroscience forumss.">
+    <meta name="description" content="Remy's conference posters presented in various neuroscience forums.">
     <title>Abstracts & Posters | Remy Cohan</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -86,6 +86,28 @@
             font-weight: 600;
             margin-bottom: 20px;
         }
+
+        /* Mobile Responsive Code */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: initial;
+                height: auto;
+                width: 100%;
+                display: none; /* Hidden by default, toggled via JS */
+            }
+
+            main {
+                margin-left: 0;
+            }
+
+            nav {
+                flex-direction: column;
+            }
+
+            nav a {
+                margin: 5px 0;
+            }
+        }
     </style>
 </head>
 
@@ -115,14 +137,14 @@
         <h1>Abstracts & Posters</h1>
         <p>Below are some of my abstracts and posters:</p>
 
-        <!-- GitHub Link -->
+        <!-- Example for a GitHub repository link -->
         <section>
             <h2>Neural Network Analysis in Python</h2>
             <p>This project analyses multi-echo resting state functional magnetic resonance imaging.</p>
             <a href="https://github.com/remycohan/neural-network-analysis" target="_blank">View Code on GitHub</a>
         </section>
 
-        <!-- Code Snippet -->
+        <!-- Example for a direct code snippet using Prism (assuming you have included Prism's CSS and JS) -->
         <section>
             <h2>Sample Code: Basic Neural Network in Python</h2>
             <pre><code class="language-python">
@@ -138,5 +160,13 @@ model = tf.keras.models.Sequential([
             </code></pre>
         </section>
     </main>
+    <script>
+        // Simple JS for toggling sidebar for mobile views
+        function toggleSidebar() {
+            var sidebar = document.querySelector('.sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
 </body>
+
 </html>
