@@ -7,6 +7,15 @@
     <meta name="description" content="Remy Cohan's Neuroimaging Analysis Scripts.">
     <title>Neuroimaging Analysis Scripts (Python & Matlab) | Remy Cohan</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Remy's Neuroimaging Analysis Scripts.">
+    <title>Neuroimaging Analysis Scripts | Remy Cohan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -114,8 +123,8 @@
 
 <!-- Main Content -->
 <main>
-    <h1>Neuroimaging Analysis Scripts (Python & Matlab)</h1>
-    <p>Below are some of my prominent projects and their corresponding codes:</p>
+    <h1>Abstracts & Posters</h1>
+    <p>Below are some of my neuroimaging analysis scripts:</p>
 
     <!-- Example for a GitHub repository link -->
     <section>
