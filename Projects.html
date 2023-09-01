@@ -29,6 +29,7 @@
 
         nav {
             display: flex;
+            flex-wrap: wrap; /* Allow the items to wrap if necessary */
             justify-content: center;
             gap: 20px;
             padding: 10px 0;
@@ -87,6 +88,31 @@
             margin-bottom: 20px;
         }
 
+        /* Mobile-friendly adjustments */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column; /* Make nav items stack vertically */
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+                width: 100%;
+                padding: 10px 0;
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            .sidebar h3 {
+                display: none; /* Hide "Quick Links" title on mobile */
+            }
+
+            main {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 
@@ -101,7 +127,6 @@
         <a href="plots.html">Statistics and Plotting in Python & R</a>
         <a href="neuro_analysis.html">Neuroimaging Analysis Scripts</a>
         <a href="posters.html">Conference Posters</a>
-        <a href="#contact">Contact</a>
     </nav>
 
     <!-- Sidebar -->
