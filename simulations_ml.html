@@ -34,6 +34,7 @@
             padding: 10px 0;
             background-color: #333;
             box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
         }
 
         nav a {
@@ -58,6 +59,7 @@
             background-color: #34495e;
             padding: 20px 0;
             box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
         }
 
         .sidebar h3,
@@ -87,12 +89,31 @@
             margin-bottom: 20px;
         }
 
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                transform: none;
+            }
+
+            main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            nav a {
+                margin: 5px 0;
+            }
+        }
     </style>
 </head>
 
 <body>
     <!-- Header -->
     <header>Remy Cohan</header>
+    <!-- ... rest of the content -->
+</body>
 
     <!-- Navigation -->
     <nav>
@@ -150,3 +171,5 @@
     <p>Explore the Machine Learning Algorithm to Predict Whether Handedness and Propofol Dosage have any effects on MEP amplitudes on GitHub:</p>
     <a href="https://github.com/CohanR/MotorEvokedPotentials_Propofol_ML" target="_blank">View Propofol_MEP_ML Code on GitHub</a>
 </section>
+
+</html>
