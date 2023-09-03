@@ -137,8 +137,31 @@
 <body>
     <!-- Header -->
     <header>
-    <h1 class="seo-header" aria-label="Dr. Remy Cohan", aria-label="Remy Cohan MD, PhD">Remy Cohan</h1>
+        <h1 class="seo-header">
+            Remy Cohan
+            <span class="hidden-text">Dr. Remy Cohan</span>
+            <span class="hidden-text">Remy Cohan MD, PhD</span>
+            <span class="hidden-text">Neuroradiology</span>
+            <span class="hidden-text">Medical Imaging</span>
+            <span class="hidden-text">Interventional Neurologist</span>
+        </h1>
     </header>
+</body>
+
+<!-- Add this to your CSS -->
+<style>
+    .hidden-text {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+</style>
+
 
 
     <!-- Navigation -->
