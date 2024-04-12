@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Professional NIfTI Viewer</title>
+    <title>Advanced NIfTI Viewer</title>
+    <link rel="stylesheet" href="papaya.css" />
+    <script src="papaya.js"></script>
     <script src="nifti-reader-min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pako@1.0.11/dist/pako.min.js"></script>
     <style>
@@ -10,92 +12,84 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #eef2f7;
+            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
-            align-items: center;
             height: 100vh;
         }
         .container {
-            width: 80%;
-            max-width: 600px;
-            background: #ffffff;
+            width: 85%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            padding: 20px;
+        }
+        #papayaContainer {
+            flex: 1;
+            margin-right: 20px;
+            height: calc(100vh - 300px);
+        }
+        .sidebar {
+            width: 300px;
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        #headerInfo {
-            margin-top: 20px;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-size: 0.9em;
-        }
-        input[type="file"] {
+        button, input[type="file"] {
             width: 100%;
-            margin-top: 20px;
-        }
-        .info {
-            margin-top: 10px;
             padding: 10px;
-            background-color: #e2e8f0;
-            border-left: 5px solid #5f6874;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>NIfTI Viewer</h1>
-        <input type="file" id="files" name="files[]" accept=".nii,.nii.gz" />
-
-        <div id="headerInfo"></div>
-
-        <script>
-            document.getElementById('files').addEventListener('change', function(evt) {
-                var files = evt.target.files; // FileList object
-                var output = document.getElementById('headerInfo');
-                output.innerHTML = ''; // Clear previous headers
-
-                for (var i = 0, f; f = files[i]; i++) {
-                    var reader = new FileReader();
-                    
-                    reader.onload = (function(theFile) {
-                        return function(e) {
-                            var buffer = e.target.result;
-
-                            // Check if the file is compressed and handle accordingly
-                            if (nifti.isCompressed(theFile.name)) {
-                                buffer = pako.inflate(new Uint8Array(buffer)).buffer;
-                            }
-
-                            if (nifti.isNIFTI(theFile.name)) {
-                                var niftiHeader = nifti.readHeader(buffer);
-                                var niftiImage = nifti.readImage(niftiHeader, buffer);
-                                displayHeaderInfo(niftiHeader, theFile.name);
-                            } else {
-                                output.innerHTML += '<div class="info">Not a valid NIFTI file: ' + theFile.name + '</div>';
-                            }
-                        };
-                    })(f);
-
-                    reader.readAsArrayBuffer(f);
-                }
-
-                function displayHeaderInfo(header, fileName) {
-                    var info = '<h3>File: ' + fileName + '</h3>';
-                    info += '<div class="info"><strong>Dimensions:</strong> ' + header.dims[1] + ' x ' + header.dims[2] + ' x ' + header.dims[3] + '</div>';
-                    info += '<div class="info"><strong>Voxel Size:</strong> ' + header.pixDims[1] + ' x ' + header.pixDims[2] + ' x ' + header.pixDims[3] + ' mm³</div>';
-                    info += '<div class="info"><strong>DataType:</strong> ' + header.datatypeCode + ' (' + nifti.Utils.datatypeCodeToString(header.datatypeCode) + ')</div>';
-                    info += '<div class="info"><strong>Description:</strong> ' + header.description + '</div>';
-                    output.innerHTML += info;
-                }
-            }, false);
-        </script>
+        <div id="papayaContainer"></div>
+        <div class="sidebar">
+            <input type="file" id="file-input" accept=".nii, .nii.gz" />
+            <button onclick="loadImage()">Load Image</button>
+            <div id="file-info"></div>
+        </div>
     </div>
+
+    <script>
+        window.onload = function() {
+            papaya.Container.resetViewer(0, {images: []}); // Start with an empty viewer or specify a default image
+        };
+
+        function loadImage() {
+            var fileInput = document.getElementById('file-input');
+            if (fileInput.files.length === 0) {
+                alert('Please select a file first!');
+                return;
+            }
+
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var buffer = e.target.result;
+                if (nifti.isCompressed(file.name)) {
+                    buffer = pako.inflate(new Uint8Array(buffer)).buffer;
+                }
+                if (nifti.isNIFTI(file.name)) {
+                    var niftiHeader = nifti.readHeader(buffer);
+                    var niftiImage = nifti.readImage(niftiHeader, buffer);
+                    papaya.Container.resetViewer(0, {images: [buffer]});
+                    displayFileInfo(niftiHeader);
+                } else {
+                    document.getElementById('file-info').innerText = 'Not a valid NIFTI file.';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function displayFileInfo(header) {
+            document.getElementById('file-info').innerHTML = `<strong>Dimensions:</strong> ${header.dims[1]} x ${header.dims[2]} x ${header.dims[3]}<br>
+            <strong>Voxel Size:</strong> ${header.pixDims[1]}mm x ${header.pixDims[2]}mm x ${header.pixDims[3]}mm<br>
+            <strong>Data Type:</strong> ${header.datatypeCode} (${nifti.Utils.datatypeCodeToString(header.datatypeCode)})`;
+        }
+    </script>
 </body>
 </html>
