@@ -13,35 +13,26 @@
             background-color: #f4f4f4;
             display: flex;
             justify-content: center;
+            align-items: center;
             height: 100vh;
         }
-        .container {
-            width: 85%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
         #papayaContainer {
-            width: 100%;
-            height: 100vh; /* Adjust the height as needed */
+            width: 80%;
+            height: 80vh; /* This will control the size of the Papaya viewer */
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="papayaContainer" data-params="params"></div>
-    </div>
+    <div id="papayaContainer" data-params="params"></div>
 
     <script>
         var params = {
-            images: [], // If you have a default image to load initially, specify its path here
-            configUrl: "papaya_config.json" // Optional: If you have a configuration JSON file
+            images: [], // Optional: Add default NIfTI images here as URLs
+            configUrl: "papaya_config.json" // Optional: Path to your Papaya config file if you have specific settings
         };
 
         window.onload = function() {
-            papaya.Container.resetViewer(0, params);
+            papaya.Container.resetViewer(0, {configUrl: "papaya_config.json"});
         };
     </script>
 </body>
