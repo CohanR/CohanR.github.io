@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NIfTI Viewer</title>
+    <script src="nifti-reader-min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        #headerInfo {
+            margin-top: 20px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>NIfTI Viewer</h1>
+    <input type="file" id="files" name="files[]" accept=".nii,.nii.gz" />
+
+    <div id="headerInfo"></div>
+
+    <script>
+        document.getElementById('files').addEventListener('change', function(evt) {
+            var files = evt.target.files; // FileList object
+            var output = document.getElementById('headerInfo');
+            output.innerHTML = ''; // Clear previous headers
+
+            for (var i = 0, f; f = files[i]; i++) {
+                var reader = new FileReader();
+                
+                reader.onload = (function(theFile) {
+                    return function(e) {
+                        if (nifti.isNIFTI(theFile.name)) {
+                            var niftiHeader = nifti.readHeader(e.target.result);
+                            var niftiImage = nifti.readImage(niftiHeader, e.target.result);
+                            displayHeaderInfo(niftiHeader, theFile.name);
+                        } else {
+                            output.innerHTML += '<p>Not a valid NIFTI file: ' + theFile.name + '</p>';
+                        }
+                    };
+                })(f);
+
+                reader.readAsArrayBuffer(f);
+            }
+
+            function displayHeaderInfo(header, fileName) {
+                var info = '<h3>File: ' + fileName + '</h3>';
+                info += '<p><strong>Dimensions:</strong> ' + header.dims[1] + ' x ' + header.dims[2] + ' x ' + header.dims[3] + '</p>';
+                info += '<p><strong>Voxel Size:</strong> ' + header.pixDims[1] + ' x ' + header.pixDims[2] + ' x ' + header.pixDims[3] + ' mm³</p>';
+                info += '<p><strong>DataType:</strong> ' + header.datatypeCode + ' (' + nifti.Utils.datatypeCodeToString(header.datatypeCode) + ')</p>';
+                info += '<p><strong>Description:</strong> ' + header.description + '</p>';
+                output.innerHTML += info;
+            }
+        }, false);
+    </script>
+</body>
+</html>
