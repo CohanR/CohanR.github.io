@@ -41,9 +41,8 @@
 </head>
 <body>
     <div class="container">
-        <div id="papayaContainer"></div>
+        <div id="papayaContainer" data-params="params"></div>
         <div class="sidebar">
-            <!-- Removed the manual upload button and input, relying on Papaya's built-in functionality -->
             <div id="file-info"></div>
         </div>
     </div>
@@ -53,7 +52,37 @@
             papaya.Container.resetViewer(0, {images: []}); // Start with an empty viewer or specify a default image
         };
 
-        // If needed, you can add back specific functionality to handle files or other interactions in this script.
+        document.body.addEventListener('drop', function(event) {
+            event.preventDefault(); // Prevent default behavior (prevent file from being opened)
+            var files = event.dataTransfer.files; // File list from drop event
+            if (files && files.length > 0) {
+                var file = files[0];
+                var reader = new FileReader();
+
+                reader.onload = function(loadEvent) {
+                    var buffer = loadEvent.target.result;
+                    if (nifti.isCompressed(file.name)) {
+                        buffer = pako.inflate(new Uint8Array(buffer)).buffer;
+                    }
+
+                    if (nifti.isNIFTI(file.name)) {
+                        var niftiHeader = nifti.readHeader(buffer);
+                        var niftiImage = nifti.readImage(niftiHeader, buffer);
+                        papaya.Container.resetViewer(0, {images: [buffer]});
+                        displayFileInfo(niftiHeader);
+                    } else {
+                        document.getElementById('file-info').innerText = 'Not a valid NIFTI file.';
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        }, false);
+
+        function displayFileInfo(header) {
+            document.getElementById('file-info').innerHTML = `<strong>Dimensions:</strong> ${header.dims[1]} x ${header.dims[2]} x ${header.dims[3]}<br>
+            <strong>Voxel Size:</strong> ${header.pixDims[1]}mm x ${header.pixDims[2]}mm x ${header.pixDims[3]}mm<br>
+            <strong>Data Type:</strong> ${header.datatypeCode} (${nifti.Utils.datatypeCodeToString(header.datatypeCode)})`;
+        }
     </script>
 </body>
 </html>
