@@ -5,8 +5,6 @@
     <title>Advanced NIfTI Viewer</title>
     <link rel="stylesheet" href="papaya.css" />
     <script src="papaya.js"></script>
-    <script src="nifti-reader-min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pako@1.0.11/dist/pako.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,75 +19,30 @@
             width: 85%;
             max-width: 1200px;
             display: flex;
-            justify-content: space-between;
-            align-items: start;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
         #papayaContainer {
-            flex: 1;
-            margin-right: 20px;
-            height: calc(100vh - 300px);
-        }
-        .sidebar {
-            width: 300px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        button, input[type="file"] {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
+            height: 100vh; /* Adjust the height as needed */
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="papayaContainer"></div>
-        <div class="sidebar">
-            <input type="file" id="file-input" accept=".nii, .nii.gz" />
-            <button onclick="loadImage()">Load Image</button>
-            <div id="file-info"></div>
-        </div>
+        <div id="papayaContainer" data-params="params"></div>
     </div>
 
     <script>
-        window.onload = function() {
-            papaya.Container.resetViewer(0, {images: []}); // Start with an empty viewer or specify a default image
+        var params = {
+            images: [], // If you have a default image to load initially, specify its path here
+            configUrl: "papaya_config.json" // Optional: If you have a configuration JSON file
         };
 
-        function loadImage() {
-            var fileInput = document.getElementById('file-input');
-            if (fileInput.files.length === 0) {
-                alert('Please select a file first!');
-                return;
-            }
-
-            var file = fileInput.files[0];
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var buffer = e.target.result;
-                if (nifti.isCompressed(file.name)) {
-                    buffer = pako.inflate(new Uint8Array(buffer)).buffer;
-                }
-                if (nifti.isNIFTI(file.name)) {
-                    var niftiHeader = nifti.readHeader(buffer);
-                    var niftiImage = nifti.readImage(niftiHeader, buffer);
-                    papaya.Container.resetViewer(0, {images: [buffer]});
-                    displayFileInfo(niftiHeader);
-                } else {
-                    document.getElementById('file-info').innerText = 'Not a valid NIFTI file.';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function displayFileInfo(header) {
-            document.getElementById('file-info').innerHTML = `<strong>Dimensions:</strong> ${header.dims[1]} x ${header.dims[2]} x ${header.dims[3]}<br>
-            <strong>Voxel Size:</strong> ${header.pixDims[1]}mm x ${header.pixDims[2]}mm x ${header.pixDims[3]}mm<br>
-            <strong>Data Type:</strong> ${header.datatypeCode} (${nifti.Utils.datatypeCodeToString(header.datatypeCode)})`;
-        }
+        window.onload = function() {
+            papaya.Container.resetViewer(0, params);
+        };
     </script>
 </body>
 </html>
