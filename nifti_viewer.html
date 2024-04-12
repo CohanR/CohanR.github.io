@@ -37,19 +37,13 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        button, input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="papayaContainer"></div>
         <div class="sidebar">
-            <input type="file" id="file-input" accept=".nii, .nii.gz" />
-            <button onclick="loadImage()">Load Image</button>
+            <!-- Removed the manual upload button and input, relying on Papaya's built-in functionality -->
             <div id="file-info"></div>
         </div>
     </div>
@@ -59,37 +53,7 @@
             papaya.Container.resetViewer(0, {images: []}); // Start with an empty viewer or specify a default image
         };
 
-        function loadImage() {
-            var fileInput = document.getElementById('file-input');
-            if (fileInput.files.length === 0) {
-                alert('Please select a file first!');
-                return;
-            }
-
-            var file = fileInput.files[0];
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var buffer = e.target.result;
-                if (nifti.isCompressed(file.name)) {
-                    buffer = pako.inflate(new Uint8Array(buffer)).buffer;
-                }
-                if (nifti.isNIFTI(file.name)) {
-                    var niftiHeader = nifti.readHeader(buffer);
-                    var niftiImage = nifti.readImage(niftiHeader, buffer);
-                    papaya.Container.resetViewer(0, {images: [buffer]});
-                    displayFileInfo(niftiHeader);
-                } else {
-                    document.getElementById('file-info').innerText = 'Not a valid NIFTI file.';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function displayFileInfo(header) {
-            document.getElementById('file-info').innerHTML = `<strong>Dimensions:</strong> ${header.dims[1]} x ${header.dims[2]} x ${header.dims[3]}<br>
-            <strong>Voxel Size:</strong> ${header.pixDims[1]}mm x ${header.pixDims[2]}mm x ${header.pixDims[3]}mm<br>
-            <strong>Data Type:</strong> ${header.datatypeCode} (${nifti.Utils.datatypeCodeToString(header.datatypeCode)})`;
-        }
+        // If needed, you can add back specific functionality to handle files or other interactions in this script.
     </script>
 </body>
 </html>
