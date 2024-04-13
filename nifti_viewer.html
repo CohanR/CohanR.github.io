@@ -12,27 +12,27 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
             overflow: hidden;
         }
         .container {
             display: flex; /* Flex container for sidebar and viewer */
             width: 95%; /* Responsive width */
             max-width: 1200px; /* Maximum width of the container */
-            height: 85vh; /* Height of the viewer */
+            height: auto; /* Adjust height based on content */
+            flex-direction: column; /* Stack vertically by default */
         }
         #papayaContainer {
-            flex: 3; /* Takes up 3 parts of the flex container */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            flex-grow: 1; /* Allows the viewer to expand as needed */
+            width: 100%; /* Full width of its container */
+            height: 60vh; /* Adjusted for mobile visibility */
         }
         .sidebar {
-            flex: 1; /* Takes up 1 part of the flex container */
+            width: 100%; /* Full width */
             padding: 20px;
-            display: flex;
-            flex-direction: column;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             overflow-y: auto;
@@ -48,13 +48,18 @@
             text-decoration: none;
             z-index: 10;
         }
-        @media (max-width: 800px) {
+        @media (min-width: 800px) {
             .container {
-                flex-direction: column; /* Stacks the sidebar and viewer vertically */
-                height: auto; /* Auto height for vertical stacking */
+                flex-direction: row; /* Horizontal layout for wider screens */
+                height: 85vh; /* Larger height for better visibility */
             }
-            #papayaContainer, .sidebar {
-                width: 100%; /* Full width for both elements on small screens */
+            #papayaContainer {
+                width: 75%; /* Larger portion for the viewer */
+                height: 100%; /* Full height of the container */
+            }
+            .sidebar {
+                width: 25%; /* Smaller portion for the sidebar */
+                height: 100%; /* Full height of the container */
             }
         }
     </style>
@@ -62,11 +67,11 @@
 <body>
     <a href="index.html" class="home-button">Home</a>
     <div class="container">
-        <div class="sidebar">
-            <p>This viewer is pre-loaded with the MNI 152 standard brain. Scroll, hover or click on the brain to see different columes and anatomical labels.</p>
-            <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalised to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
-        </div>
         <div id="papayaContainer" data-params="params"></div>
+        <div class="sidebar">
+            <p>This viewer is pre-loaded with the MNI 152 standard brain. Scroll, hover, or click on the brain to see different volumes and anatomical labels.</p>
+            <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalized to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
+        </div>
     </div>
 
     <script type="text/javascript">
