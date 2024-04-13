@@ -12,19 +12,19 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
+            height: auto; /* Change from 100vh to auto */
+            min-height: 100vh; /* Ensure it covers at least the full viewport height */
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden; /* Hide horizontal scroll */
-            overflow-y: auto; /* Enable vertical scroll */
-            min-height: 200vh;
+            overflow-x: hidden;
         }
         #papayaContainer {
             width: 95%;
             height: 70vh;
             max-width: 1200px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: 20px; /* Space from the top */
+            margin-top: 20px;
         }
         .info {
             width: 95%;
@@ -33,7 +33,8 @@
             text-align: center;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: 20px; /* Space after the viewer */
+            margin-top: 20px;
+            margin-bottom: 20px; /* Add space below the text for easier readability and access */
         }
         .home-button {
             position: fixed;
@@ -49,9 +50,6 @@
         @media (max-width: 800px) {
             #papayaContainer {
                 height: 60vh;
-            }
-            .info {
-                padding: 10px;
             }
         }
     </style>
