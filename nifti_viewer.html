@@ -13,7 +13,7 @@
             padding: 0;
             background-color: #f4f4f4;
             height: auto; 
-            min-height: 100vh; 
+            min-height: 120vh; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -24,7 +24,7 @@
             height: 70vh;
             max-width: 1200px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: 5px;
+            margin-top: 5px; /* Adjusted for better vertical positioning */
         }
         .info {
             width: 95%;
@@ -71,10 +71,13 @@
 
         window.onload = function() {
             papaya.Container.resetViewer(0, params);
-            // Add event listener to stop scroll propagation
-            document.getElementById('papayaContainer').addEventListener('wheel', function(event) {
-                event.stopPropagation();
-            }, {passive: false});
+            // Ensure only the viewer consumes the scroll when hovered over
+            document.getElementById('papayaContainer').addEventListener('mouseenter', function() {
+                document.body.style.overflow = 'hidden'; // Disable scrolling on the body when hovering over the viewer
+            });
+            document.getElementById('papayaContainer').addEventListener('mouseleave', function() {
+                document.body.style.overflow = 'auto'; // Re-enable scrolling when not hovering over the viewer
+            });
         };
     </script>
 </body>
