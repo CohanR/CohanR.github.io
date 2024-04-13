@@ -48,18 +48,19 @@
     </div>
 
     <script>
-        window.onload = function() {
-            papaya.Container.resetViewer(0, {images: []}); // Start with an empty viewer or specify a default image
-        };
+    window.onload = function() {
+        papaya.Container.resetViewer(0, {images: []});
+    };
 
-        document.body.addEventListener('drop', function(event) {
-            event.preventDefault(); // Prevent default behavior (prevent file from being opened)
-            var files = event.dataTransfer.files; // File list from drop event
-            if (files && files.length > 0) {
-                var file = files[0];
-                var reader = new FileReader();
+    document.body.addEventListener('drop', function(event) {
+        event.preventDefault();
+        var files = event.dataTransfer.files;
+        if (files && files.length > 0) {
+            var file = files[0];
+            var reader = new FileReader();
 
-                reader.onload = function(loadEvent) {
+            reader.onload = function(loadEvent) {
+                try {
                     var buffer = loadEvent.target.result;
                     if (nifti.isCompressed(file.name)) {
                         buffer = pako.inflate(new Uint8Array(buffer)).buffer;
@@ -71,18 +72,27 @@
                         papaya.Container.resetViewer(0, {images: [buffer]});
                         displayFileInfo(niftiHeader);
                     } else {
+                        console.error('Not a valid NIFTI file.');
                         document.getElementById('file-info').innerText = 'Not a valid NIFTI file.';
                     }
-                };
-                reader.readAsArrayBuffer(file);
-            }
-        }, false);
+                } catch (e) {
+                    console.error('Error processing the NIfTI file:', e);
+                }
+            };
 
-        function displayFileInfo(header) {
-            document.getElementById('file-info').innerHTML = `<strong>Dimensions:</strong> ${header.dims[1]} x ${header.dims[2]} x ${header.dims[3]}<br>
-            <strong>Voxel Size:</strong> ${header.pixDims[1]}mm x ${header.pixDims[2]}mm x ${header.pixDims[3]}mm<br>
-            <strong>Data Type:</strong> ${header.datatypeCode} (${nifti.Utils.datatypeCodeToString(header.datatypeCode)})`;
+            reader.onerror = function(event) {
+                console.error("File could not be read! Code " + event.target.error.code);
+            };
+
+            reader.readAsArrayBuffer(file);
         }
-    </script>
+    }, false);
+
+    function displayFileInfo(header) {
+        document.getElementById('file-info').innerHTML = `<strong>Dimensions:</strong> ${header.dims[1]} x ${header.dims[2]} x ${header.dims[3]}<br>
+        <strong>Voxel Size:</strong> ${header.pixDims[1]}mm x ${header.pixDims[2]}mm x ${header.pixDims[3]}mm<br>
+        <strong>Data Type:</strong> ${header.datatypeCode} (${nifti.Utils.datatypeCodeToString(header.datatypeCode)})`;
+    }
+</script>
 </body>
 </html>
