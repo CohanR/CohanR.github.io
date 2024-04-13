@@ -12,28 +12,30 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             overflow: hidden;
         }
+        .container {
+            display: flex; /* Flex container for sidebar and viewer */
+            width: 95%; /* Responsive width */
+            max-width: 1200px; /* Maximum width of the container */
+            height: 85vh; /* Height of the viewer */
+        }
         #papayaContainer {
-            width: 70%;
-            height: 85vh;
-            max-width: 1000px; /* Adjusted for space for sidebar */
+            flex: 3; /* Takes up 3 parts of the flex container */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .sidebar {
-            width: 25%; /* Sidebar taking 25% of the screen */
-            height: 85vh;
+            flex: 1; /* Takes up 1 part of the flex container */
             padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            background: #ffffff; /* Light background for the sidebar */
+            background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            overflow-y: auto; /* Allows scrolling if content is too long */
+            overflow-y: auto;
         }
         .home-button {
             position: absolute;
@@ -44,16 +46,27 @@
             color: white;
             border-radius: 5px;
             text-decoration: none;
-            z-index: 10; /* Ensures the button is above other elements */
+            z-index: 10;
+        }
+        @media (max-width: 800px) {
+            .container {
+                flex-direction: column; /* Stacks the sidebar and viewer vertically */
+                height: auto; /* Auto height for vertical stacking */
+            }
+            #papayaContainer, .sidebar {
+                width: 100%; /* Full width for both elements on small screens */
+            }
         }
     </style>
 </head>
 <body>
     <a href="index.html" class="home-button">Home</a>
-    <div id="papayaContainer" data-params="params"></div>
-    <div class="sidebar">
-        <p>This viewer is pre-loaded with the MNI 152 standard brain. Scroll, hover or click on the brain to see different volumes and anatomical labels.</p>
-        <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalised to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
+    <div class="container">
+        <div class="sidebar">
+            <p>This viewer is pre-loaded with the MNI 152 standard brain. Scroll, hover or click on the brain to see different columes and anatomical labels.</p>
+            <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalised to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
+        </div>
+        <div id="papayaContainer" data-params="params"></div>
     </div>
 
     <script type="text/javascript">
