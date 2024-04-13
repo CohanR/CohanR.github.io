@@ -12,29 +12,24 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
-            height: auto; 
-            min-height: 115vh; 
+            height: 115vh; /* Changed from auto to 100vh to fit everything in one screen */
             display: flex;
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
         }
         #papayaContainer {
-            width: 95%;
-            height: 70vh;
-            max-width: 1080px;
+            width: 85%; /* Reduced width to allow non-scroll fitting */
+            height: 65vh; /* Adjusted height */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: 1px; /* Adjusted for better vertical positioning */
         }
         .info {
-            width: 95%;
-            max-width: 1200px;
-            padding: 5px;
+            width: 85%; /* Aligns with the width of the viewer */
+            padding: 20px;
             text-align: center;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: 20px;
-            margin-bottom: 20px;
+            margin-top: 10px; /* Reduced spacing */
         }
         .home-button {
             position: fixed;
@@ -47,18 +42,13 @@
             text-decoration: none;
             z-index: 10;
         }
-        @media (max-width: 800px) {
-            #papayaContainer {
-                height: 60vh;
-            }
-        }
     </style>
 </head>
 <body>
     <a href="index.html" class="home-button">Home</a>
     <div id="papayaContainer" data-params="params"></div>
     <div class="info">
-        <p>This viewer is pre-loaded with the MNI 152 standard brain. Scroll, hover or click on the brain to see different volumes and anatomical labels.</p>
+        <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
         <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalised to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
     </div>
 
@@ -71,13 +61,12 @@
 
         window.onload = function() {
             papaya.Container.resetViewer(0, params);
-            // Ensure only the viewer consumes the scroll when hovered over
-            document.getElementById('papayaContainer').addEventListener('mouseenter', function() {
-                document.body.style.overflow = 'hidden'; // Disable scrolling on the body when hovering over the viewer
-            });
-            document.getElementById('papayaContainer').addEventListener('mouseleave', function() {
-                document.body.style.overflow = 'auto'; // Re-enable scrolling when not hovering over the viewer
-            });
+            document.getElementById('papayaContainer').onmouseenter = function() {
+                document.body.style.overflowY = 'hidden';
+            };
+            document.getElementById('papayaContainer').onmouseleave = function() {
+                document.body.style.overflowY = 'auto';
+            };
         };
     </script>
 </body>
