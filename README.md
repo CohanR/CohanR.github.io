@@ -1,3 +1,3 @@
-#https://cohanr.github.io
-##Remy Cohan
-###Systems & Computational Neuroscience, Neuroplasticity, Neuroimaging 
+# https://cohanr.github.io
+## Remy Cohan
+### Systems & Computational Neuroscience, Neuroplasticity, Neuroimaging 
