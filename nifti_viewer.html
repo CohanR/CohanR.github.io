@@ -12,8 +12,8 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
-            height: auto; /* Change from 100vh to auto */
-            min-height: 120vh; /* Ensure it covers at least the full viewport height */
+            height: auto; 
+            min-height: 100vh; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -24,7 +24,7 @@
             height: 70vh;
             max-width: 1200px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: -15px;
+            margin-top: 5px;
         }
         .info {
             width: 95%;
@@ -34,7 +34,7 @@
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             margin-top: 20px;
-            margin-bottom: 20px; /* Add space below the text for easier readability and access */
+            margin-bottom: 20px;
         }
         .home-button {
             position: fixed;
@@ -71,6 +71,10 @@
 
         window.onload = function() {
             papaya.Container.resetViewer(0, params);
+            // Add event listener to stop scroll propagation
+            document.getElementById('papayaContainer').addEventListener('wheel', function(event) {
+                event.stopPropagation();
+            }, {passive: false});
         };
     </script>
 </body>
