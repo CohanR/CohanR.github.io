@@ -15,16 +15,16 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Changed from center to flex-start */
+            overflow-x: hidden; /* Hide horizontal scroll */
+            overflow-y: auto; /* Enable vertical scroll */
             min-height: 100vh;
-            padding-top: 50px; /* Added padding at the top */
-            overflow: hidden;
         }
         #papayaContainer {
             width: 95%;
             height: 70vh;
             max-width: 1200px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 20px; /* Space from the top */
         }
         .info {
             width: 95%;
@@ -33,7 +33,7 @@
             text-align: center;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: 20px;
+            margin-top: 20px; /* Space after the viewer */
         }
         .home-button {
             position: fixed;
@@ -52,9 +52,6 @@
             }
             .info {
                 padding: 10px;
-            }
-            body, html {
-                padding-top: 20px; /* Less padding on smaller screens */
             }
         }
     </style>
