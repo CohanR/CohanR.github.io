@@ -12,24 +12,26 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
-            height: 115vh; /* Changed from auto to 100vh to fit everything in one screen */
             display: flex;
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
+            height: 120vh; 
         }
         #papayaContainer {
-            width: 85%; /* Reduced width to allow non-scroll fitting */
-            height: 65vh; /* Adjusted height */
+            width: 95%;
+            height: 65vh; /* Allocate height to the viewer */
+            max-width: 1080px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 20px; /* Provide some top margin */
         }
         .info {
-            width: 85%; /* Aligns with the width of the viewer */
-            padding: 20px;
+            width: 95%;
+            padding: 10px;
             text-align: center;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-top: 10px; /* Reduced spacing */
+            margin-bottom: 20px; /* Ensure some space at the bottom */
         }
         .home-button {
             position: fixed;
@@ -49,7 +51,7 @@
     <div id="papayaContainer" data-params="params"></div>
     <div class="info">
         <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
-        <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalised to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
+        <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalized to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
     </div>
 
     <script type="text/javascript">
@@ -62,10 +64,10 @@
         window.onload = function() {
             papaya.Container.resetViewer(0, params);
             document.getElementById('papayaContainer').onmouseenter = function() {
-                document.body.style.overflowY = 'hidden';
+                document.body.style.overflowY = 'hidden'; // Prevent scrolling on the entire page when using the viewer
             };
             document.getElementById('papayaContainer').onmouseleave = function() {
-                document.body.style.overflowY = 'auto';
+                document.body.style.overflowY = 'auto'; // Allow scrolling when not using the viewer
             };
         };
     </script>
