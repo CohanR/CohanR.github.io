@@ -18,28 +18,22 @@
             height: 100vh;
             overflow: hidden;
         }
-        .content {
-            display: flex; /* establishes a flex container */
-            justify-content: center;
-            align-items: center;
-            width: 85%; /* total width of the viewer and sidebar */
-            max-width: 1200px;
-        }
         #papayaContainer {
-            flex-grow: 1; /* takes up the remaining space after the sidebar */
+            width: 70%;
             height: 85vh;
+            max-width: 1000px; /* Adjusted for space for sidebar */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .sidebar {
-            width: 25%; /* sidebar taking a fixed percentage of the content width */
+            width: 25%; /* Sidebar taking 25% of the screen */
             height: 85vh;
             padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background: #ffffff;
+            background: #ffffff; /* Light background for the sidebar */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            overflow-y: auto;
+            overflow-y: auto; /* Allows scrolling if content is too long */
         }
         .home-button {
             position: absolute;
@@ -50,27 +44,16 @@
             color: white;
             border-radius: 5px;
             text-decoration: none;
-            z-index: 10;
-        }
-        @media (max-width: 800px) {
-            .content {
-                flex-direction: column; /* here I'm stacking the sidebar and viewer vertically on small screens */
-            }
-            #papayaContainer, .sidebar {
-                width: 100%;
-                height: auto; /* Adjust height for smaller devices */
-            }
+            z-index: 10; /* Ensures the button is above other elements */
         }
     </style>
 </head>
 <body>
     <a href="index.html" class="home-button">Home</a>
-    <div class="content">
-        <div class="sidebar">
-            <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
-            <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalised to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
-        </div>
-        <div id="papayaContainer" data-params="params"></div>
+    <div id="papayaContainer" data-params="params"></div>
+    <div class="sidebar">
+        <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
+        <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalised to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
     </div>
 
     <script type="text/javascript">
