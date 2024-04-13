@@ -3,96 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Advanced NIfTI Viewer</title>
-    <link rel="stylesheet" href="papaya.css" />
-    <script src="papaya.js"></script>
-    <script src="nifti-reader-min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pako@1.0.11/dist/pako.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="papaya.css?build=1456"> <!-- Ensure the build version matches your files -->
+    <script type="text/javascript" src="papaya.js?build=1456"></script> <!-- Same here for the JavaScript file -->
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
+            height: 100vh; /* Full height */
             display: flex;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            width: 85%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            padding: 20px;
+            justify-content: center; /* Center the viewer horizontally */
+            align-items: center; /* Center the viewer vertically */
         }
         #papayaContainer {
-            flex: 1;
-            margin-right: 20px;
-            height: calc(100vh - 300px);
-        }
-        .sidebar {
-            width: 300px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 85%;
+            height: 85vh; /* Use 85% of the viewport height */
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="papayaContainer" data-params="params"></div>
-        <div class="sidebar">
-            <div id="file-info"></div>
-        </div>
-    </div>
+    <div id="papayaContainer" data-params="params"></div>
 
-    <script>
-    window.onload = function() {
-        papaya.Container.resetViewer(0, {images: []});
-    };
+    <script type="text/javascript">
+        var params = {
+            "images": ["your_image_file.nii"], // Adjust this path to where your NIfTI files are hosted
+            "worldSpace": true,
+            "showControls": true
+        };
 
-    document.body.addEventListener('drop', function(event) {
-        event.preventDefault();
-        var files = event.dataTransfer.files;
-        if (files && files.length > 0) {
-            var file = files[0];
-            var reader = new FileReader();
-
-            reader.onload = function(loadEvent) {
-                try {
-                    var buffer = loadEvent.target.result;
-                    if (nifti.isCompressed(file.name)) {
-                        buffer = pako.inflate(new Uint8Array(buffer)).buffer;
-                    }
-
-                    if (nifti.isNIFTI(file.name)) {
-                        var niftiHeader = nifti.readHeader(buffer);
-                        var niftiImage = nifti.readImage(niftiHeader, buffer);
-                        papaya.Container.resetViewer(0, {images: [buffer]});
-                        displayFileInfo(niftiHeader);
-                    } else {
-                        console.error('Not a valid NIFTI file.');
-                        document.getElementById('file-info').innerText = 'Not a valid NIFTI file.';
-                    }
-                } catch (e) {
-                    console.error('Error processing the NIfTI file:', e);
-                }
-            };
-
-            reader.onerror = function(event) {
-                console.error("File could not be read! Code " + event.target.error.code);
-            };
-
-            reader.readAsArrayBuffer(file);
-        }
-    }, false);
-
-    function displayFileInfo(header) {
-        document.getElementById('file-info').innerHTML = `<strong>Dimensions:</strong> ${header.dims[1]} x ${header.dims[2]} x ${header.dims[3]}<br>
-        <strong>Voxel Size:</strong> ${header.pixDims[1]}mm x ${header.pixDims[2]}mm x ${header.pixDims[3]}mm<br>
-        <strong>Data Type:</strong> ${header.datatypeCode} (${nifti.Utils.datatypeCodeToString(header.datatypeCode)})`;
-    }
-</script>
+        // This function initializes the Papaya viewer when the window loads
+        window.onload = function() {
+            papaya.Container.resetViewer(0, params);
+        };
+    </script>
 </body>
 </html>
