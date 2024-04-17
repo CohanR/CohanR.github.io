@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,7 +28,7 @@
 
         nav {
             display: flex;
-            flex-wrap: wrap; /* Allow the items to wrap if necessary */
+            flex-wrap: wrap;
             justify-content: center;
             gap: 20px;
             padding: 10px 0;
@@ -55,14 +54,20 @@
             top: 0;
             left: 0;
             height: 100%;
-            width: 250px;
+            width: 0;
+            overflow: hidden;
             background-color: #34495e;
             padding: 20px 0;
             box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+            transition: width 0.5s ease;
         }
 
-        .sidebar h3,
-        .sidebar a {
+        .sidebar:hover,
+        .sidebar:focus {
+            width: 250px;
+        }
+
+        .sidebar h3, .sidebar a {
             color: white;
             margin-left: 20px;
             text-decoration: none;
@@ -75,23 +80,32 @@
             color: #bdc3c7;
         }
 
+        .sidebar-tab {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #34495e;
+            color: white;
+            padding: 10px;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background-color 0.3s;
+        }
+
         main {
-            margin-left: 270px;
+            margin-left: 0;
             padding: 40px;
             background-color: #ffffff;
             box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
 
-        h1 {
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        /* Mobile-friendly adjustments */
         @media (max-width: 768px) {
             nav {
-                flex-direction: column; /* Make nav items stack vertically */
+                flex-direction: column;
             }
 
             .sidebar {
@@ -105,7 +119,7 @@
             }
 
             .sidebar h3 {
-                display: none; /* Hide "Quick Links" title on mobile */
+                display: none;
             }
 
             main {
@@ -115,7 +129,6 @@
         }
     </style>
 </head>
-
 <body>
     <!-- Header -->
     <header>Remy Cohan</header>
@@ -130,6 +143,9 @@
         <a href="posters.html">Conference Posters</a>
     </nav>
 
+    <!-- Sidebar Trigger -->
+    <div class="sidebar-tab" onclick="toggleSidebar()">☰</div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <h3>Quick Links</h3>
@@ -142,15 +158,19 @@
     <main>
         <h1>Current Projects</h1>
         <img src="images/MRI_TMS_Suite_Remy_COhan.png" alt="Neuroradiologist Remy Cohan MRI Suite" style="max-width:100%; height:auto;">
-        <p> Project 1- Differential Effects of Theta Burst Stimulation on Motor and Non-Motor Cortical Regions: An MRI-TMS study.</p>
-        <p> Project 2- Investigating the Role of Salivary Brain-Derived Neurotrophic Factor (BDNF) in Brain Plasticity.</p>
-        <p> Project 3- Investigating the Role of GABA and Glutamate in Sensory Gating: An MR Spectroscopy Study.</p>
-        <p> Project 4- Evaluating the Effects of Continous Theta Burst Stimulation on Occular Dominance: An MRI-TMS Study.</p>
-        <p> Project 5- Evaluating the Effects of Continous Theta Burst Stimulation on Motor Evoked Potentials: An MRI-TMS Study.</p>
-
-        <p> If you are interested in participating in any of the above projects please contact me at rcohan@yorku.ca.</p>
-        
+        <p>Project 1 - Differential Effects of Theta Burst Stimulation on Motor and Non-Motor Cortical Regions: An MRI-TMS study.</p>
+        <p>Project 2 - Investigating the Role of Salivary Brain-Derived Neurotrophic Factor (BDNF) in Brain Plasticity.</p>
+        <p>Project 3 - Investigating the Role of GABA and Glutamate in Sensory Gating: An MR Spectroscopy Study.</p>
+        <p>Project 4 - Evaluating the Effects of Continous Theta Burst Stimulation on Occular Dominance: An MRI-TMS Study.</p>
+        <p>Project 5 - Evaluating the Effects of Continous Theta Burst Stimulation on Motor Evoked Potentials: An MRI-TMS Study.</p>
+        <p>If you are interested in participating in any of the above projects please contact me at rcohan@yorku.ca.</p>
     </main>
-</body>
 
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.querySelector('.sidebar');
+            sidebar.style.width = sidebar.style.width === '250px' ? '0' : '250px';
+        }
+    </script>
+</body>
 </html>
