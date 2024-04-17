@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,11 +54,17 @@
             top: 0;
             left: 0;
             height: 100%;
-            width: 250px;
+            width: 0; /* Initially set width to 0 */
+            overflow: hidden;
             background-color: #34495e;
             padding: 20px 0;
             box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            transition: width 0.5s ease;
+        }
+
+        .sidebar:hover,
+        .sidebar:focus {
+            width: 250px;
         }
 
         .sidebar h3,
@@ -76,17 +81,27 @@
             color: #bdc3c7;
         }
 
+        .sidebar-tab {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #34495e;
+            color: white;
+            padding: 10px;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background-color 0.3s;
+        }
+
         main {
-            margin-left: 270px;
+            margin-left: 0; /* Adjust based on sidebar state */
             padding: 40px;
             background-color: #ffffff;
             box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
-        }
-
-        h1 {
-            font-weight: 600;
-            margin-bottom: 20px;
         }
 
         @media (max-width: 768px) {
@@ -108,12 +123,9 @@
         }
     </style>
 </head>
-
 <body>
     <!-- Header -->
     <header>Remy Cohan</header>
-    <!-- ... rest of the content -->
-</body>
 
     <!-- Navigation -->
     <nav>
@@ -123,8 +135,10 @@
         <a href="plots.html">Statistics and Plotting in Python & R</a>
         <a href="neuro_analysis.html">Neuroimaging Analysis Scripts</a>
         <a href="posters.html">Conference Posters</a>
- 
     </nav>
+
+    <!-- Sidebar Trigger -->
+    <div class="sidebar-tab" onclick="toggleSidebar()">☰</div>
 
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -133,44 +147,48 @@
         <a href="https://github.com/CohanR/Action_Potential_Simulation">Action Potential Simulation</a>
         <a href="https://github.com/CohanR/TMS_ElectricField_Group_Simulation">TMS Electric Field Simulation</a>
         <a href="https://github.com/CohanR/MotorEvokedPotentials_Propofol_ML">Propofol and Motor Evoked Potential ML Algorithm</a>
-
     </aside>
 
-<!-- Main Content -->
-<main>
-    <h1>Simulation & Machine Learning</h1>
-    <p>Below are some of my simulation and ML scripts:</p>
+    <!-- Main Content -->
+    <main>
+        <h1>Simulation & Machine Learning</h1>
+        <p>Below are some of my simulation and ML scripts:</p>
 
-<!-- Section for the Hodgkin Huxley Model Simulation and Repository Link -->
-<section>
-    <h2>Hodgkin Huxley Simulation</h2>
-    <img src="images/hodgkin_huxley_simulation_Remy_Cohan.gif" alt="Hodgkin Huxley Simulation GIF" style="max-width:100%; height:auto;">
-    <p>Checkout the Hodgkin Huxley Simulation on GitHub:</p>
-    <a href="https://github.com/CohanR/Hodgkin-Huxley_Simulation" target="_blank">View Hodgkin Huxley Simulation Code on GitHub</a>
-</section>
+        <!-- Sections for Simulations and ML -->
+        <section>
+            <h2>Hodgkin Huxley Simulation</h2>
+            <img src="images/hodgkin_huxley_simulation_Remy_Cohan.gif" alt="Hodgkin Huxley Simulation GIF" style="max-width:100%; height:auto;">
+            <p>Checkout the Hodgkin Huxley Simulation on GitHub:</p>
+            <a href="https://github.com/CohanR/Hodgkin-Huxley_Simulation" target="_blank">View Hodgkin Huxley Simulation Code on GitHub</a>
+        </section>
 
-    <!-- Section for the Action Potentials Simulation and Repository Link -->
-<section>
-    <h2>Action Potentials Simulation</h2>
-    <img src="images/Action_Potential_Sim_Remy_Cohan.gif" alt="Action Potentials Simulation GIF" style="max-width:100%; height:auto;">
-    <p>Checkout the Action Potentials Simulation on GitHub:</p>
-    <a href="https://github.com/CohanR/Action_Potential_Simulation" target="_blank">View the GitHub Repository</a>
-</section>
+        <section>
+            <h2>Action Potentials Simulation</h2>
+            <img src="images/Action_Potential_Sim_Remy_Cohan.gif" alt="Action Potentials Simulation GIF" style="max-width:100%; height:auto;">
+            <p>Checkout the Action Potentials Simulation on GitHub:</p>
+            <a href="https://github.com/CohanR/Action_Potential_Simulation" target="_blank">View the GitHub Repository</a>
+        </section>
 
-<!-- Section for the E-Field Simulation and Repository Link -->
-<section>
-    <h2>E-Field Simulation</h2>
-    <img src="images/e_field_simulation_Remy.png" alt="E-Field Simulation Image" style="max-width:100%; height:auto;">
-    <p>Explore the Electric Field Simulation on GitHub:</p>
-    <a href="https://github.com/CohanR/TMS_ElectricField_Group_Simulation" target="_blank">View the GitHub Repository</a>
-</section>
+        <section>
+            <h2>E-Field Simulation</h2>
+            <img src="images/e_field_simulation_Remy.png" alt="E-Field Simulation Image" style="max-width:100%; height:auto;">
+            <p>Explore the Electric Field Simulation on GitHub:</p>
+            <a href="https://github.com/CohanR/TMS_ElectricField_Group_Simulation" target="_blank">View the GitHub Repository</a>
+        </section>
 
-<!-- Section for the machine learning algorithm for propofol and motor evoked potentials (MEPs) -->
-<section>
-    <h2>Propofol and MEPs ML Model</h2>
-    <img src="images/decision_tree_RC.png" alt="Decision Tree Image" style="max-width:100%; height:auto;">
-    <p>Explore the Machine Learning Algorithm to Predict Whether Handedness and Propofol Dosage have any effects on MEP amplitudes on GitHub:</p>
-    <a href="https://github.com/CohanR/MotorEvokedPotentials_Propofol_ML" target="_blank">View the GitHub Repository</a>
-</section>
+        <section>
+            <h2>Propofol and MEPs ML Model</h2>
+            <img src="images/decision_tree_RC.png" alt="Decision Tree Image" style="max-width:100%; height:auto;">
+            <p>Explore the Machine Learning Algorithm to Predict Whether Handedness and Propofol Dosage have any effects on MEP amplitudes on GitHub:</p>
+            <a href="https://github.com/CohanR/MotorEvokedPotentials_Propofol_ML" target="_blank">View the GitHub Repository</a>
+        </section>
+    </main>
 
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.querySelector('.sidebar');
+            sidebar.style.width = sidebar.style.width === '250px' ? '0' : '250px';
+        }
+    </script>
+</body>
 </html>
