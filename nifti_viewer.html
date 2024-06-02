@@ -45,9 +45,9 @@
             padding: 1vh; /* Small padding for aesthetics */
         }
         .home-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
             padding: 10px 20px;
             background-color: #007BFF;
             color: white;
@@ -69,6 +69,18 @@
             }
             #papayaContainer {
                 height: 50vh;
+            }
+        }
+        @media (max-width: 480px) {
+            .sidebar {
+                height: 35vh;
+                padding: 1vh;
+            }
+            #papayaContainer {
+                height: 45vh;
+            }
+            .info {
+                padding: 0.5vh;
             }
         }
     </style>
