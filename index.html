@@ -54,6 +54,13 @@
             padding: 10px 20px;
             border-radius: 5px;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-width: 120px; /* Ensure each tab has a minimum width */
         }
 
         nav a:hover {
@@ -139,29 +146,11 @@
     <header>
         <h1 class="seo-header">
             Remy Cohan
-        </a>
-            <span class="hidden-text">Dr. Remy Cohan</span>
-            <span class="hidden-text">Rémy Cohan MD, PhD</span>
-            <span class="hidden-text">Neuroradiology</span>
         </h1>
+        <span class="hidden-text">Dr. Remy Cohan</span>
+        <span class="hidden-text">Rémy Cohan MD, PhD</span>
+        <span class="hidden-text">Neuroradiology</span>
     </header>
-</body>
-
-<!-- Adding this to my CSS -->
-<style>
-    .hidden-text {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-    }
-</style>
-
-
 
     <!-- Navigation -->
     <nav>
@@ -196,31 +185,36 @@
             </p>
         </section>
 
-        <!-- Adding this to the <head> of my HTML -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <section id="contact">
+            <h2>Contact</h2>
+            <p><a href="mailto:rcohan@yorku.ca" class="email-link"><i class="fas fa-envelope"></i> rcohan@yorku.ca</a></p>
+            <p><a href="https://www.yorku.ca/health/lab/steeves/lab-members/" class="email-link"><i class="fas fa-brain"></i> Perceptual Neuroscience Laboratory</a></p>
+            <p><a href="https://github.com/CohanR?tab=repositories" class="email-link"><i class="fab fa-github"></i> CohanR</a></p>
+            <p><a href="https://strokesciences.com/" class="email-link"><i class="fas fa-brain"></i> strokesciences.com</a></p>
+            <p><a href="https://twitter.com/remycohan" class="email-link"><i class="fab fa-twitter"></i> @remycohan</a></p>
+        </section>
+    </main>
 
+    <style>
+        .hidden-text {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        .email-link .fab {
+            color: #3a4750;
+            margin-right: 5px;  /* Adds a little space between the icon and the text */
+        }
 
-<section id="contact">
-    <h2>Contact</h2>
-    <p><a href="mailto:rcohan@yorku.ca" class="email-link"><i class="fas fa-envelope"></i> rcohan@yorku.ca</a></p>
-    <p><a href="https://www.yorku.ca/health/lab/steeves/lab-members/" class="email-link"><i class="fas fa-brain"></i> Perceptual Neuroscience Laboratory</a></p>
-    <p><a href="https://github.com/CohanR?tab=repositories" class="email-link"><i class="fab fa-github"></i> CohanR</a></p>
-    <p><a href="https://strokesciences.com/" class="email-link"><i class="fas fa-brain"></i> strokesciences.com</a></p>
-    <p><a href="https://twitter.com/remycohan" class="email-link"><i class="fab fa-twitter"></i> @remycohan</a></p>
-</section>
-</main>
-
-<!-- For my CSS styles -->
-<style>
-    .email-link .fab {
-        color: #3a4750;
-        margin-right: 5px;  /* Adds a little space between the icon and the text */
-    }
-
-    .email-link:hover .fab {
-        color: #5f6874;
-    }
-</style>
+        .email-link:hover .fab {
+            color: #5f6874;
+        }
+    </style>
 
 </body>
 
