@@ -55,6 +55,22 @@
             text-decoration: none;
             z-index: 10;
         }
+        @media (max-width: 768px) {
+            body, html {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                margin: 1vh 0;
+                height: 30vh;
+            }
+            .content {
+                width: 100%;
+            }
+            #papayaContainer {
+                height: 50vh;
+            }
+        }
     </style>
 </head>
 <body>
@@ -74,7 +90,6 @@
     <div class="content">
         <div id="papayaContainer" data-params="params"></div>
         <div class="info">
-            
             <p>You can also use the 'File' menu to 'Close All' and upload your own DICOM or NIfTI MRI image. If your MRI file is normalized to MNI space, the MNI template overlay will automatically add region labels to your image.</p>
         </div>
     </div>
