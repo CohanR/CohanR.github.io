@@ -59,7 +59,7 @@
         @media (max-width: 768px) {
             body, html {
                 flex-direction: column;
-                overflow: auto;
+                overflow: hidden;
             }
             .sidebar {
                 display: none;
@@ -70,7 +70,8 @@
                 padding: 0;
             }
             #papayaContainer {
-                height: calc(100vh - 50px); /* Full height minus some padding for buttons */
+                width: 100vw;
+                height: 100vh; /* Full height */
                 margin: 0;
                 box-shadow: none;
             }
@@ -80,7 +81,8 @@
         }
         @media (max-width: 480px) {
             #papayaContainer {
-                height: calc(100vh - 50px);
+                width: 100vw;
+                height: 100vh; /* Full height */
             }
         }
     </style>
