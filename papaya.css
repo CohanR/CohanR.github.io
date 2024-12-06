@@ -256,10 +256,10 @@ li .papaya-menu-slider {
 
 @media (max-width: 480px) {
     .papaya-dialog {
-        min-width: 95%;
-        max-width: 95%;
+        min-width: 90%;
+        max-width: 90%;
         height: auto;
-        padding: 10px;
+        padding: 5px;
         font-size: 12px; /* Reduce font size for tiny screens */
     }
 }
