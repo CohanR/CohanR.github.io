@@ -12,32 +12,35 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
-            height: 100vh;
+            height: 100%; /* Ensure it fills the viewport */
             display: flex;
-            flex-direction: row;
-            overflow: hidden;
+            flex-direction: column;
+            overflow: hidden; /* Avoid scrollbars */
         }
+
         .sidebar {
             width: 20%;
             padding: 2vh;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             margin: 1vh;
-            margin-top: 3.5vh;
             overflow-y: auto;
         }
+
         .content {
-            width: 75%;
+            flex: 1; /* Fill remaining space */
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
         #papayaContainer {
             width: 100%;
-            height: 60vh;
+            height: 60vh; /* Default height for computers */
+            max-height: 100vh; /* Ensure it never exceeds the viewport */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin: 1vh 0;
         }
+
         .info {
             width: 100%;
             text-align: center;
@@ -45,6 +48,7 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             padding: 1vh;
         }
+
         .home-button {
             position: absolute;
             top: 10px;
@@ -56,38 +60,29 @@
             text-decoration: none;
             z-index: 10;
         }
+
         @media (max-width: 768px) {
-            body, html {
-                flex-direction: column;
-                overflow: hidden;
-                height: 100vh;
-            }
             .sidebar {
-                display: none;
+                display: none; /* Hide sidebar on smaller devices */
             }
+
             .content {
                 width: 100%;
-                height: 100vh;
-                padding: 0;
             }
+
             #papayaContainer {
-                width: 100vw;
-                height: 100vh;
-                margin: 0;
-                box-shadow: none;
+                height: 80vh; /* Reduce height for smaller screens */
+                width: 100%;
             }
+
             .info {
-                display: none;
+                display: none; /* Hide info section on small devices */
             }
         }
+
         @media (max-width: 480px) {
-            body, html {
-                height: 100vh;
-            }
             #papayaContainer {
-                width: 100vw;
-                height: calc(100vh - constant(safe-area-inset-bottom)); /* Legacy safe-area handling */
-                height: calc(100vh - env(safe-area-inset-bottom)); /* Modern browsers */
+                height: calc(100vh - 10px); /* Full height minus a small margin */
             }
         }
     </style>
@@ -104,7 +99,6 @@
         </ol>
         <p>You should see a black screen. You can now drag and drop the MRI file that ends with <code>.nii.gz (or DICOM files/folder)</code> onto the black window, or you can click on <strong>File</strong> and then <strong>Add Image</strong>.</p>
         <p>Make sure to use <strong>Close ALL</strong> if you wish to see a different image. Otherwise, the previous image remains there and the new image you add overlays on top. Please note that your images/data will never be saved on this website.</p>
-        <p>If your images are normalised to MNI space, the MNI template overlay will automatically add region labels to your image. If you have fMRI correlation maps, t-maps, DTI images you can also add the anatomical image first and add the second image as an overlay to visualise the results. </p>
     </div>
     <div class="content">
         <div id="papayaContainer" data-params="params"></div>
@@ -118,23 +112,23 @@
             "showControls": true
         };
 
-        window.onload = function() {
-            papaya.Container.resetViewer(0, params);
-            document.getElementById('papayaContainer').addEventListener('mouseenter', function() {
-                document.body.style.overflow = 'hidden';
-            });
-            document.getElementById('papayaContainer').addEventListener('mouseleave', function() {
-                document.body.style.overflow = 'hidden';
-            });
-        };
-
-        function adjustPapayaHeight() {
+        function adjustPapayaContainerHeight() {
             const container = document.getElementById('papayaContainer');
-            container.style.height = `${window.innerHeight}px`;
+            if (window.innerWidth <= 768) {
+                // For mobile devices, adjust height dynamically
+                container.style.height = `${window.innerHeight - 10}px`;
+            } else {
+                // Default height for larger screens
+                container.style.height = '60vh';
+            }
         }
 
-        window.addEventListener('load', adjustPapayaHeight);
-        window.addEventListener('resize', adjustPapayaHeight);
+        window.onload = function () {
+            papaya.Container.resetViewer(0, params);
+            adjustPapayaContainerHeight();
+        };
+
+        window.addEventListener('resize', adjustPapayaContainerHeight);
     </script>
 </body>
 </html>
