@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Remy's NIfTI Viewer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" type="text/css" href="papaya.css?build=1456">
     <script type="text/javascript" src="papaya.js?build=1456"></script>
     <style>
@@ -86,7 +86,8 @@
             }
             #papayaContainer {
                 width: 100vw;
-                height: 100vh;
+                height: calc(100vh - constant(safe-area-inset-bottom)); /* Legacy safe-area handling */
+                height: calc(100vh - env(safe-area-inset-bottom)); /* Modern browsers */
             }
         }
     </style>
@@ -126,6 +127,14 @@
                 document.body.style.overflow = 'hidden';
             });
         };
+
+        function adjustPapayaHeight() {
+            const container = document.getElementById('papayaContainer');
+            container.style.height = `${window.innerHeight}px`;
+        }
+
+        window.addEventListener('load', adjustPapayaHeight);
+        window.addEventListener('resize', adjustPapayaHeight);
     </script>
 </body>
 </html>
