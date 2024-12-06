@@ -1,9 +1,10 @@
 .papaya {
     width: 100%;
-    height: 100%;
+    height: calc(100vh - 10px);
     margin: 0;
     background-color: black;
     font-family: sans-serif;
+    box-sizing: border-box;
 }
 .papaya:before {
     position: relative;
@@ -17,6 +18,8 @@
 }
 .papaya-fullscreen {
     height: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 .papaya-toolbar {
     text-align: left;
@@ -242,6 +245,25 @@ li .papaya-menu-slider {
     box-sizing: content-box;
     line-height: 1.45;
 }
+@media (max-width: 768px) {
+    .papaya-dialog {
+        min-width: 90%; /* Scale to 90% of the screen width */
+        max-width: 90%;
+        height: auto; /* Let the height adjust dynamically */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .papaya-dialog {
+        min-width: 95%;
+        max-width: 95%;
+        height: auto;
+        padding: 10px;
+        font-size: 12px; /* Reduce font size for tiny screens */
+    }
+}
+
 .papaya-dialog-content {
     margin: 20px;
     height: 415px;
@@ -345,5 +367,8 @@ li .papaya-menu-slider {
     font-family: sans-serif;
 }
 .papaya-viewer canvas {
+    width: 100%; /* Add this line for dynamic width */
+    height: 100%; /* Add this line for dynamic height */
     cursor: crosshair;
+    box-sizing: border-box; /* Add this for consistent sizing */
 }
