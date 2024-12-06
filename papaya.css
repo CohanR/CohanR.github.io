@@ -372,3 +372,16 @@ li .papaya-menu-slider {
     cursor: crosshair;
     box-sizing: border-box; /* Add this for consistent sizing */
 }
+/* iOS-specific fix for vertical mode */
+@supports (-webkit-touch-callout: none) {
+    html, body {
+        height: 100%;
+        overflow: hidden; /* Prevent scrolling issues */
+    }
+
+    .papaya {
+        height: calc(100% - constant(safe-area-inset-bottom)); /* Handle safe area insets */
+        height: calc(100% - env(safe-area-inset-bottom)); /* Fallback for modern browsers */
+    }
+}
+
