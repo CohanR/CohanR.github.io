@@ -14,7 +14,7 @@
             padding: 0;
             background-color: #f4f4f4;
             height: 100%;
-            overflow: auto; /* Allow page scrolling */
+            overflow: auto;
             display: flex;
             flex-direction: column;
         }
@@ -24,18 +24,18 @@
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            height: 100vh; /* Full viewport height */
-            overflow: hidden; /* Prevent extra scrolling within the layout */
+            height: 100vh;
+            overflow: hidden;
         }
 
         /* Sidebar Styles */
         .sidebar {
-            width: 25%; /* Sidebar occupies 25% of the screen width */
-            max-width: 300px; /* Optional max width */
+            width: 25%;
+            max-width: 300px;
             padding: 1rem;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow-y: auto; /* Allow text scrolling if it overflows */
+            overflow-y: auto;
         }
 
         /* Content Styles */
@@ -49,12 +49,12 @@
         }
 
         #papayaContainer {
-            width: 75%; /* Viewer takes 75% of the content width */
-            height: 65%; /* Viewer takes 65% of the content height */
-            max-width: 1100px; /* Limit max width */
-            max-height: 850px; /* Limit max height */
+            width: 75%;
+            height: 65%;
+            max-width: 1200px;
+            max-height: 850px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden; /* Prevent any internal scrolling */
+            position: relative;
         }
 
         .info {
@@ -84,13 +84,13 @@
                 flex-direction: column;
             }
             .sidebar {
-                display: none; /* Hide sidebar on small screens */
+                display: none;
             }
             #papayaContainer {
-                width: 90%; /* Viewer takes 90% of the content width */
-                height: 50vh; /* Adjust height for smaller screens */
-                max-width: none; /* Remove width limit on small screens */
-                max-height: none; /* Remove height limit on small screens */
+                width: 90%;
+                height: 50vh;
+                max-width: none;
+                max-height: none;
             }
         }
     </style>
@@ -98,9 +98,8 @@
 <body>
     <a href="index.html" class="home-button">Home</a>
 
-    <!-- Layout Container -->
     <div class="container">
-        <!-- Sidebar Section -->
+        <!-- Sidebar -->
         <div class="sidebar">
             <h3>Instructions</h3>
             <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
@@ -110,17 +109,14 @@
                 <li>Click on <strong>Close ALL</strong></li>
             </ol>
             <p>Drag and drop your <code>.nii.gz</code> file or click on <strong>File</strong> → <strong>Add Image</strong>.</p>
-            <p>Ensure images are normalised to MNI space for automatic overlay and region labels.</p>
         </div>
 
-        <!-- Content Section -->
+        <!-- Papaya Viewer -->
         <div class="content">
             <div id="papayaContainer"></div>
-            <div class="info"></div>
         </div>
     </div>
 
-    <!-- JavaScript Section -->
     <script type="text/javascript">
         var params = {
             images: ["images/mni152.nii.gz"],
@@ -128,23 +124,22 @@
             showControls: true
         };
 
-        // Function to Resize Papaya Viewer
         function resizePapaya() {
             const container = document.getElementById("papayaContainer");
 
-            // Calculate dimensions dynamically
-            const containerWidth = Math.min(window.innerWidth * 0.75, 1100); // 75% of window width, max 1100px
-            const containerHeight = Math.min(window.innerHeight * 0.65, 850); // 65% of window height, max 850px
+            // Dynamically calculate size
+            const containerWidth = Math.min(window.innerWidth * 0.75, 1200); // 75% width, max 1200px
+            const containerHeight = Math.min(window.innerHeight * 0.65, 850); // 65% height, max 850px
 
-            // Set container size explicitly
+            // Set container dimensions
             container.style.width = containerWidth + "px";
             container.style.height = containerHeight + "px";
 
-            // Trigger Papaya to resize
+            // Resize Papaya
             papaya.Container.resizeViewer(0);
 
-            // Ensure MNI labels are fully visible
-            const canvas = container.querySelector('canvas');
+            // Ensure canvas fits container
+            const canvas = container.querySelector("canvas");
             if (canvas) {
                 canvas.style.width = containerWidth + "px";
                 canvas.style.height = containerHeight + "px";
@@ -155,11 +150,11 @@
         window.onload = function () {
             papaya.Container.addViewer("papayaContainer", params);
 
-            // Adjust Papaya size after it loads
+            // Resize on load
             resizePapaya();
         };
 
-        // Adjust size on window resize
+        // Resize dynamically on window changes
         window.addEventListener("resize", resizePapaya);
     </script>
 </body>
