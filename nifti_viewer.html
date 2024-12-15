@@ -49,10 +49,10 @@
         }
 
         #papayaContainer {
-            width: 50%; /* Viewer takes 50% of the content width */
-            height: 40vh; /* Viewer takes 40% of the viewport height */
-            max-width: 600px; /* Limit max width */
-            max-height: 400px; /* Limit max height */
+            width: 60%; /* Viewer takes 60% of the content width */
+            height: 50%; /* Viewer takes 50% of the content height */
+            max-width: 800px; /* Limit max width */
+            max-height: 600px; /* Limit max height */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden; /* Prevent any internal scrolling */
         }
@@ -88,7 +88,7 @@
             }
             #papayaContainer {
                 width: 90%; /* Viewer takes 90% of the content width */
-                height: 50vh; /* Adjust height for smaller screens */
+                height: 40vh; /* Adjust height for smaller screens */
                 max-width: none; /* Remove width limit on small screens */
                 max-height: none; /* Remove height limit on small screens */
             }
@@ -115,31 +115,45 @@
 
         <!-- Content Section -->
         <div class="content">
-            <div id="papayaContainer" data-params="params"></div>
+            <div id="papayaContainer"></div>
             <div class="info"></div>
         </div>
     </div>
 
     <!-- JavaScript Section -->
     <script type="text/javascript">
-        // Papaya Viewer Parameters
         var params = {
-            "images": ["images/mni152.nii.gz"],
-            "worldSpace": true,
-            "showControls": true
+            images: ["images/mni152.nii.gz"],
+            worldSpace: true,
+            showControls: true
         };
 
-        // Force Papaya Viewer Size to Match CSS
-        window.onload = function() {
-            const papayaContainer = document.getElementById('papayaContainer');
-            papaya.Container.resetViewer(0, params);
-            
-            // Enforce CSS dimensions (Papaya sometimes overrides these)
-            papayaContainer.style.width = "50%";
-            papayaContainer.style.height = "40vh";
-            papayaContainer.style.maxWidth = "600px";
-            papayaContainer.style.maxHeight = "400px";
+        // Function to Resize Papaya Viewer
+        function resizePapaya() {
+            const container = document.getElementById("papayaContainer");
+
+            // Calculate dimensions dynamically
+            const containerWidth = Math.min(window.innerWidth * 0.6, 800); // 60% of window width, max 800px
+            const containerHeight = Math.min(window.innerHeight * 0.5, 600); // 50% of window height, max 600px
+
+            // Set container size explicitly
+            container.style.width = containerWidth + "px";
+            container.style.height = containerHeight + "px";
+
+            // Trigger Papaya to resize
+            papaya.Container.resizeViewer(0);
+        }
+
+        // Initialise Papaya Viewer
+        window.onload = function () {
+            papaya.Container.addViewer("papayaContainer", params);
+
+            // Adjust Papaya size after it loads
+            resizePapaya();
         };
+
+        // Adjust size on window resize
+        window.addEventListener("resize", resizePapaya);
     </script>
 </body>
 </html>
