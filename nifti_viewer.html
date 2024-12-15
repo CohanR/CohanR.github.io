@@ -49,11 +49,12 @@
         }
 
         #papayaContainer {
-            width: 60%; /* Viewer takes 60% of the content width */
-            height: 50vh; /* Viewer takes 50% of the viewport height */
-            max-width: 800px; /* Limit max width */
-            max-height: 500px; /* Limit max height */
+            width: 50%; /* Viewer takes 50% of the content width */
+            height: 40vh; /* Viewer takes 40% of the viewport height */
+            max-width: 600px; /* Limit max width */
+            max-height: 400px; /* Limit max height */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Prevent any internal scrolling */
         }
 
         .info {
@@ -87,7 +88,7 @@
             }
             #papayaContainer {
                 width: 90%; /* Viewer takes 90% of the content width */
-                height: 40vh; /* Adjust height for smaller screens */
+                height: 50vh; /* Adjust height for smaller screens */
                 max-width: none; /* Remove width limit on small screens */
                 max-height: none; /* Remove height limit on small screens */
             }
@@ -128,9 +129,16 @@
             "showControls": true
         };
 
-        // Initialise Papaya Viewer
+        // Force Papaya Viewer Size to Match CSS
         window.onload = function() {
+            const papayaContainer = document.getElementById('papayaContainer');
             papaya.Container.resetViewer(0, params);
+            
+            // Enforce CSS dimensions (Papaya sometimes overrides these)
+            papayaContainer.style.width = "50%";
+            papayaContainer.style.height = "40vh";
+            papayaContainer.style.maxWidth = "600px";
+            papayaContainer.style.maxHeight = "400px";
         };
     </script>
 </body>
