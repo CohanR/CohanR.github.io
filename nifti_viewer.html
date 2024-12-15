@@ -49,8 +49,10 @@
         }
 
         #papayaContainer {
-            width: 70%; /* Viewer takes 70% of the content width */
-            height: 70%; /* Viewer takes 70% of the viewport height */
+            width: 60%; /* Viewer takes 60% of the content width */
+            height: 50vh; /* Viewer takes 50% of the viewport height */
+            max-width: 800px; /* Limit max width */
+            max-height: 500px; /* Limit max height */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
@@ -85,7 +87,9 @@
             }
             #papayaContainer {
                 width: 90%; /* Viewer takes 90% of the content width */
-                height: 60vh; /* Adjust height for smaller screens */
+                height: 40vh; /* Adjust height for smaller screens */
+                max-width: none; /* Remove width limit on small screens */
+                max-height: none; /* Remove height limit on small screens */
             }
         }
     </style>
