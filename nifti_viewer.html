@@ -49,10 +49,10 @@
         }
 
         #papayaContainer {
-            width: 70%; /* Viewer takes 70% of the content width */
-            height: 60%; /* Viewer takes 60% of the content height */
-            max-width: 1000px; /* Limit max width */
-            max-height: 800px; /* Limit max height */
+            width: 75%; /* Viewer takes 75% of the content width */
+            height: 65%; /* Viewer takes 65% of the content height */
+            max-width: 1100px; /* Limit max width */
+            max-height: 850px; /* Limit max height */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden; /* Prevent any internal scrolling */
         }
@@ -133,8 +133,8 @@
             const container = document.getElementById("papayaContainer");
 
             // Calculate dimensions dynamically
-            const containerWidth = Math.min(window.innerWidth * 0.7, 1000); // 70% of window width, max 1000px
-            const containerHeight = Math.min(window.innerHeight * 0.6, 800); // 60% of window height, max 800px
+            const containerWidth = Math.min(window.innerWidth * 0.75, 1100); // 75% of window width, max 1100px
+            const containerHeight = Math.min(window.innerHeight * 0.65, 850); // 65% of window height, max 850px
 
             // Set container size explicitly
             container.style.width = containerWidth + "px";
