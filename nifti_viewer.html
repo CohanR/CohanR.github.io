@@ -14,37 +14,44 @@
             padding: 0;
             background-color: #f4f4f4;
             height: 100%;
-            overflow: auto; /* Allow scrolling */
+            overflow: auto; /* Allow page scrolling */
             display: flex;
             flex-direction: column;
+        }
+
+        /* Layout Container */
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            height: 100vh; /* Full viewport height */
+            overflow: hidden; /* Prevent extra scrolling within the layout */
         }
 
         /* Sidebar Styles */
         .sidebar {
-            width: 100%;
-            max-width: 300px;
+            width: 25%; /* Sidebar occupies 25% of the screen width */
+            max-width: 300px; /* Optional max width */
             padding: 1rem;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1rem;
-            overflow-y: auto;
+            overflow-y: auto; /* Allow text scrolling if it overflows */
         }
 
         /* Content Styles */
         .content {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100%;
+            justify-content: center;
             padding: 1rem;
         }
 
         #papayaContainer {
-            width: 100%;
-            max-width: 900px; /* Limit the maximum width for better usability */
-            height: 70vh; /* Relative height for responsiveness */
+            width: 70%; /* Viewer takes 70% of the content width */
+            height: 70%; /* Viewer takes 70% of the viewport height */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin: 1rem 0;
         }
 
         .info {
@@ -70,46 +77,42 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
             .sidebar {
-                display: none;
+                display: none; /* Hide sidebar on small screens */
             }
             #papayaContainer {
-                width: 100%;
-                height: 60vh;
-            }
-            .info {
-                display: block;
-            }
-        }
-
-        @media (max-width: 480px) {
-            #papayaContainer {
-                height: calc(100vh - constant(safe-area-inset-bottom)); /* Legacy safe-area handling */
-                height: calc(100vh - env(safe-area-inset-bottom)); /* Modern browsers */
+                width: 90%; /* Viewer takes 90% of the content width */
+                height: 60vh; /* Adjust height for smaller screens */
             }
         }
     </style>
 </head>
 <body>
     <a href="index.html" class="home-button">Home</a>
-    
-    <!-- Sidebar Section -->
-    <div class="sidebar">
-        <h3>Instructions</h3>
-        <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
-        <p>To load your own image:</p>
-        <ol>
-            <li>Click on <strong>File</strong></li>
-            <li>Click on <strong>Close ALL</strong></li>
-        </ol>
-        <p>Drag and drop your <code>.nii.gz</code> file or click on <strong>File</strong> → <strong>Add Image</strong>.</p>
-        <p>Ensure images are normalised to MNI space for automatic overlay and region labels.</p>
-    </div>
 
-    <!-- Content Section -->
-    <div class="content">
-        <div id="papayaContainer" data-params="params"></div>
-        <div class="info"></div>
+    <!-- Layout Container -->
+    <div class="container">
+        <!-- Sidebar Section -->
+        <div class="sidebar">
+            <h3>Instructions</h3>
+            <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
+            <p>To load your own image:</p>
+            <ol>
+                <li>Click on <strong>File</strong></li>
+                <li>Click on <strong>Close ALL</strong></li>
+            </ol>
+            <p>Drag and drop your <code>.nii.gz</code> file or click on <strong>File</strong> → <strong>Add Image</strong>.</p>
+            <p>Ensure images are normalised to MNI space for automatic overlay and region labels.</p>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content">
+            <div id="papayaContainer" data-params="params"></div>
+            <div class="info"></div>
+        </div>
     </div>
 
     <!-- JavaScript Section -->
@@ -124,19 +127,7 @@
         // Initialise Papaya Viewer
         window.onload = function() {
             papaya.Container.resetViewer(0, params);
-            adjustPapayaHeight();
         };
-
-        // Adjust Viewer Height Dynamically
-        function adjustPapayaHeight() {
-            const container = document.getElementById('papayaContainer');
-            const sidebar = document.querySelector('.sidebar');
-            const availableHeight = window.innerHeight - (sidebar ? sidebar.offsetHeight : 0);
-            container.style.height = `${Math.max(availableHeight, 400)}px`; // Minimum height of 400px
-        }
-
-        // Resize Event Listener
-        window.addEventListener('resize', adjustPapayaHeight);
     </script>
 </body>
 </html>
