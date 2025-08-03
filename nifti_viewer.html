@@ -152,21 +152,12 @@
 
         function resizePapaya() {
             const container = document.getElementById("papayaContainer");
-            const width = Math.min(window.innerWidth * 0.75, 1200);
-            const height = Math.min(window.innerHeight * 0.65, 850);
+            container.style.width = Math.min(window.innerWidth * 0.75, 1200) + "px";
+            container.style.height = Math.min(window.innerHeight * 0.65, 850) + "px";
 
-            container.style.width = width + "px";
-            container.style.height = height + "px";
-
-            // Resize Papaya viewer
+            // Call Papaya's internal resize (handles proper scaling)
             if (papaya.Container && papaya.Container.resizeViewer) {
                 papaya.Container.resizeViewer(0);
-            }
-
-            const canvas = container.querySelector("canvas");
-            if (canvas) {
-                canvas.style.width = width + "px";
-                canvas.style.height = height + "px";
             }
         }
 
