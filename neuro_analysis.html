@@ -3,9 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Remy's Neuroimaging Analysis Scripts.">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Neuroimaging analysis scripts by Remy Cohan – EEG source localisation, voxel-based morphometry, and brain volume analysis tools.">
+    <meta name="keywords" content="neuroimaging, EEG source localisation, voxel-based morphometry, brain volume analysis, neuroscience scripts, Remy Cohan">
+    <meta name="author" content="Remy Cohan">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Neuroimaging Analysis Scripts | Remy Cohan">
+    <meta property="og:description" content="Scripts and workflows for EEG source localisation, voxel-based morphometry, and brain volume analysis by Remy Cohan.">
+    <meta property="og:image" content="https://neuropsis.org/images/RC_profile.png">
+    <meta property="og:url" content="https://neuropsis.org/neuro_analysis.html">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Neuroimaging Analysis Scripts | Remy Cohan">
+    <meta name="twitter:description" content="Explore EEG source localisation, voxel-based morphometry, and brain volume analysis tools for neuroscience research.">
+    <meta name="twitter:image" content="https://neuropsis.org/images/RC_profile.png">
+
     <title>Neuroimaging Analysis Scripts | Remy Cohan</title>
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      "name": "Neuroimaging Analysis Scripts",
+      "author": {
+        "@type": "Person",
+        "name": "Remy Cohan"
+      },
+      "description": "Scripts and workflows for EEG source localisation, voxel-based morphometry, and brain volume analysis in neuroscience.",
+      "url": "https://neuropsis.org/neuro_analysis.html"
+    }
+    </script>
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -53,7 +89,7 @@
             top: 0;
             left: 0;
             height: 100%;
-            width: 0; /* Initially set width to 0 */
+            width: 0;
             overflow: hidden;
             background-color: #34495e;
             padding: 20px 0;
@@ -96,7 +132,7 @@
         }
 
         main {
-            margin-left: 0; /* Adjust based on sidebar state */
+            margin-left: 0;
             padding: 40px;
             background-color: #ffffff;
             box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
@@ -172,46 +208,42 @@
 
     <!-- Main Content -->
     <main>
-    <section>
-        <h2>EEG Source Localisation</h2>
-        <!-- Display the GIF -->
-        <div style="text-align:center;">
-            <img src="images/EEG_SourceLoc_Remy_Cohan.gif" alt="EEG Source Localisation Example" style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:8px;">
-        </div>
-        <!-- Add description -->
-        <p style="text-align:justify; font-size:1rem;">
-            EEG Source Localisation pipeline and the workflow for preprocessing, epoching, co-registration, and source reconstruction using EEG data. 
-        </p>
-        <!-- Add link to the GitHub repository -->
-        <p style="text-align:center;">
-            <a href="https://github.com/CohanR/EEG_SourceLoc" target="_blank" style="color:#2E86C1; text-decoration:none; font-weight:600;">
-                View the GitHub Repository
-            </a>
-        </p>
-
         <section>
-            <h2>Voxel-Based Morphometry with Enigma Toolbox</h2>
-            <img src="images/ENigma_VBM_L_hippocampus_Remy.png" alt="ENIGMA STROKE VBM" style="max-width:100%; height:auto;">
-            <p>Checkout the Voxel-Based Morphometry with Enigma Toolbox Code on GitHub:</p>
-            <a href="https://github.com/CohanR/Enigma_Voxel_based_morphometry" target="_blank">View the GitHub Repository</a>
-        </section>
+            <h2>EEG Source Localisation</h2>
+            <div style="text-align:center;">
+                <img src="images/EEG_SourceLoc_Remy_Cohan.gif" alt="EEG Source Localisation Example" loading="lazy" style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:8px;">
+            </div>
+            <p style="text-align:justify; font-size:1rem;">
+                EEG Source Localisation pipeline and the workflow for preprocessing, epoching, co-registration, and source reconstruction using EEG data. 
+            </p>
+            <p style="text-align:center;">
+                <a href="https://github.com/CohanR/EEG_SourceLoc" target="_blank" style="color:#2E86C1; text-decoration:none; font-weight:600;">
+                    View the GitHub Repository
+                </a>
+            </p>
 
-        <section>
-            <h2>Brain Volume Analysis and Visualisation</h2>
-            <img src="images/BrainVol_grey_matter_vis_RC.png" alt="Brain Volume Analysis" style="max-width:100%; height:auto;">
-            <img src="images/BrainVol_result_output.png" alt="Brain Volume Analysis output" style="max-width:100%; height:auto;">
-            <p>Checkout the Brain Volume analysis on T1w images on GitHub:</p>
-            <a href="https://github.com/CohanR/BrainVolume_Calculation" target="_blank">View the GitHub Repository</a>
-        </section>
-
+            <section>
+                <h2>Voxel-Based Morphometry with Enigma Toolbox</h2>
+                <img src="images/ENigma_VBM_L_hippocampus_Remy.png" alt="ENIGMA STROKE VBM" loading="lazy" style="max-width:100%; height:auto;">
+                <p>Checkout the Voxel-Based Morphometry with Enigma Toolbox Code on GitHub:</p>
+                <a href="https://github.com/CohanR/Enigma_Voxel_based_morphometry" target="_blank">View the GitHub Repository</a>
             </section>
+
+            <section>
+                <h2>Brain Volume Analysis and Visualisation</h2>
+                <img src="images/BrainVol_grey_matter_vis_RC.png" alt="Brain Volume Analysis" loading="lazy" style="max-width:100%; height:auto;">
+                <img src="images/BrainVol_result_output.png" alt="Brain Volume Analysis output" loading="lazy" style="max-width:100%; height:auto;">
+                <p>Checkout the Brain Volume analysis on T1w images on GitHub:</p>
+                <a href="https://github.com/CohanR/BrainVolume_Calculation" target="_blank">View the GitHub Repository</a>
+            </section>
+        </section>
+
         <h1>Neuroimaging Data Processing & Analysis Scripts</h1>
         <p>Below are some of my neuroimaging data processing & analysis scripts:</p>
 
-        <!-- Sections for Neuroimaging Scripts -->
         <section>
             <h2>EEG Data Processing with MNE</h2>
-            <img src="images/output3.png" alt="Hodgkin Huxley Simulation GIF" style="max-width:100%; height:auto;">
+            <img src="images/output3.png" alt="EEG Data Processing with MNE Example" loading="lazy" style="max-width:100%; height:auto;">
             <p>Checkout the EEG Data Processing with MNE toolbox Code on GitHub:</p>
             <a href="https://github.com/CohanR/14_channel_EEG_Data" target="_blank">View the GitHub Repository</a>
         </section>
