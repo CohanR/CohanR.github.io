@@ -24,7 +24,7 @@
 
     <title>Interactive MRI Viewer | Remy Cohan</title>
 
-    <!-- Structured Data (Schema.org) -->
+    <!-- Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -93,14 +93,6 @@
             position: relative;
         }
 
-        .info {
-            width: 100%;
-            text-align: center;
-            background: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-        }
-
         .home-button {
             position: fixed;
             top: 10px;
@@ -160,18 +152,21 @@
 
         function resizePapaya() {
             const container = document.getElementById("papayaContainer");
-            const containerWidth = Math.min(window.innerWidth * 0.75, 1200);
-            const containerHeight = Math.min(window.innerHeight * 0.65, 850);
+            const width = Math.min(window.innerWidth * 0.75, 1200);
+            const height = Math.min(window.innerHeight * 0.65, 850);
 
-            container.style.width = containerWidth + "px";
-            container.style.height = containerHeight + "px";
+            container.style.width = width + "px";
+            container.style.height = height + "px";
 
-            papaya.Container.resizeViewer(0);
+            // Resize Papaya viewer
+            if (papaya.Container && papaya.Container.resizeViewer) {
+                papaya.Container.resizeViewer(0);
+            }
 
             const canvas = container.querySelector("canvas");
             if (canvas) {
-                canvas.style.width = containerWidth + "px";
-                canvas.style.height = containerHeight + "px";
+                canvas.style.width = width + "px";
+                canvas.style.height = height + "px";
             }
         }
 
