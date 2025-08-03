@@ -3,11 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Remy's NIfTI Viewer</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js.">
+    <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan">
+    <meta name="author" content="Remy Cohan">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Interactive MRI Viewer | Remy Cohan">
+    <meta property="og:description" content="View and interact with NIfTI brain MRI files in your browser. Built using Papaya.js for neuroimaging and research applications.">
+    <meta property="og:image" content="https://neuropsis.org/images/RC_profile.png">
+    <meta property="og:url" content="https://neuropsis.org/nifti_viewer.html">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Interactive MRI Viewer | Remy Cohan">
+    <meta name="twitter:description" content="Web-based NIfTI MRI viewer for neuroimaging research with anatomical label overlays.">
+    <meta name="twitter:image" content="https://neuropsis.org/images/RC_profile.png">
+
+    <title>Interactive MRI Viewer | Remy Cohan</title>
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Interactive MRI Viewer",
+      "creator": {
+        "@type": "Person",
+        "name": "Remy Cohan"
+      },
+      "applicationCategory": "MedicalApplication",
+      "description": "Web-based MRI viewer for viewing NIfTI (.nii.gz) brain images with anatomical overlays.",
+      "operatingSystem": "Any (web-based)",
+      "url": "https://neuropsis.org/nifti_viewer.html"
+    }
+    </script>
+
+    <!-- Papaya.js Viewer -->
     <link rel="stylesheet" type="text/css" href="papaya.css?build=1456">
     <script type="text/javascript" src="papaya.js?build=1456"></script>
+
     <style>
-        /* General Styles */
         body, html {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -19,33 +57,30 @@
             flex-direction: column;
         }
 
-        /* Layout Container */
         .container {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            align-items: flex-start; /* Align items to the top of the page */
-            height: 100vh; /* Full viewport height */
+            align-items: flex-start;
+            height: 100vh;
             overflow: hidden;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 25%;
             max-width: 300px;
-            padding: 4rem 1rem 1rem; /* Add extra padding to avoid overlap with the home button */
+            padding: 4rem 1rem 1rem;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
         }
 
-        /* Content Styles */
         .content {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Push the viewer closer to the top */
+            justify-content: flex-start;
             padding: 1rem;
         }
 
@@ -66,7 +101,6 @@
             padding: 1rem;
         }
 
-        /* Home Button */
         .home-button {
             position: fixed;
             top: 10px;
@@ -79,7 +113,6 @@
             z-index: 10;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -127,19 +160,14 @@
 
         function resizePapaya() {
             const container = document.getElementById("papayaContainer");
+            const containerWidth = Math.min(window.innerWidth * 0.75, 1200);
+            const containerHeight = Math.min(window.innerHeight * 0.65, 850);
 
-            // Dynamically calculate size
-            const containerWidth = Math.min(window.innerWidth * 0.75, 1200); // 75% width, max 1200px
-            const containerHeight = Math.min(window.innerHeight * 0.65, 850); // 65% height, max 850px
-
-            // Set container dimensions
             container.style.width = containerWidth + "px";
             container.style.height = containerHeight + "px";
 
-            // Resize Papaya
             papaya.Container.resizeViewer(0);
 
-            // Ensure canvas fits container
             const canvas = container.querySelector("canvas");
             if (canvas) {
                 canvas.style.width = containerWidth + "px";
@@ -147,15 +175,11 @@
             }
         }
 
-        // Initialise Papaya Viewer
         window.onload = function () {
             papaya.Container.addViewer("papayaContainer", params);
-
-            // Resize on load
             resizePapaya();
         };
 
-        // Resize dynamically on window changes
         window.addEventListener("resize", resizePapaya);
     </script>
 </body>
