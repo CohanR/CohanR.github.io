@@ -1,206 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Canonical Tag -->
-    <link rel="canonical" href="https://neuropsis.org/nifti_viewer.html">
+  <!-- Canonical Tag -->
+  <link rel="canonical" href="https://neuropsis.org/nifti_viewer.html" />
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js.">
-    <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan">
-    <meta name="author" content="Remy Cohan">
+  <!-- SEO Meta Tags -->
+  <meta
+    name="description"
+    content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js."
+  />
+  <meta
+    name="keywords"
+    content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan"
+  />
+  <meta name="author" content="Remy Cohan" />
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="Interactive MRI Viewer | Remy Cohan">
-    <meta property="og:description" content="View and interact with NIfTI brain MRI files in your browser. Built using Papaya.js for neuroimaging and research applications.">
-    <meta property="og:image" content="https://neuropsis.org/images/RC_profile.png">
-    <meta property="og:url" content="https://neuropsis.org/nifti_viewer.html">
-    <meta property="og:type" content="website">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Interactive MRI Viewer | Remy Cohan" />
+  <meta
+    property="og:description"
+    content="View and interact with NIfTI brain MRI files in your browser. Built using Papaya.js for neuroimaging and research applications."
+  />
+  <meta property="og:image" content="https://neuropsis.org/images/RC_profile.png" />
+  <meta property="og:url" content="https://neuropsis.org/nifti_viewer.html" />
+  <meta property="og:type" content="website" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Interactive MRI Viewer | Remy Cohan">
-    <meta name="twitter:description" content="Web-based NIfTI MRI viewer for neuroimaging research with anatomical label overlays.">
-    <meta name="twitter:image" content="https://neuropsis.org/images/RC_profile.png">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Interactive MRI Viewer | Remy Cohan" />
+  <meta
+    name="twitter:description"
+    content="Web-based NIfTI MRI viewer for neuroimaging research with anatomical label overlays."
+  />
+  <meta name="twitter:image" content="https://neuropsis.org/images/RC_profile.png" />
 
-    <title>Interactive MRI Viewer | Remy Cohan</title>
+  <title>Interactive MRI Viewer | Remy Cohan</title>
 
-    <!-- Structured Data -->
-    <script type="application/ld+json">
+  <!-- Structured Data -->
+  <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Interactive MRI Viewer",
-      "creator": {"@type": "Person","name": "Remy Cohan"},
+      "creator": {
+        "@type": "Person",
+        "name": "Remy Cohan"
+      },
       "applicationCategory": "MedicalApplication",
       "description": "Web-based MRI viewer for viewing NIfTI (.nii.gz) brain images with anatomical overlays.",
       "operatingSystem": "Any (web-based)",
       "url": "https://neuropsis.org/nifti_viewer.html"
     }
-    </script>
+  </script>
 
-    <!-- Papaya.js Viewer -->
-    <link rel="stylesheet" type="text/css" href="papaya.css?build=1456">
-    <script type="text/javascript" src="papaya.js?build=1456"></script>
+  <!-- Papaya.js Viewer -->
+  <link rel="stylesheet" type="text/css" href="papaya.css?build=1456" />
+  <script type="text/javascript" src="papaya.js?build=1456"></script>
 
-    <style>
-        body, html {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            height: 100%;
-            overflow: auto;
-            display: flex;
-            flex-direction: column;
-            color: #111827; /* default text (instructions darker than footer) */
-        }
+  <style>
+    body,
+    html {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      height: 100%;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .container {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: flex-start;
-            height: 100vh;     /* original behaviour */
-            overflow: hidden;  /* original behaviour */
-        }
+    .container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-        .sidebar {
-            width: 25%;
-            max-width: 300px;
-            padding: 4rem 1rem 1rem;
-            background: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    .sidebar {
+      width: 25%;
+      max-width: 300px;
+      padding: 4rem 1rem 1rem;
+      background: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
 
-            /* make footer stick to the bottom while instructions can scroll */
-            display: flex;
-            flex-direction: column;
-            height: 100%;     /* fill the container's height */
-            overflow: hidden; /* scrolling goes to sidebar-content */
-        }
+    .content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1rem;
+    }
 
-        .sidebar-content {
-            overflow-y: auto;
-            padding-right: 4px;
-            padding-bottom: 12px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #e5e7eb; /* subtle divider line */
-        }
+    #papayaContainer {
+      width: 75%;
+      height: 65%;
+      max-width: 1200px;
+      max-height: 850px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
 
-        .sidebar-footer {
-            margin-top: auto;         /* pushes to the visual bottom */
-            text-align: center;
-            padding: 14px 8px 10px;   /* space above/below divider */
-            color: #6b7280;           /* lighter dark grey than instructions */
-        }
-        .sidebar-footer .name {
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        .sidebar-footer .email {
-            display: block;           /* line under the name */
-            text-decoration: none;    /* no underline */
-            color: inherit;           /* keep the same grey */
-            cursor: default;          /* not a link */
-        }
+    .home-button {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 5px;
+      text-decoration: none;
+      z-index: 10;
+    }
 
-        .content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 1rem;
-        }
+    /* Optional: slightly lighter, dark-grey signature text */
+    .signature {
+      margin-top: 1rem;
+      color: #6b7280; /* dark grey, lighter than main text */
+      text-align: left; /* keep default; change to center if you want */
+    }
 
-        #papayaContainer {
-            width: 75%;
-            height: 65%;
-            max-width: 1200px;
-            max-height: 850px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            position: relative;
-            background: #000; /* optional: gives viewer a clean backdrop */
-        }
-
-        .home-button {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border-radius: 5px;
-            text-decoration: none;
-            z-index: 10;
-        }
-
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .sidebar { display: none; }
-            #papayaContainer {
-                width: 90%;
-                height: 50vh;
-                max-width: none;
-                max-height: none;
-            }
-        }
-    </style>
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      .sidebar {
+        display: none;
+      }
+      #papayaContainer {
+        width: 90%;
+        height: 50vh;
+        max-width: none;
+        max-height: none;
+      }
+    }
+  </style>
 </head>
 <body>
-    <a href="index.html" class="home-button">Home</a>
+  <a href="index.html" class="home-button">Home</a>
 
-    <div class="container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-          <div class="sidebar-content">
-            <h3>Instructions</h3>
-            <p>This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the brain to see anatomical labels.</p>
-            <p>To load your own image:</p>
-            <ol>
-              <li>Click on <strong>File</strong></li>
-              <li>Click on <strong>Close ALL</strong></li>
-            </ol>
-            <p>Drag and drop your <code>.nii.gz</code> file or click on <strong>File</strong> → <strong>Add Image</strong>.</p>
-          </div>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h3>Instructions</h3>
+      <p>
+        This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the
+        brain to see anatomical labels.
+      </p>
+      <p>To load your own image:</p>
+      <ol>
+        <li>Click on <strong>File</strong></li>
+        <li>Click on <strong>Close ALL</strong></li>
+      </ol>
+      <p>
+        Drag and drop your <code>.nii.gz</code> file or click on <strong>File</strong>
+        → <strong>Add Image</strong>.
+      </p>
 
-          <div class="sidebar-footer">
-            <div class="name">Remy Cohan</div>
-            <span class="email">remycohan@neuropsis.org</span>
-          </div>
-        </div>
-
-        <!-- Papaya Viewer -->
-        <div class="content">
-            <div id="papayaContainer"></div>
-        </div>
+      <!-- Keep the signature as plain text, as in your original -->
+      <p class="signature">Remy Cohan (remycohan@neuropsis.org)</p>
     </div>
 
-    <script type="text/javascript">
-        var params = {
-            images: ["images/mni152.nii.gz"],
-            worldSpace: true,
-            showControls: true
-        };
+    <!-- Papaya Viewer -->
+    <div class="content">
+      <div id="papayaContainer"></div>
+    </div>
+  </div>
 
-        function resizePapaya() {
-            const container = document.getElementById("papayaContainer");
-            container.style.width  = Math.min(window.innerWidth  * 0.75, 1200) + "px";
-            container.style.height = Math.min(window.innerHeight * 0.65, 850)  + "px";
+  <script type="text/javascript">
+    var params = {
+      images: ['images/mni152.nii.gz'],
+      worldSpace: true,
+      showControls: true
+    };
 
-            if (papaya.Container && papaya.Container.resizeViewer) {
-                papaya.Container.resizeViewer(0);
-            }
-        }
+    function resizePapaya() {
+      const container = document.getElementById('papayaContainer');
+      container.style.width = Math.min(window.innerWidth * 0.75, 1200) + 'px';
+      container.style.height = Math.min(window.innerHeight * 0.65, 850) + 'px';
 
-        window.onload = function () {
-            papaya.Container.addViewer("papayaContainer", params);
-            resizePapaya();
-        };
+      // Call Papaya's internal resize (handles proper scaling)
+      if (papaya.Container && papaya.Container.resizeViewer) {
+        papaya.Container.resizeViewer(0);
+      }
+    }
 
-        window.addEventListener("resize", resizePapaya);
-    </script>
+    window.onload = function () {
+      papaya.Container.addViewer('papayaContainer', params);
+      resizePapaya();
+    };
+
+    window.addEventListener('resize', resizePapaya);
+  </script>
 </body>
 </html>
