@@ -33,10 +33,7 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Interactive MRI Viewer",
-      "creator": {
-        "@type": "Person",
-        "name": "Remy Cohan"
-      },
+      "creator": {"@type": "Person","name": "Remy Cohan"},
       "applicationCategory": "MedicalApplication",
       "description": "Web-based MRI viewer for viewing NIfTI (.nii.gz) brain images with anatomical overlays.",
       "operatingSystem": "Any (web-based)",
@@ -48,7 +45,6 @@
     <link rel="stylesheet" type="text/css" href="papaya.css?build=1456">
     <script type="text/javascript" src="papaya.js?build=1456"></script>
 
-    
     <style>
         body, html {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -59,6 +55,7 @@
             overflow: auto;
             display: flex;
             flex-direction: column;
+            color: #111827; /* default text (instructions darker than footer) */
         }
 
         .container {
@@ -66,8 +63,8 @@
             flex-direction: row;
             justify-content: space-between;
             align-items: flex-start;
-            height: 100vh;
-            overflow: hidden;
+            height: 100vh;     /* original behaviour */
+            overflow: hidden;  /* original behaviour */
         }
 
         .sidebar {
@@ -76,7 +73,37 @@
             padding: 4rem 1rem 1rem;
             background: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+            /* make footer stick to the bottom while instructions can scroll */
+            display: flex;
+            flex-direction: column;
+            height: 100%;     /* fill the container's height */
+            overflow: hidden; /* scrolling goes to sidebar-content */
+        }
+
+        .sidebar-content {
             overflow-y: auto;
+            padding-right: 4px;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb; /* subtle divider line */
+        }
+
+        .sidebar-footer {
+            margin-top: auto;         /* pushes to the visual bottom */
+            text-align: center;
+            padding: 14px 8px 10px;   /* space above/below divider */
+            color: #6b7280;           /* lighter dark grey than instructions */
+        }
+        .sidebar-footer .name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .sidebar-footer .email {
+            display: block;           /* line under the name */
+            text-decoration: none;    /* no underline */
+            color: inherit;           /* keep the same grey */
+            cursor: default;          /* not a link */
         }
 
         .content {
@@ -95,6 +122,7 @@
             max-height: 850px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             position: relative;
+            background: #000; /* optional: gives viewer a clean backdrop */
         }
 
         .home-button {
@@ -110,12 +138,8 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .sidebar {
-                display: none;
-            }
+            .container { flex-direction: column; }
+            .sidebar { display: none; }
             #papayaContainer {
                 width: 90%;
                 height: 50vh;
@@ -128,6 +152,8 @@
 <body>
     <a href="index.html" class="home-button">Home</a>
 
+    <div class="container">
+        <!-- Sidebar -->
         <div class="sidebar">
           <div class="sidebar-content">
             <h3>Instructions</h3>
@@ -146,7 +172,6 @@
           </div>
         </div>
 
-
         <!-- Papaya Viewer -->
         <div class="content">
             <div id="papayaContainer"></div>
@@ -162,10 +187,9 @@
 
         function resizePapaya() {
             const container = document.getElementById("papayaContainer");
-            container.style.width = Math.min(window.innerWidth * 0.75, 1200) + "px";
-            container.style.height = Math.min(window.innerHeight * 0.65, 850) + "px";
+            container.style.width  = Math.min(window.innerWidth  * 0.75, 1200) + "px";
+            container.style.height = Math.min(window.innerHeight * 0.65, 850)  + "px";
 
-            // Call Papaya's internal resize (handles proper scaling)
             if (papaya.Container && papaya.Container.resizeViewer) {
                 papaya.Container.resizeViewer(0);
             }
