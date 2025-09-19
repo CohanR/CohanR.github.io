@@ -9,178 +9,94 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --brand: #2e86c1;
-      --dark: #333;
-      --sidebar: #34495e;
-      --bg1: #f7f9fc;
-      --bg2: #dfe6e9;
+      --brand:#2e86c1; --dark:#333; --sidebar:#34495e;
+      --bg1:#f7f9fc; --bg2:#dfe6e9;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:'Poppins',sans-serif; color:var(--dark);
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      min-height:100vh; overflow-x:hidden;
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      line-height: 1.7;
-      color: var(--dark);
-      background: linear-gradient(135deg, var(--bg1), var(--bg2));
-      min-height: 100vh;
-      overflow-x: hidden;
+    header{
+      position:sticky; top:0; z-index:20;
+      background:var(--brand); color:#fff; text-align:center;
+      padding:1.6rem 0 1.3rem; font-size:2.2rem; font-weight:600;
+      box-shadow:0 3px 10px rgba(0,0,0,.1);
+    }
+    .menu-btn{
+      position:absolute; left:14px; top:12px;
+      border:none; background:#1b4f72; color:#fff; cursor:pointer;
+      padding:10px 14px; border-radius:8px; font-size:18px;
     }
 
-    header {
-      background: var(--brand);
-      color: #fff;
-      text-align: center;
-      padding: 2rem 0 1.6rem;
-      font-size: 2.4rem;
-      font-weight: 600;
-      position: relative;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    nav.topnav{
+      display:flex; flex-wrap:wrap; justify-content:center; gap:12px 18px;
+      padding:10px 12px; background:#333;
+    }
+    nav.topnav a{
+      color:#fff; text-decoration:none; padding:10px 16px; border-radius:6px;
+      transition:background .2s, transform .15s; white-space:nowrap;
+    }
+    nav.topnav a:hover{background:#555; transform:scale(1.03)}
+
+    /* ---- Drawer Sidebar ---- */
+    .sidebar{
+      position:fixed; inset:0 auto 0 0; width:260px; z-index:100;
+      background:var(--sidebar); color:#fff; padding:18px 0;
+      box-shadow:2px 0 10px rgba(0,0,0,.2);
+      transform:translateX(-100%); transition:transform .25s ease;
+    }
+    .sidebar h3,.sidebar a{color:#fff; margin-left:20px}
+    .sidebar h3{margin:10px 0 18px}
+    .sidebar a{
+      display:block; text-decoration:none; padding:10px 0; margin-right:20px;
+      border-radius:4px; transition:background .2s, color .2s;
+    }
+    .sidebar a:hover{background:rgba(255,255,255,.08); color:#e8eef3}
+
+    /* Backdrop shown only when menu is open */
+    .backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90;
+      opacity:0; pointer-events:none; transition:opacity .2s;
     }
 
-    /* Top nav */
-    nav.topnav {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      padding: 10px 0;
-      background: #333;
-      color: #fff;
-    }
-    nav.topnav a {
-      color: #fff;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      transition: background-color .2s, transform .15s;
-      white-space: nowrap;
-    }
-    nav.topnav a:hover { background: #555; transform: scale(1.03); }
+    /* Open state */
+    body.sidebar-open .sidebar{transform:translateX(0)}
+    body.sidebar-open .backdrop{opacity:1; pointer-events:auto}
+    body.sidebar-open{overflow:hidden}
 
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      z-index: 1000;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 260px;
-      background: var(--sidebar);
-      color: #fff;
-      padding: 18px 0;
-      box-shadow: 2px 0 6px rgba(0,0,0,0.15);
-      transform: translateX(0);
-      transition: transform .25s ease;
+    /* ---- Page content ---- */
+    main{
+      padding:28px 20px 40px; margin:18px auto;
+      width:min(1100px, 95vw);
+      background:#fff; border-radius:12px; box-shadow:0 3px 15px rgba(0,0,0,.1);
+      display:none; /* revealed after password */
     }
-    .sidebar h3, .sidebar a { color: #fff; margin-left: 20px; }
-    .sidebar h3 { margin-top: 10px; margin-bottom: 18px; }
-    .sidebar a {
-      text-decoration: none;
-      display: block;
-      padding: 10px 0;
-      margin-right: 20px;
-      border-radius: 4px;
-      transition: color .2s, background .2s;
-    }
-    .sidebar a:hover { color: #bdc3c7; background: rgba(255,255,255,0.06); }
+    h1{margin:0 0 18px; font-weight:600}
 
-    /* Toggle button (appears on small screens) */
-    .menu-btn {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      display: none;
-      border: none;
-      background: #1b4f72;
-      color: #fff;
-      padding: 10px 14px;
-      font-size: 18px;
-      border-radius: 8px;
-      cursor: pointer;
+    /* ---- Password Gate ---- */
+    #password-gate{ min-height:60vh; display:grid; place-items:center; padding:40px 16px; }
+    .gate-card{
+      width:min(680px, 92vw); background:#fff; border-radius:14px;
+      box-shadow:0 8px 30px rgba(0,0,0,.08); padding:32px 26px 28px; text-align:center;
     }
-
-    /* Main content */
-    main {
-      margin-left: 280px; /* space for sidebar on desktop */
-      padding: 40px;
-      background: #fff;
-      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-      border-radius: 12px;
-      margin-right: 20px;
-      margin-top: 20px;
-      display: none; /* hidden until gate success */
+    .gate-title{ font-size:1.25rem; font-weight:600; line-height:1.4; margin:0 0 14px; }
+    .gate-title span{ display:block; } /* forces two tidy lines */
+    .gate-form{ display:grid; gap:12px; justify-items:center; margin-top:8px; }
+    .gate-form input{
+      width:min(420px, 92%); padding:12px 14px; font-size:16px;
+      border:1px solid #ccd6dd; border-radius:8px; outline:none;
     }
-
-    h1 { font-weight: 600; margin: 0 0 18px; }
-
-    /* Password gate */
-    #password-gate {
-      min-height: 60vh;
-      display: grid;
-      place-items: center;
-      padding: 40px 16px;
+    .gate-form input:focus{ border-color:var(--brand); }
+    .gate-actions{ margin-top:6px; }
+    .gate-actions button{
+      padding:10px 20px; background:var(--brand); color:#fff; border:none;
+      border-radius:8px; font-size:16px; cursor:pointer;
     }
-    .gate-card {
-      width: min(680px, 92vw);
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-      padding: 32px 26px 28px;
-      text-align: center;
-    }
-    .gate-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin: 0 0 16px;
-      line-height: 1.4;
-    }
-    .gate-title span { display: block; } /* forces two lines neatly */
-
-    .gate-form {
-      display: grid;
-      gap: 12px;
-      margin-top: 8px;
-      justify-items: center;
-    }
-    .gate-form input {
-      width: min(420px, 92%);
-      padding: 12px 14px;
-      font-size: 16px;
-      border: 1px solid #ccd6dd;
-      border-radius: 8px;
-      outline: none;
-    }
-    .gate-form input:focus { border-color: var(--brand); }
-
-    .gate-actions {
-      margin-top: 8px;
-    }
-    .gate-actions button {
-      padding: 10px 20px;
-      background: var(--brand);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .gate-actions button:hover { background: #1b4f72; }
-    .error {
-      color: #c0392b;
-      margin-top: 6px;
-      display: none;
-      font-size: 0.95rem;
-    }
-
-    /* Responsive rules */
-    @media (max-width: 1100px) {
-      main { margin-left: 20px; }
-      .sidebar { transform: translateX(-100%); } /* collapsed by default on small screens */
-      .menu-btn { display: inline-block; }
-      body.sidebar-open .sidebar { transform: translateX(0); }
-      body.sidebar-open { overflow: hidden; } /* prevent background scroll when menu open */
-    }
+    .gate-actions button:hover{ background:#1b4f72; }
+    .error{ color:#c0392b; margin-top:6px; display:none; font-size:.95rem; }
   </style>
 </head>
 <body>
@@ -198,12 +114,14 @@
     <a href="neuro_analysis.html">Neuroimaging Analysis Scripts</a>
   </nav>
 
+  <!-- Drawer + Backdrop -->
   <aside class="sidebar" id="sidebar">
     <h3>Quick Links</h3>
     <a href="#">Link 1</a>
     <a href="#">Link 2</a>
     <a href="#">Link 3</a>
   </aside>
+  <div class="backdrop" id="backdrop"></div>
 
   <!-- Password Gate -->
   <section id="password-gate">
@@ -212,19 +130,16 @@
         <span>If Remy gave you a password at a conference,</span>
         <span>enter it below to access the poster PDF.</span>
       </div>
-
       <form class="gate-form" onsubmit="event.preventDefault(); checkGate();">
         <input type="email" id="email-input" placeholder="Enter your e-mail" autocomplete="email" required />
         <input type="password" id="password-input" placeholder="Enter password" autocomplete="current-password" required />
-        <div class="gate-actions">
-          <button type="submit">Submit</button>
-        </div>
+        <div class="gate-actions"><button type="submit">Submit</button></div>
         <div class="error" id="error-message">Incorrect password. Please try again.</div>
       </form>
     </div>
   </section>
 
-  <!-- Protected Content -->
+  <!-- Protected content -->
   <main id="protected-content">
     <h1>Abstracts & Posters</h1>
     <p>Below are some of my abstracts and posters:</p>
@@ -232,39 +147,29 @@
     <h2>Canadian Association for Neuroscience (2022) | Theta Burst Stimulation and Resting State Functional Connectivity</h2>
     <img src="images/CAN2022_Poster_Study_Remy_Cohan.png" alt="Study Design" style="max-width:100%;height:auto;">
     <img src="images/CAN2022_Poster_Remy_Cohan.png" alt="ROIs" style="max-width:100%;height:auto;">
-    <!-- Ensure the filename has no stray spaces -->
-    <embed src="PDFs/CAN2022_RC.pdf" type="application/pdf" width="100%" height="600px" />
+    <embed src="PDFs/CAN2022_RC.pdf" type="application/pdf" width="100%" height="600">
     <p>The paper has been published, check it out here:</p>
     <a href="https://pubmed.ncbi.nlm.nih.gov/37062900/" target="_blank" rel="noopener">View the paper</a>
   </main>
 
   <script>
-    // ---- Settings ----
-    const CORRECT_PASSWORD = "Remy2022"; // << change this
-    const ACCESS_KEY = "poster_gate_ok"; // sessionStorage key
+    // ----- Config -----
+    const CORRECT_PASSWORD = "Remy2022";   // change this
+    const ACCESS_KEY = "poster_gate_ok";    // session key
 
-    // Restore access if previously unlocked this tab/session
-    (function restoreGate() {
-      if (sessionStorage.getItem(ACCESS_KEY) === "1") {
-        showProtected();
-      } else {
-        hideProtected();
-      }
+    // Restore access if already unlocked in this tab
+    (function restore(){
+      if (sessionStorage.getItem(ACCESS_KEY) === "1") showProtected();
     })();
 
-    function checkGate() {
+    function checkGate(){
       const email = document.getElementById("email-input").value.trim();
-      const pwd = document.getElementById("password-input").value;
-
-      // Basic email sanity check
+      const pwd   = document.getElementById("password-input").value;
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showError("Please enter a valid e-mail address.");
-        return;
+        return showError("Please enter a valid e-mail address.");
       }
-
-      if (pwd === CORRECT_PASSWORD) {
+      if (pwd === CORRECT_PASSWORD){
         sessionStorage.setItem(ACCESS_KEY, "1");
-        // Optional: also remember email in this session
         sessionStorage.setItem("poster_email", email);
         showProtected();
       } else {
@@ -272,49 +177,21 @@
       }
     }
 
-    function showError(msg) {
-      const el = document.getElementById("error-message");
-      el.textContent = msg;
-      el.style.display = "block";
-    }
-
-    function showProtected() {
+    function showProtected(){
       document.getElementById("password-gate").style.display = "none";
       document.getElementById("protected-content").style.display = "block";
     }
-
-    function hideProtected() {
-      document.getElementById("password-gate").style.display = "grid";
-      document.getElementById("protected-content").style.display = "none";
+    function showError(msg){
+      const el = document.getElementById("error-message");
+      el.textContent = msg; el.style.display = "block";
     }
 
-    // Sidebar toggling on small screens
-    function toggleSidebar() {
-      if (document.body.classList.contains("sidebar-open")) {
-        document.body.classList.remove("sidebar-open");
-      } else {
-        document.body.classList.add("sidebar-open");
-      }
+    // ----- Drawer logic -----
+    const backdrop = document.getElementById("backdrop");
+    function toggleSidebar(){
+      document.body.classList.toggle("sidebar-open");
     }
-
-    // Close sidebar when clicking outside it on small screens
-    document.addEventListener("click", (e) => {
-      const sidebar = document.getElementById("sidebar");
-      const btn = document.querySelector(".menu-btn");
-      const small = window.matchMedia("(max-width: 1100px)").matches;
-
-      if (!small) return; // desktop: do nothing
-      if (!document.body.classList.contains("sidebar-open")) return;
-
-      const clickInsideSidebar = sidebar.contains(e.target);
-      const clickOnButton = btn.contains(e.target);
-
-      if (!clickInsideSidebar && !clickOnButton) {
-        document.body.classList.remove("sidebar-open");
-      }
-    });
-
-    // Close sidebar on Escape
+    backdrop.addEventListener("click", () => document.body.classList.remove("sidebar-open"));
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") document.body.classList.remove("sidebar-open");
     });
