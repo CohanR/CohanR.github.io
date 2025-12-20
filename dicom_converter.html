@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="canonical" href="https://neuropsis.org/dicom_converter.html" />
   <title>DICOM to NIfTI Converter | Remy Cohan</title>
   
-  <script src="https://cdn.jsdelivr.net/npm/@niivue/niivue@0.41.0/dist/niivue.umd.js"></script>
-
   <style>
-    /* --- Styles --- */
+    /* --- Styles (Unchanged) --- */
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f7f9fc; color: #333; display: flex; flex-direction: column; height: 100vh; }
     header { background: #2E86C1; color: white; text-align: center; padding: 1rem; font-size: 1.5rem; font-weight: 600; }
     nav { display: flex; justify-content: center; gap: 20px; padding: 10px; background-color: #333; }
@@ -23,10 +20,10 @@
     h2 { margin-top: 0; color: #2E86C1; }
     
     .drop-zone { border: 2px dashed #ccc; border-radius: 6px; padding: 30px; text-align: center; margin: 20px 0; background: #fafafa; cursor: pointer; transition: 0.2s; }
-    .drop-zone:hover, .drop-zone.dragover { border-color: #2E86C1; background: #eef6fc; }
+    .drop-zone:hover { border-color: #2E86C1; background: #eef6fc; }
     .drop-icon { font-size: 40px; color: #2E86C1; margin-bottom: 10px; }
     
-    /* Make the input cover the whole area to catch clicks */
+    /* Input covers the zone */
     #file-input { display: none; }
     
     input[type="text"] { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
@@ -51,22 +48,21 @@
   <div class="main-container">
     <div class="control-panel">
       <h2>DICOM to NIfTI</h2>
-      <p>Convert DICOM folders to NIfTI securely in your browser.</p>
+      <p>Convert DICOM folders (T1/T2) to NIfTI locally.</p>
       
-      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="drop-zone" id="drop-zone">
         <div class="drop-icon">📂</div>
-        <strong>Click to Select Folder</strong><br>
-        <span style="font-size:0.85rem">or Drag Folder Here</span>
-        
+        <strong>Click or Drag Folder</strong><br>
+        <span style="font-size:0.85rem">Select the folder containing .dcm files</span>
         <input type="file" id="file-input" multiple webkitdirectory>
       </div>
 
       <label>Output Filename</label>
       <input type="text" id="filename" value="converted_brain" placeholder="e.g. subject_01">
 
-      <button id="convert-btn" class="btn-primary" disabled onclick="downloadNifti()">⬇ Download NIfTI</button>
+      <button id="convert-btn" class="btn-primary" disabled>⬇ Download NIfTI</button>
 
-      <div id="status-msg">Initializing...</div>
+      <div id="status-msg">Initializing System...</div>
     </div>
 
     <div class="preview-panel">
@@ -75,89 +71,86 @@
     </div>
   </div>
 
-  <script>
-    // 1. Initialize NiiVue with Error Check
-    let nv;
-    try {
-        if (typeof niivue === 'undefined') {
-            throw new Error("Library not loaded");
-        }
-        nv = new niivue.Niivue();
-        nv.attachTo('gl');
-        document.getElementById('status-msg').innerText = "✅ System Ready. Please upload files.";
-        document.getElementById('status-msg').className = 'success';
-    } catch (e) {
-        document.getElementById('status-msg').innerText = "❌ Critical Error: NiiVue Library failed to load.\nPlease check your internet connection or try a different browser.";
-        document.getElementById('status-msg').className = 'error';
-    }
+  <script type="module">
+    // Import directly from the official module CDN
+    import { Niivue } from 'https://niivue.github.io/niivue/dist/niivue.es.js';
 
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
+    let nv;
     const statusMsg = document.getElementById('status-msg');
     const convertBtn = document.getElementById('convert-btn');
     const canvas = document.getElementById('gl');
     const emptyState = document.getElementById('empty-state');
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
 
-    // 2. Drag & Drop Visuals
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    // 1. Initialize
+    try {
+        nv = new Niivue();
+        nv.attachTo('gl');
+        setStatus("✅ System Ready.", "success");
+    } catch (e) {
+        setStatus("❌ Error initializing engine.", "error");
+    }
+
+    // 2. Click Handler
+    dropZone.onclick = () => fileInput.click();
     
-    // 3. Handle DROP (The tricky part)
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        
-        // Use NiiVue's own helper if available, or just standard file list
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFiles(files);
-        } else {
-             // If browser blocks folder drop, ask user to click
-             setStatus("⚠️ Browser blocked folder drop. Please CLICK the box to select folder instead.", "error");
-        }
-    });
-
-    // 4. Handle CLICK (Standard Input)
-    fileInput.addEventListener('change', (e) => {
+    fileInput.onchange = (e) => {
         handleFiles(e.target.files);
-    });
+    };
+
+    // 3. Drag & Drop Handlers
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#2E86C1'; };
+    dropZone.ondragleave = () => { dropZone.style.borderColor = '#ccc'; };
+    dropZone.ondrop = (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#ccc';
+        if (e.dataTransfer.files.length > 0) {
+            handleFiles(e.dataTransfer.files);
+        }
+    };
+
+    // 4. Download Handler
+    convertBtn.onclick = () => {
+        const name = document.getElementById('filename').value || 'converted_brain';
+        nv.saveImage(name + '.nii.gz');
+    };
 
     // 5. Main Processing Logic
     async function handleFiles(fileList) {
         if (!nv) return;
-        if (fileList.length === 0) return;
-
-        setStatus(`⏳ Reading ${fileList.length} files... Please wait.`, 'loading');
         
+        // Filter: Keep only potential DICOM files (skip hidden system files)
+        const files = Array.from(fileList).filter(f => !f.name.startsWith('.'));
+        
+        if (files.length === 0) return;
+
+        setStatus(`⏳ Reading ${files.length} files...`, 'loading');
         convertBtn.disabled = true;
         canvas.style.display = 'none';
         emptyState.style.display = 'flex';
 
         try {
-            // Load files directly into NiiVue engine
-            await nv.loadFromFileList(fileList);
+            // NiiVue 0.40+ attempts to parse DICOMs natively when passed as a list
+            await nv.loadFromFileList(files);
             
-            // Check if it worked
             if (nv.volumes.length > 0) {
                 const vol = nv.volumes[0];
-                setStatus(`✅ Success! Volume Loaded: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
+                setStatus(`✅ Loaded Volume: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
                 convertBtn.disabled = false;
                 
                 canvas.style.display = 'block';
                 emptyState.style.display = 'none';
                 
+                // Set default view to axial
+                nv.setSliceType(nv.sliceTypeMultiplanar);
             } else {
-                setStatus('❌ Files loaded, but no 3D volume could be reconstructed.\nEnsure these are valid DICOM series.', 'error');
+                setStatus('❌ Files loaded, but could not form a volume.\nEnsure folder contains standard .dcm files.', 'error');
             }
         } catch (err) {
             console.error(err);
-            setStatus('❌ Error: ' + err.message, 'error');
+            setStatus('❌ Parse Error: ' + err.message, 'error');
         }
-    }
-
-    function downloadNifti() {
-        const name = document.getElementById('filename').value || 'converted_brain';
-        nv.saveImage(name + '.nii.gz');
     }
 
     function setStatus(msg, type) {
