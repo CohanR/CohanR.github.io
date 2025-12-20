@@ -10,34 +10,7 @@
   <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan" />
   <meta name="author" content="Remy Cohan" />
 
-  <meta property="og:title" content="Interactive MRI Viewer | Remy Cohan" />
-  <meta property="og:description" content="View and interact with NIfTI brain MRI files in your browser. Built using Papaya.js for neuroimaging and research applications." />
-  <meta property="og:image" content="https://neuropsis.org/images/RC_profile.png" />
-  <meta property="og:url" content="https://neuropsis.org/nifti_viewer.html" />
-  <meta property="og:type" content="website" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Interactive MRI Viewer | Remy Cohan" />
-  <meta name="twitter:description" content="Web-based NIfTI MRI viewer for neuroimaging research with anatomical label overlays." />
-  <meta name="twitter:image" content="https://neuropsis.org/images/RC_profile.png" />
-
   <title>Interactive MRI Viewer | Remy Cohan</title>
-
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Interactive MRI Viewer",
-      "creator": {
-        "@type": "Person",
-        "name": "Remy Cohan"
-      },
-      "applicationCategory": "MedicalApplication",
-      "description": "Web-based MRI viewer for viewing NIfTI (.nii.gz) or DICOM brain images with anatomical overlays.",
-      "operatingSystem": "Any (web-based)",
-      "url": "https://neuropsis.org/nifti_viewer.html"
-    }
-  </script>
 
   <link rel="stylesheet" type="text/css" href="papaya.css?build=1456" />
   <script type="text/javascript" src="papaya.js?build=1456"></script>
@@ -59,17 +32,17 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      /* Prevents 'bounce' scrolling on Mac/iOS */
       overscroll-behavior: none; 
-      overflow: hidden; /* We handle scroll internally */
+      overflow: hidden; 
     }
 
     /* --- Main Layout Grid --- */
     .app-container {
       display: grid;
-      grid-template-columns: 300px 1fr; /* Sidebar fixed, Viewer flexible */
+      grid-template-columns: 300px 1fr; 
       grid-template-rows: 100%;
-      height: 100dvh; /* Dynamic Viewport Height for mobile browsers */
+      height: 100vh; 
+      height: 100dvh; /* Mobile support */
       width: 100vw;
     }
 
@@ -85,7 +58,7 @@
       box-shadow: 2px 0 5px rgba(0,0,0,0.05);
     }
 
-    .sidebar h3 { margin-top: 0; color: #444; }
+    .sidebar h3 { margin-top: 0; color: #444; font-size: 1.2rem;}
     .sidebar ol { padding-left: 20px; margin-bottom: 20px; }
     .sidebar li { margin-bottom: 8px; font-size: 0.95rem; }
     
@@ -117,34 +90,34 @@
       flex-direction: column;
       height: 100%;
       position: relative;
-      background: #000; /* Medical imaging background */
+      background: #000; 
     }
 
-    /* Custom Toolbar above Papaya */
-    .toolbar {
-      background: #333;
-      padding: 8px 15px;
+    /* Custom Quick-Action Toolbar (Supplementary) */
+    .quick-toolbar {
+      background: #222;
+      padding: 5px 15px;
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
       align-items: center;
+      border-bottom: 1px solid #444;
     }
 
     .tool-btn {
-      background: #555;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
+      background: #444;
+      color: #ddd;
+      border: 1px solid #555;
+      padding: 4px 10px;
+      border-radius: 3px;
       cursor: pointer;
-      font-size: 0.9rem;
-      transition: background 0.2s;
+      font-size: 0.85rem;
+      transition: all 0.2s;
     }
-    .tool-btn:hover { background: #777; }
-    .tool-btn.primary { background: var(--primary-color); }
+    .tool-btn:hover { background: #666; color: #fff;}
+    .tool-btn.primary { background: var(--primary-color); border-color: var(--primary-color); color: white;}
     .tool-btn.primary:hover { background: #0056b3; }
 
-    /* The actual container for Papaya */
+    /* Papaya Wrapper */
     .papaya-wrapper {
       flex-grow: 1;
       position: relative;
@@ -153,46 +126,51 @@
       overflow: hidden;
     }
 
-    /* Overwrite Papaya defaults to force full size */
+    /* Force Papaya to fill the grid cell */
     #papayaContainer {
       width: 100% !important; 
-      height: 100% !important;
+      height: 100% !important; 
       margin: 0;
       padding: 0;
+    }
+
+    /* Fix Papaya Toolbar Alignment */
+    .papaya-toolbar {
+        width: 100% !important;
+        box-sizing: border-box;
     }
 
     /* --- Mobile Optimization --- */
     @media (max-width: 768px) {
       .app-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto; /* Header, Viewer, Footer */
+        grid-template-rows: auto 1fr auto; 
       }
 
       .sidebar {
-        order: 3; /* Move instructions to bottom */
+        order: 3; 
         height: auto;
-        max-height: 25vh; /* Limit height */
+        max-height: 30vh; 
         border-right: none;
         border-top: 1px solid #ddd;
         padding: 15px;
       }
 
-      .home-button {
-        display: none; /* Hide home button in sidebar to save space */
-      }
+      .home-button { display: none; }
       
-      /* Add a mobile header */
       .mobile-header {
         display: flex;
         justify-content: space-between;
         padding: 10px;
         background: #fff;
         border-bottom: 1px solid #ddd;
+        align-items: center;
       }
       .mobile-home-btn {
         text-decoration: none;
         color: var(--primary-color);
         font-weight: bold;
+        font-size: 0.9rem;
       }
     }
     
@@ -214,26 +192,24 @@
       <a href="index.html" class="home-button">← Back to Home</a>
       
       <h3>Instructions</h3>
-      <p>This viewer is pre-loaded with the MNI 152 standard brain.</p>
+      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates at the bottom.</p>
       
-      <h3>How to load your data:</h3>
-      <ol>
-        <li>Click <strong>"Load New Image"</strong> in the toolbar.</li>
-        <li>Select your <code>.nii.gz</code> file.</li>
-      </ol>
-      <p><em>Use 1-finger drag to adjust contrast/brightness. Use 2-finger scroll to navigate slices.</em></p>
+      <h3>Controls:</h3>
+      <ul>
+        <li><strong>Load Image:</strong> File &rarr; Add Image (or drag & drop).</li>
+        <li><strong>Contrast/Color:</strong> Use the buttons in the top toolbar.</li>
+        <li><strong>Ruler/Crosshairs:</strong> Located in the top menu.</li>
+      </ul>
 
       <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
     </aside>
 
     <main class="viewer-area">
       
-      <div class="toolbar">
-        <button class="tool-btn primary" onclick="document.getElementById('file_upload').click()">📂 Load New Image</button>
+      <div class="quick-toolbar">
+        <button class="tool-btn primary" onclick="document.getElementById('file_upload').click()">📂 Open File...</button>
         <input type="file" id="file_upload" style="display: none;" onchange="loadFile(this)">
-        
-        <button class="tool-btn" onclick="resetView()">⟲ Reset View</button>
-        <button class="tool-btn" onclick="centerView()">🎯 Go to Center</button>
+        <span style="font-size:0.8rem; color:#888;">&nbsp;| Native controls below &darr;</span>
       </div>
 
       <div class="papaya-wrapper" id="wrapper">
@@ -247,58 +223,50 @@
     // 1. Initial Parameters
     var params = {
       images: ['images/mni152.nii.gz'],
-      worldSpace: true,
-      showControls: false, // We use our own toolbar, but standard controls appear on hover
-      kioskMode: true,     // Makes it fill the container better
-      noNewFiles: false    // Allow dropping files
+      
+      // RESTORED FEATURES:
+      worldSpace: true,       // Enables MNI/Talairach Coordinates
+      showControls: true,     // RESTORES THE TOOLBAR (Color, Ruler, Views)
+      kioskMode: false,       // RESTORES THE MENUS (File, Edit, View)
+      
+      // Settings to ensure Atlas labels appear
+      allowBodyScroll: false, 
+      expandable: true,
+      
+      // Styling
+      mainView: 'axial',
+      coordinate: [0, 0, 0]   // Start at center
     };
 
     // 2. Start Papaya
     window.onload = function() {
       papaya.Container.addViewer('papayaContainer', params);
       
-      // Fix scroll issue immediately after load
-      setTimeout(fixScrollBehavior, 1000);
+      // Apply scroll fix after load
+      setTimeout(fixScrollBehavior, 500);
     };
 
-    // 3. Custom Toolbar Functions
-    function resetView() {
-      // Access the first viewer instance and reset
-      if (papayaContainers.length > 0) {
-        papayaContainers[0].viewer.resetCoordinate();
-        papayaContainers[0].viewer.drawViewer(true);
-      }
-    }
-
-    function centerView() {
-      if (papayaContainers.length > 0) {
-        var center = papayaContainers[0].viewer.volume.header.imageDimensions.map(d => Math.floor(d/2));
-        papayaContainers[0].viewer.gotoCoordinate({x: center[0], y: center[1], z: center[2]});
-      }
-    }
-
-    // 4. File Loading Logic
+    // 3. File Loading Helper (Connects to the blue button)
     function loadFile(input) {
       if (input.files && input.files[0]) {
-        // Reset current viewer
         papaya.Container.resetViewer(0, {
           images: [input.files[0]]
         });
       }
     }
 
-    // 5. THE SCROLL FIX
-    // This stops the whole page from moving when you scroll on the image
+    // 4. THE SCROLL FIX
+    // Prevents the webpage from moving when adjusting slices/contrast
     function fixScrollBehavior() {
       const wrapper = document.getElementById('wrapper');
       
+      // Prevent wheel scrolling on the webpage
       wrapper.addEventListener('wheel', function(e) {
-        e.preventDefault(); // Stop page scroll
+        e.preventDefault(); 
       }, { passive: false });
 
+      // Prevent touch dragging the webpage (but allow pinch/drag on canvas)
       wrapper.addEventListener('touchmove', function(e) {
-        // Allow drag inside canvas, but stop page scroll if needed
-        // Papaya handles touch internally, but this ensures safety
         if (e.target.tagName === 'CANVAS') {
           e.preventDefault();
         }
