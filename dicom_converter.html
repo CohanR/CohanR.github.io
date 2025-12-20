@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="canonical" href="https://neuropsis.org/dicom_converter.html" />
   <title>DICOM to NIfTI Converter | Remy Cohan</title>
   
+  <script src="https://unpkg.com/@niivue/niivue@0.41.0/dist/niivue.umd.js"></script>
+
   <style>
     /* --- Styles (Unchanged) --- */
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f7f9fc; color: #333; display: flex; flex-direction: column; height: 100vh; }
@@ -71,10 +74,8 @@
     </div>
   </div>
 
-  <script type="module">
-    // Import directly from the official module CDN
-    import { Niivue } from 'https://niivue.github.io/niivue/dist/niivue.es.js';
-
+  <script>
+    // Global variables
     let nv;
     const statusMsg = document.getElementById('status-msg');
     const convertBtn = document.getElementById('convert-btn');
@@ -83,16 +84,25 @@
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
 
-    // 1. Initialize
-    try {
-        nv = new Niivue();
-        nv.attachTo('gl');
-        setStatus("✅ System Ready.", "success");
-    } catch (e) {
-        setStatus("❌ Error initializing engine.", "error");
-    }
+    // 1. Initialize NiiVue using standard window global
+    window.onload = function() {
+        if (typeof niivue === 'undefined') {
+            setStatus("❌ Critical Error: Library failed to load.\nCheck your internet connection.", "error");
+            return;
+        }
 
-    // 2. Click Handler
+        try {
+            // Niivue is attached to window object
+            nv = new niivue.Niivue();
+            nv.attachTo('gl');
+            setStatus("✅ System Ready.", "success");
+        } catch (e) {
+            console.error(e);
+            setStatus("❌ Error initializing graphics engine.", "error");
+        }
+    };
+
+    // 2. Click Handlers
     dropZone.onclick = () => fileInput.click();
     
     fileInput.onchange = (e) => {
@@ -102,38 +112,38 @@
     // 3. Drag & Drop Handlers
     dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#2E86C1'; };
     dropZone.ondragleave = () => { dropZone.style.borderColor = '#ccc'; };
+    
     dropZone.ondrop = (e) => {
         e.preventDefault();
         dropZone.style.borderColor = '#ccc';
+        
+        // Handle files dropped
         if (e.dataTransfer.files.length > 0) {
             handleFiles(e.dataTransfer.files);
         }
     };
 
-    // 4. Download Handler
-    convertBtn.onclick = () => {
-        const name = document.getElementById('filename').value || 'converted_brain';
-        nv.saveImage(name + '.nii.gz');
-    };
-
-    // 5. Main Processing Logic
+    // 4. Main Logic
     async function handleFiles(fileList) {
         if (!nv) return;
         
-        // Filter: Keep only potential DICOM files (skip hidden system files)
+        // Filter hidden files
         const files = Array.from(fileList).filter(f => !f.name.startsWith('.'));
-        
+
         if (files.length === 0) return;
 
         setStatus(`⏳ Reading ${files.length} files...`, 'loading');
+        
+        // Reset UI
         convertBtn.disabled = true;
         canvas.style.display = 'none';
         emptyState.style.display = 'flex';
 
         try {
-            // NiiVue 0.40+ attempts to parse DICOMs natively when passed as a list
+            // Load file list directly
             await nv.loadFromFileList(files);
             
+            // Wait for volume to populate
             if (nv.volumes.length > 0) {
                 const vol = nv.volumes[0];
                 setStatus(`✅ Loaded Volume: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
@@ -142,16 +152,22 @@
                 canvas.style.display = 'block';
                 emptyState.style.display = 'none';
                 
-                // Set default view to axial
+                // Set Default View
                 nv.setSliceType(nv.sliceTypeMultiplanar);
             } else {
-                setStatus('❌ Files loaded, but could not form a volume.\nEnsure folder contains standard .dcm files.', 'error');
+                setStatus('❌ Files loaded, but no volume found.\nEnsure you uploaded a valid DICOM series.', 'error');
             }
         } catch (err) {
             console.error(err);
             setStatus('❌ Parse Error: ' + err.message, 'error');
         }
     }
+
+    // 5. Download
+    convertBtn.onclick = () => {
+        const name = document.getElementById('filename').value || 'converted_brain';
+        nv.saveImage(name + '.nii.gz');
+    };
 
     function setStatus(msg, type) {
         statusMsg.innerText = msg;
