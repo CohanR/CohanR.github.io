@@ -6,14 +6,14 @@
     <link rel="canonical" href="https://neuropsis.org/simulations_ml.html">
     <meta name="description" content="Overview of my work in neural data simulation and machine learning.">
     <title>Simulation and Machine Learning | Remy Cohan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         /* --- MAIN SITE STYLES --- */
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            line-height: 1.7;
+            line-height: 1.6;
             color: #333;
             background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
         }
@@ -109,7 +109,22 @@
             margin: 20px auto;
         }
 
-        /* --- SIMULATION SPECIFIC STYLES --- */
+        /* --- SIMULATION STYLES --- */
+        .explanation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: #f0f7fb;
+            border-left: 5px solid #2E86C1;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .exp-col h4 { margin-top: 0; color: #2E86C1; margin-bottom: 8px; }
+        .exp-col ul { margin: 0; padding-left: 20px; }
+        .exp-col li { margin-bottom: 5px; }
+
         .sim-container {
             display: flex;
             flex-wrap: wrap;
@@ -130,7 +145,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             position: relative;
-            flex: 1 1 500px; /* Grow to fill, min width 500px */
+            flex: 1 1 500px;
         }
         
         canvas {
@@ -141,22 +156,8 @@
             height: 350px;
         }
 
-        .legend {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-size: 0.8em;
-            pointer-events: none;
-        }
-        .legend-item { display: flex; align-items: center; margin-bottom: 2px; }
-        .color-box { width: 12px; height: 12px; margin-right: 8px; border-radius: 2px; }
-
         .controls {
-            flex: 1 1 300px; /* Grow to fill, min width 300px */
+            flex: 1 1 300px;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -194,36 +195,16 @@
         }
         .preset-btn:hover { background: #f0f0f0; border-color: #bbb; }
         
+        /* Specific header colors */
         .na-header { color: #27ae60 !important; border-bottom-color: #27ae60 !important; }
         .k-header { color: #2980b9 !important; border-bottom-color: #2980b9 !important; }
         .input-header { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
 
-        /* Explanation Box */
-        .info-box {
-            background: #eef5fb;
-            border-left: 5px solid #2E86C1;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #444;
-        }
-        .info-box strong { color: #2E86C1; }
-
         @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: static;
-                transform: none;
-            }
-            main {
-                padding: 20px;
-                margin: 10px;
-            }
-            .canvas-wrapper, .controls {
-                flex: 1 1 100%;
-            }
+            .sidebar { width: 100%; height: auto; position: static; }
+            main { padding: 20px; margin: 10px; }
+            .canvas-wrapper, .controls { flex: 1 1 100%; }
+            .explanation-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -240,13 +221,12 @@
     </nav>
 
     <div class="sidebar-tab" onclick="toggleSidebar()">☰</div>
-
     <aside class="sidebar">
         <h3>Quick Links</h3>
         <a href="https://github.com/CohanR/Hodgkin-Huxley_Simulation">Hodgkin Huxley Simulation</a>
         <a href="https://github.com/CohanR/Action_Potential_Simulation">Action Potential Simulation</a>
         <a href="https://github.com/CohanR/TMS_ElectricField_Group_Simulation">TMS Electric Field Simulation</a>
-        <a href="https://github.com/CohanR/MotorEvokedPotentials_Propofol_ML">Propofol and Motor Evoked Potential ML Algorithm</a>
+        <a href="https://github.com/CohanR/MotorEvokedPotentials_Propofol_ML">Propofol and MEP ML Algorithm</a>
     </aside>
 
     <main>
@@ -256,29 +236,31 @@
         <section>
             <h2>Interactive Hodgkin-Huxley Lab</h2>
             
-            <div class="info-box">
-                <p style="margin-top:0"><strong>Quick Guide:</strong>
-                <ul>
-                    <li><strong>Action Potential:</strong> The "spike" where the neuron fires.</li>
-                    <li><strong>Depolarization:</strong> Voltage rises (Sodium IN).</li>
-                    <li><strong>Hyperpolarization:</strong> Voltage falls below rest (Potassium OUT).</li>
-                    <li><strong>Na/K Difference:</strong> Sodium (Na+) drives the spike UP. Potassium (K+) drives the reset DOWN.</li>
-                </ul>
-                <em style="font-size:0.85em">Ref: Hodgkin, A. L., & Huxley, A. F. (1952). The Journal of Physiology.</em>
-                </p>
+            <div class="explanation-grid">
+                <div class="exp-col">
+                    <h4>The Basics</h4>
+                    <ul>
+                        <li><strong>Action Potential:</strong> The electrical "spike" when a neuron fires.</li>
+                        <li><strong>Depolarization:</strong> Voltage rises sharply. Think of this as the "Gas Pedal".</li>
+                        <li><strong>Hyperpolarization:</strong> Voltage drops below rest. Think of this as the "Brake".</li>
+                    </ul>
+                </div>
+                <div class="exp-col">
+                    <h4>The Chemistry</h4>
+                    <ul>
+                        <li><strong>Sodium (Na+):</strong> Positive charge flowing <em>IN</em> causes the spike (Depolarization).</li>
+                        <li><strong>Potassium (K+):</strong> Positive charge flowing <em>OUT</em> resets the cell (Hyperpolarization).</li>
+                        <li><small><em>Reference: Hodgkin, A. L., & Huxley, A. F. (1952).</em></small></li>
+                    </ul>
+                </div>
             </div>
 
             <div class="sim-container">
                 <div class="canvas-wrapper">
                     <canvas id="simCanvas" width="600" height="350"></canvas>
-                    <div class="legend">
-                        <div class="legend-item"><div class="color-box" style="background:#e74c3c"></div>Voltage (mV)</div>
-                        <div class="legend-item"><div class="color-box" style="background:#3498db"></div>Input Current</div>
-                    </div>
                 </div>
         
                 <div class="controls">
-                    
                     <div class="control-group">
                         <h3>Quick Presets</h3>
                         <button class="preset-btn" onclick="applyPreset('normal')">Normal Fire</button>
@@ -298,7 +280,7 @@
                     <div class="control-group">
                         <h3 class="na-header">Sodium (Na+)</h3>
                         <div class="slider-container">
-                            <span class="slider-label">Conductance (g)</span>
+                            <span class="slider-label">Conductance</span>
                             <input type="range" id="g_na" min="0" max="250" value="120">
                             <span class="slider-value" id="val_g_na">120 mS</span>
                         </div>
@@ -312,7 +294,7 @@
                     <div class="control-group">
                         <h3 class="k-header">Potassium (K+)</h3>
                         <div class="slider-container">
-                            <span class="slider-label">Conductance (g)</span>
+                            <span class="slider-label">Conductance</span>
                             <input type="range" id="g_k" min="0" max="100" value="36">
                             <span class="slider-value" id="val_g_k">36 mS</span>
                         </div>
@@ -323,7 +305,7 @@
                         </div>
                     </div>
                     
-                    <button onclick="resetDefaults()" style="width:100%; padding:8px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em; margin-top:10px;">Reset to Defaults</button>
+                    <button onclick="resetDefaults()" style="width:100%; padding:10px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em; margin-top:10px; font-weight:600;">Reset Simulation</button>
                 </div>
             </div>
             
@@ -360,20 +342,15 @@
             var sidebar = document.querySelector('.sidebar');
             sidebar.style.width = sidebar.style.width === '250px' ? '0' : '250px';
         }
-    </script>
 
-    <script>
+        // --- SIMULATION LOGIC ---
         const params = {
-            C_m: 1.0,
-            g_Na: 120.0, E_Na: 50.0,
-            g_K: 36.0,   E_K: -77.0,
-            g_L: 0.3,    E_L: -54.4,
-            I_ext: 10.0,
-            dt: 0.05
+            C_m: 1.0, g_Na: 120.0, E_Na: 50.0,
+            g_K: 36.0, E_K: -77.0, g_L: 0.3, E_L: -54.4,
+            I_ext: 10.0, dt: 0.05
         };
     
         let state = { V: -65.0, m: 0.05, h: 0.6, n: 0.32, t: 0 };
-    
         const historyLength = 800; 
         let vHistory = new Array(historyLength).fill(-65);
         let iHistory = new Array(historyLength).fill(0);
@@ -398,23 +375,17 @@
             const I_K  = g_K  * Math.pow(n, 4) * (V - E_K);
             const I_L  = g_L  * (V - E_L);
             const dV = (I_ext - I_Na - I_K - I_L) / C_m;
-            const dm = alpha_m(V) * (1 - m) - beta_m(V) * m;
-            const dh = alpha_h(V) * (1 - h) - beta_h(V) * h;
-            const dn = alpha_n(V) * (1 - n) - beta_n(V) * n;
             
             state.V += dV * dt;
-            state.m += dm * dt;
-            state.h += dh * dt;
-            state.n += dn * dt;
-            state.t += dt;
+            state.m += (alpha_m(V)*(1-m) - beta_m(V)*m) * dt;
+            state.h += (alpha_h(V)*(1-h) - beta_h(V)*h) * dt;
+            state.n += (alpha_n(V)*(1-n) - beta_n(V)*n) * dt;
             return state.V;
         }
     
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
-        
-        // --- SPEED SETTING ---
-        let speedMult = 0.8; // Very slow speed (was 2)
+        let speedMult = 0.8; // Slow speed
     
         function animate() {
             if(canvas.width !== canvas.offsetWidth) {
@@ -435,69 +406,46 @@
     
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const vMin = -90;
-            const vMax = 60;
+            const vMin = -90, vMax = 60;
             const yScale = canvas.height / (vMax - vMin);
             
             // Grid
-            ctx.strokeStyle = '#eee';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
+            ctx.strokeStyle = '#eee'; ctx.lineWidth = 1; ctx.beginPath();
             const zeroY = canvas.height - (0 - vMin) * yScale;
             ctx.moveTo(0, zeroY); ctx.lineTo(canvas.width, zeroY);
             const restY = canvas.height - (-65 - vMin) * yScale;
-            ctx.strokeStyle = '#ddd';
-            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = '#ddd'; ctx.setLineDash([5, 5]);
             ctx.moveTo(0, restY); ctx.lineTo(canvas.width, restY);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.stroke(); ctx.setLineDash([]);
     
-            // Trace
-            ctx.beginPath();
-            ctx.strokeStyle = '#e74c3c';
-            ctx.lineWidth = 2;
+            // Traces
+            ctx.beginPath(); ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2;
             for (let i = 0; i < historyLength; i++) {
                 if (isNaN(vHistory[i])) continue;
                 const x = (i / historyLength) * canvas.width;
                 const y = canvas.height - (vHistory[i] - vMin) * yScale;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             }
             ctx.stroke();
     
-            // Current indicator
-            ctx.beginPath();
-            ctx.strokeStyle = '#3498db';
-            ctx.lineWidth = 1;
-            ctx.globalAlpha = 0.5;
+            ctx.beginPath(); ctx.strokeStyle = '#3498db'; ctx.lineWidth = 1; ctx.globalAlpha = 0.5;
             for (let i = 0; i < historyLength; i++) {
                 const x = (i / historyLength) * canvas.width;
-                const normalizedI = (iHistory[i] / 50) * 50; 
-                const y = canvas.height - 10 - normalizedI; 
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                const y = canvas.height - 10 - (iHistory[i] / 50) * 50; 
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             }
-            ctx.stroke();
-            ctx.globalAlpha = 1.0;
+            ctx.stroke(); ctx.globalAlpha = 1.0;
 
-            // --- FIXED AXIS LABELS ---
-            ctx.fillStyle = '#444'; // Darker for visibility
-            ctx.font = 'bold 12px Poppins, sans-serif';
-            // Y-Axis
+            // Labels
+            ctx.fillStyle = '#444'; ctx.font = 'bold 12px Poppins, sans-serif';
             ctx.fillText("Voltage (mV)", 10, 20);
-            // X-Axis (Moved inward to ensure visibility)
             ctx.fillText("Time →", canvas.width - 80, canvas.height - 20);
-            // Resting Label
-            ctx.fillStyle = '#999';
-            ctx.fillText("-65mV", 5, restY - 5);
+            ctx.fillStyle = '#999'; ctx.fillText("-65mV", 5, restY - 5);
         }
     
         const inputs = [
-            { id: 'i_ext', param: 'I_ext' },
-            { id: 'g_na', param: 'g_Na' },
-            { id: 'e_na', param: 'E_Na' },
-            { id: 'g_k', param: 'g_K' },
-            { id: 'e_k', param: 'E_K' }
+            { id: 'i_ext', param: 'I_ext' }, { id: 'g_na', param: 'g_Na' }, { id: 'e_na', param: 'E_Na' },
+            { id: 'g_k', param: 'g_K' }, { id: 'e_k', param: 'E_K' }
         ];
     
         function updateUI() {
@@ -515,33 +463,19 @@
         });
     
         function applyPreset(type) {
-            if(type === 'normal') {
-                params.g_Na = 120; params.E_Na = 50;
-                params.g_K = 36; params.E_K = -77;
-                params.I_ext = 10;
-            } else if (type === 'low_na') {
-                params.g_Na = 30; params.E_Na = 50; params.g_K = 36; params.E_K = -77;
-                params.I_ext = 10;
-            } else if (type === 'high_k') {
-                params.g_Na = 120; params.E_Na = 50;
-                params.g_K = 36; params.E_K = -40;
-                params.I_ext = 10;
-            }
-            state.V = -65.0; 
-            updateUI();
+            if(type === 'normal') { params.g_Na=120; params.E_Na=50; params.g_K=36; params.E_K=-77; params.I_ext=10; }
+            else if (type === 'low_na') { params.g_Na=30; params.E_Na=50; params.g_K=36; params.E_K=-77; params.I_ext=10; }
+            else if (type === 'high_k') { params.g_Na=120; params.E_Na=50; params.g_K=36; params.E_K=-40; params.I_ext=10; }
+            state.V = -65.0; updateUI();
         }
 
         function resetDefaults() {
-            params.I_ext = 10;
-            params.g_Na = 120; params.E_Na = 50;
-            params.g_K = 36; params.E_K = -77;
-            state.V = -65.0; state.m = 0.05; state.h = 0.6; state.n = 0.32;
-            vHistory.fill(-65.0);
-            updateUI();
+            params.I_ext=10; params.g_Na=120; params.E_Na=50; params.g_K=36; params.E_K=-77;
+            state.V=-65.0; state.m=0.05; state.h=0.6; state.n=0.32;
+            vHistory.fill(-65.0); updateUI();
         }
 
-        updateUI();
-        animate();
+        updateUI(); animate();
     </script>
 </body>
 </html>
