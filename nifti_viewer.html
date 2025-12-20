@@ -91,19 +91,19 @@
       position: relative;
       background-color: var(--bg-color);
       
-      /* THE FIX: We use flexbox to center the viewer, but give it padding */
+      /* Bloody ell!I finally settled for flexbox to centre the viewer, but give it padding */
       display: flex;
       justify-content: center;
       align-items: center;
       
-      /* This padding ensures the viewer never touches the edge,
+      /* This padding gives the viewer a better proportion and never touches the edge,
          preventing the bottom bar from being cut off */
       padding: 20px; 
       box-sizing: border-box;
     }
 
     /* --- The Viewer Container --- */
-    /* We do NOT set fixed PX height here anymore. 
+    /* I won't set fixed PX height here anymore. 
        We let it fill the .content area minus the padding */
     #papayaContainer {
       width: 100% !important;
@@ -113,13 +113,13 @@
       margin: 0 auto;
     }
     
-    /* Ensure the inner canvas doesn't overflow */
+    /* so the inner canvas doesn't overflow */
     .papaya-wrapper {
         width: 100%;
         height: 100%;
     }
 
-    /* --- Papaya UI Customization --- */
+    /* --- papaya UI customisation --- */
     .papaya-menu-bar {
         background-color: #444 !important; 
         border-bottom: 1px solid #555 !important;
@@ -127,7 +127,7 @@
     .papaya-menu-bar ul li { color: #fff !important; }
     .papaya-menu-bar ul li:hover { background-color: #666 !important; }
 
-    /* Force Bottom Info Bar Visibility & Contrast */
+    /* force bottom info bar visibility & contrast */
     .papaya-display {
         background-color: #000 !important;
         border-top: 1px solid #555 !important;
@@ -198,6 +198,7 @@
         <li>Click on <strong>Close ALL</strong> to clear the current view.</li>
         <li>Drag and drop your <code>.nii.gz</code> file (or DICOM folder) onto the viewer area.</li>
         <li><em>Alternatively:</em> Click <strong>File &rarr; Add Image</strong> to browse.</li>
+        <li>Use the buttons on the top right corner to change the contrast/colour of the image for better visibility</li>
       </ol>
 
       <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
