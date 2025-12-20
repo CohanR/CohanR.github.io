@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DICOM to NIfTI Converter | Remy Cohan</title>
   
-  <script src="https://unpkg.com/@niivue/niivue@0.42.0/dist/niivue.umd.js"></script>
-
   <style>
-    /* --- Styles --- */
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f7f9fc; color: #333; display: flex; flex-direction: column; height: 100vh; }
     header { background: #2E86C1; color: white; text-align: center; padding: 1rem; font-size: 1.5rem; font-weight: 600; }
     nav { display: flex; justify-content: center; gap: 20px; padding: 10px; background-color: #333; }
@@ -31,7 +28,7 @@
     .btn-primary { display: block; width: 100%; padding: 12px; background-color: #2E86C1; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; }
     .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
     
-    #status-msg { margin-top: 15px; font-size: 0.9rem; font-weight: 500; min-height: 20px; white-space: pre-wrap; padding: 10px; border-radius: 4px;}
+    #status-msg { margin-top: 15px; font-size: 0.9rem; font-weight: 500; min-height: 20px; white-space: pre-wrap; padding: 10px; border-radius: 4px; }
     .success { background: #d1fae5; color: #065f46; } 
     .error { background: #fee2e2; color: #991b1b; } 
     .loading { background: #ffedd5; color: #9a3412; }
@@ -74,7 +71,9 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { Niivue } from 'https://niivue.github.io/niivue/dist/niivue.es.js';
+
     let nv;
     const statusMsg = document.getElementById('status-msg');
     const convertBtn = document.getElementById('convert-btn');
@@ -83,29 +82,22 @@
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
 
-    // 1. Initialize Engine (Standard Global Method)
-    window.onload = function() {
-        if (typeof niivue === 'undefined') {
-            setStatus("❌ Error: Library not loaded. Check internet.", "error");
-            return;
-        }
-        try {
-            nv = new niivue.Niivue();
-            nv.attachTo('gl');
-            // Set black background
-            nv.setMeshProperty(0, {rgba255: [0, 0, 0, 255]});
-            setStatus("✅ System Ready.", "success");
-        } catch (e) {
-            console.error(e);
-            setStatus("❌ Graphics Error.", "error");
-        }
-    };
+    // 1. Initialize
+    try {
+        nv = new Niivue();
+        nv.attachTo('gl');
+        nv.setMeshProperty(0, {rgba255: [0, 0, 0, 255]});
+        setStatus("✅ System Ready.", "success");
+    } catch (e) {
+        setStatus("❌ Failed to load graphics engine.", "error");
+        console.error(e);
+    }
 
-    // 2. Click Handler
+    // 2. Click Handlers
     dropZone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => handleFiles(e.target.files);
 
-    // 3. Drag & Drop (Recursive)
+    // 3. Drag & Drop
     dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#2E86C1'; };
     dropZone.ondragleave = () => { dropZone.style.borderColor = '#ccc'; };
     
@@ -127,7 +119,7 @@
         }
     };
 
-    // --- HELPER: Recursive Folder Scanner ---
+    // --- RECURSIVE SCANNER ---
     async function getAllFileEntries(dataTransferItemList) {
         let fileEntries = [];
         let queue = [];
@@ -151,7 +143,7 @@
     function readFile(entry) { return new Promise(resolve => entry.file(file => resolve(file))); }
     function readDir(reader) { return new Promise(resolve => reader.readEntries(entries => resolve(entries))); }
 
-    // 4. Main Logic
+    // 4. Main Processing Logic
     async function handleFiles(fileList) {
         if (!nv) return;
         
@@ -160,13 +152,12 @@
 
         setStatus(`⏳ Processing ${files.length} files...`, 'loading');
         convertBtn.disabled = true;
-        
-        // Hide preview while loading
-        canvas.style.opacity = '0.5';
+        canvas.style.display = 'none';
+        emptyState.style.display = 'flex';
 
         try {
-            // --- THE FIX IS HERE ---
-            // We check which function exists before calling it
+            // --- DUAL METHOD CHECK ---
+            // This ensures it works regardless of which NiiVue version loads
             if (typeof nv.loadFromFiles === 'function') {
                 await nv.loadFromFiles(files);
             } 
@@ -177,14 +168,12 @@
                 throw new Error("Compatible load function not found.");
             }
             
-            // Check result
             if (nv.volumes.length > 0) {
                 const vol = nv.volumes[0];
                 setStatus(`✅ Success! Volume: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
                 convertBtn.disabled = false;
                 
                 canvas.style.display = 'block';
-                canvas.style.opacity = '1';
                 emptyState.style.display = 'none';
                 
                 nv.setSliceType(nv.sliceTypeMultiplanar);
@@ -193,7 +182,7 @@
             }
         } catch (err) {
             console.error(err);
-            setStatus('❌ Error: ' + err.message, 'error');
+            setStatus('❌ Parse Error: ' + err.message, 'error');
         }
     }
 
@@ -204,7 +193,7 @@
     };
 
     function setStatus(msg, type) {
-        statusMsg.innerText = msg;
+        statusMsg.textContent = msg;
         statusMsg.className = type;
     }
   </script>
