@@ -60,7 +60,7 @@
 
     .sidebar h3 { margin-top: 0; color: #444; font-size: 1.2rem;}
     .sidebar ol { padding-left: 20px; margin-bottom: 20px; }
-    .sidebar li { margin-bottom: 8px; font-size: 0.95rem; }
+    .sidebar li { margin-bottom: 12px; font-size: 0.95rem; line-height: 1.5; }
     
     .home-button {
       display: inline-block;
@@ -91,31 +91,9 @@
       height: 100%;
       position: relative;
       background: #000; 
+      /* Padding to ensure bottom labels aren't cut off */
+      padding-bottom: 0px; 
     }
-
-    /* Custom Quick-Action Toolbar (Supplementary) */
-    .quick-toolbar {
-      background: #222;
-      padding: 5px 15px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      border-bottom: 1px solid #444;
-    }
-
-    .tool-btn {
-      background: #444;
-      color: #ddd;
-      border: 1px solid #555;
-      padding: 4px 10px;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.2s;
-    }
-    .tool-btn:hover { background: #666; color: #fff;}
-    .tool-btn.primary { background: var(--primary-color); border-color: var(--primary-color); color: white;}
-    .tool-btn.primary:hover { background: #0056b3; }
 
     /* Papaya Wrapper */
     .papaya-wrapper {
@@ -134,10 +112,10 @@
       padding: 0;
     }
 
-    /* Fix Papaya Toolbar Alignment */
-    .papaya-toolbar {
-        width: 100% !important;
-        box-sizing: border-box;
+    /* FIX: Ensure bottom info bar is visible */
+    .papaya-display {
+        background-color: rgba(0,0,0,0.8);
+        border-top: 1px solid #444;
     }
 
     /* --- Mobile Optimization --- */
@@ -150,7 +128,7 @@
       .sidebar {
         order: 3; 
         height: auto;
-        max-height: 30vh; 
+        max-height: 35vh; 
         border-right: none;
         border-top: 1px solid #ddd;
         padding: 15px;
@@ -192,30 +170,23 @@
       <a href="index.html" class="home-button">← Back to Home</a>
       
       <h3>Instructions</h3>
-      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates at the bottom.</p>
+      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates at the very bottom.</p>
       
-      <h3>Controls:</h3>
-      <ul>
-        <li><strong>Load Image:</strong> File &rarr; Add Image (or drag & drop).</li>
-        <li><strong>Contrast/Color:</strong> Use the buttons in the top toolbar.</li>
-        <li><strong>Ruler/Crosshairs:</strong> Located in the top menu.</li>
-      </ul>
+      <h3>To load your own image:</h3>
+      <ol>
+        <li>Click on <strong>File</strong> (top left).</li>
+        <li>Click on <strong>Close ALL</strong> to clear the current view.</li>
+        <li>Drag and drop your <code>.nii.gz</code> file (or DICOM folder) onto the viewer area.</li>
+        <li><em>Alternatively:</em> Click <strong>File &rarr; Add Image</strong> to browse.</li>
+      </ol>
 
       <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
     </aside>
 
     <main class="viewer-area">
-      
-      <div class="quick-toolbar">
-        <button class="tool-btn primary" onclick="document.getElementById('file_upload').click()">📂 Open File...</button>
-        <input type="file" id="file_upload" style="display: none;" onchange="loadFile(this)">
-        <span style="font-size:0.8rem; color:#888;">&nbsp;| Native controls below &darr;</span>
-      </div>
-
       <div class="papaya-wrapper" id="wrapper">
         <div id="papayaContainer"></div>
       </div>
-
     </main>
   </div>
 
@@ -224,14 +195,14 @@
     var params = {
       images: ['images/mni152.nii.gz'],
       
-      // RESTORED FEATURES:
-      worldSpace: true,       // Enables MNI/Talairach Coordinates
-      showControls: true,     // RESTORES THE TOOLBAR (Color, Ruler, Views)
-      kioskMode: false,       // RESTORES THE MENUS (File, Edit, View)
+      // CRITICAL SETTINGS FOR UI:
+      worldSpace: true,       // Enables MNI Coordinates & Labels
+      showControls: true,     // Shows the toolbar (Ruler, Color, etc)
+      kioskMode: false,       // Shows the top menu (File, Edit, View)
       
-      // Settings to ensure Atlas labels appear
+      // Layout Settings
       allowBodyScroll: false, 
-      expandable: true,
+      expandable: true,       // Helps it fill the container
       
       // Styling
       mainView: 'axial',
@@ -246,16 +217,7 @@
       setTimeout(fixScrollBehavior, 500);
     };
 
-    // 3. File Loading Helper (Connects to the blue button)
-    function loadFile(input) {
-      if (input.files && input.files[0]) {
-        papaya.Container.resetViewer(0, {
-          images: [input.files[0]]
-        });
-      }
-    }
-
-    // 4. THE SCROLL FIX
+    // 3. THE SCROLL FIX
     // Prevents the webpage from moving when adjusting slices/contrast
     function fixScrollBehavior() {
       const wrapper = document.getElementById('wrapper');
