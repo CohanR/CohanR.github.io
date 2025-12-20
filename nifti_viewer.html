@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://neuropsis.org/nifti_viewer.html" />
 
   <meta name="description" content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js." />
-  <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan, Neuroradiology, MD, PhD" />
+  <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan" />
   <meta name="author" content="Remy Cohan" />
 
   <title>Interactive MRI Viewer | Remy Cohan</title>
@@ -42,7 +42,8 @@
       grid-template-columns: 300px 1fr; 
       grid-template-rows: 100%;
       height: 100vh; 
-      height: 100dvh; /* Mobile support */
+      /* Use dvh (dynamic viewport height) to handle mobile address bars */
+      height: 100dvh; 
       width: 100vw;
     }
 
@@ -89,23 +90,23 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      position: relative;
       background: #000; 
       
-      /* THIS IS THE FIX: Padding minimizes the window so nothing is cut off */
-      padding: 20px; 
+      /* KEY FIX: Large padding ensures the window is smaller than the screen */
+      padding: 30px; 
       box-sizing: border-box;
-      justify-content: center; /* Centers the viewer vertically */
-      align-items: center;     /* Centers the viewer horizontally */
+      justify-content: center; 
+      align-items: center;     
     }
 
     /* Papaya Wrapper */
     .papaya-wrapper {
       position: relative;
+      /* Ensure it takes up space but leaves room for the padding */
       width: 100%;
       height: 100%;
-      /* Optional: Rounded corners to look like a clean window */
-      border-radius: 8px; 
+      
+      border-radius: 4px; 
       overflow: hidden;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
@@ -118,17 +119,13 @@
       padding: 0;
     }
 
-    /* Override Papaya Menu Color (Lighter Grey) */
+    /* Make Menu Lighter */
     .papaya-menu-bar {
         background-color: #444 !important; 
         border-bottom: 1px solid #555 !important;
     }
-    .papaya-menu-bar ul li {
-        color: #fff !important; 
-    }
-    .papaya-menu-bar ul li:hover {
-        background-color: #666 !important; 
-    }
+    .papaya-menu-bar ul li { color: #fff !important; }
+    .papaya-menu-bar ul li:hover { background-color: #666 !important; }
 
     /* Force Bottom Info Bar Visibility */
     .papaya-display {
@@ -136,7 +133,6 @@
         border-top: 1px solid #555 !important;
         margin-bottom: 0 !important;
         z-index: 100;
-        /* Ensure text is visible */
         color: #fff !important; 
     }
 
@@ -156,11 +152,8 @@
         padding: 15px;
       }
       
-      /* Reduce padding on mobile to maximize screen real estate */
-      .viewer-area {
-        padding: 5px;
-      }
-
+      /* Smaller padding on mobile */
+      .viewer-area { padding: 10px; }
       .home-button { display: none; }
       
       .mobile-header {
@@ -197,7 +190,7 @@
       <a href="index.html" class="home-button">← Back to Home</a>
       
       <h3>Instructions</h3>
-      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates at the bottom.</p>
+      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates.</p>
       
       <h3>To load your own image:</h3>
       <ol>
@@ -220,15 +213,11 @@
   <script type="text/javascript">
     var params = {
       images: ['images/mni152.nii.gz'],
-      
-      // UI Settings
       worldSpace: true,       // MNI Coordinates ON
       showControls: true,     // Toolbar ON
       kioskMode: false,       // Menu ON
-      
       allowBodyScroll: false, 
       expandable: true,       
-      
       mainView: 'axial',
       coordinate: [0, 0, 0]   
     };
@@ -236,19 +225,25 @@
     window.onload = function() {
       papaya.Container.addViewer('papayaContainer', params);
       
-      // Delay scroll fix slightly to ensure load
-      setTimeout(fixScrollBehavior, 500);
+      // AUTO-RESIZE FIX:
+      // This forces the viewer to recalculate its size 500ms after loading.
+      // This simulates "pressing the button" automatically.
+      setTimeout(function() {
+         window.dispatchEvent(new Event('resize'));
+         // Also verify scroll fix
+         fixScrollBehavior();
+      }, 500);
     };
 
     function fixScrollBehavior() {
       const wrapper = document.getElementById('wrapper');
       
-      // Stop webpage scrolling when mouse is over viewer
+      // Prevent webpage scrolling when using mouse wheel over image
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault(); 
       }, { passive: false });
 
-      // Stop webpage dragging on mobile touch
+      // Prevent webpage scrolling when dragging image on mobile
       wrapper.addEventListener('touchmove', function(e) {
         if (e.target.tagName === 'CANVAS') {
           e.preventDefault();
