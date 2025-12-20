@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://neuropsis.org/nifti_viewer.html" />
 
   <meta name="description" content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js." />
-  <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan, Neuroradiology, MD,PhD" />
+  <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan, Neuroradiology, MD, PhD" />
   <meta name="author" content="Remy Cohan" />
 
   <title>Interactive MRI Viewer | Remy Cohan</title>
@@ -92,21 +92,25 @@
       position: relative;
       background: #000; 
       
-      /* FIX 1: Add padding to bottom so the info bar isn't cut off */
-      padding-bottom: 5px; 
+      /* THIS IS THE FIX: Padding minimizes the window so nothing is cut off */
+      padding: 20px; 
       box-sizing: border-box;
+      justify-content: center; /* Centers the viewer vertically */
+      align-items: center;     /* Centers the viewer horizontally */
     }
 
     /* Papaya Wrapper */
     .papaya-wrapper {
-      flex-grow: 1;
       position: relative;
       width: 100%;
       height: 100%;
+      /* Optional: Rounded corners to look like a clean window */
+      border-radius: 8px; 
       overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
 
-    /* Force Papaya to fill the grid cell */
+    /* Force Papaya to fill the wrapper */
     #papayaContainer {
       width: 100% !important; 
       height: 100% !important; 
@@ -114,24 +118,26 @@
       padding: 0;
     }
 
-    /* FIX 2: Override Papaya Menu Color (Make it Lighter Grey) */
+    /* Override Papaya Menu Color (Lighter Grey) */
     .papaya-menu-bar {
-        background-color: #444 !important; /* Lighter Grey */
+        background-color: #444 !important; 
         border-bottom: 1px solid #555 !important;
     }
     .papaya-menu-bar ul li {
-        color: #fff !important; /* White Text */
+        color: #fff !important; 
     }
     .papaya-menu-bar ul li:hover {
-        background-color: #666 !important; /* Even lighter on hover */
+        background-color: #666 !important; 
     }
 
-    /* FIX 3: Force Bottom Info Bar Visibility */
+    /* Force Bottom Info Bar Visibility */
     .papaya-display {
         background-color: rgba(0,0,0,0.85) !important;
         border-top: 1px solid #555 !important;
-        margin-bottom: 0 !important; /* Ensure no negative margin hides it */
+        margin-bottom: 0 !important;
         z-index: 100;
+        /* Ensure text is visible */
+        color: #fff !important; 
     }
 
     /* --- Mobile Optimization --- */
@@ -148,6 +154,11 @@
         border-right: none;
         border-top: 1px solid #ddd;
         padding: 15px;
+      }
+      
+      /* Reduce padding on mobile to maximize screen real estate */
+      .viewer-area {
+        padding: 5px;
       }
 
       .home-button { display: none; }
@@ -186,7 +197,7 @@
       <a href="index.html" class="home-button">← Back to Home</a>
       
       <h3>Instructions</h3>
-      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates.</p>
+      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates at the bottom.</p>
       
       <h3>To load your own image:</h3>
       <ol>
@@ -207,12 +218,13 @@
   </div>
 
   <script type="text/javascript">
-    // 1. Initial Parameters
     var params = {
       images: ['images/mni152.nii.gz'],
-      worldSpace: true,
-      showControls: true,     
-      kioskMode: false,       
+      
+      // UI Settings
+      worldSpace: true,       // MNI Coordinates ON
+      showControls: true,     // Toolbar ON
+      kioskMode: false,       // Menu ON
       
       allowBodyScroll: false, 
       expandable: true,       
@@ -221,21 +233,22 @@
       coordinate: [0, 0, 0]   
     };
 
-    // 2. Start Papaya
     window.onload = function() {
       papaya.Container.addViewer('papayaContainer', params);
       
+      // Delay scroll fix slightly to ensure load
       setTimeout(fixScrollBehavior, 500);
     };
 
-    // 3. THE SCROLL FIX
     function fixScrollBehavior() {
       const wrapper = document.getElementById('wrapper');
       
+      // Stop webpage scrolling when mouse is over viewer
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault(); 
       }, { passive: false });
 
+      // Stop webpage dragging on mobile touch
       wrapper.addEventListener('touchmove', function(e) {
         if (e.target.tagName === 'CANVAS') {
           e.preventDefault();
