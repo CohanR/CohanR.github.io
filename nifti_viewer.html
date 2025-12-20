@@ -19,7 +19,7 @@
     /* --- CSS Reset & Base --- */
     :root {
       --primary-color: #007bff;
-      --bg-color: #f4f4f4;
+      --bg-color: #e5e5e5; /* Neutral grey background like your screenshot */
       --sidebar-bg: #ffffff;
       --text-color: #333;
     }
@@ -32,132 +32,134 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      overscroll-behavior: none; /* Stops "bounce" on Mac */
-      overflow: hidden; /* Stops whole page scroll */
+      overflow: hidden; /* Stop page scroll */
     }
 
     /* --- Layout Container --- */
     .app-container {
       display: flex;
-      flex-direction: row; /* Sidebar Left, Content Right */
+      flex-direction: row; 
       height: 100vh;
       width: 100vw;
     }
 
     /* --- Sidebar --- */
     .sidebar {
-      width: 300px; /* Fixed width */
-      flex-shrink: 0; /* Prevent shrinking */
+      width: 320px; 
+      flex-shrink: 0; 
       background: var(--sidebar-bg);
-      padding: 2rem 1.5rem;
-      border-right: 1px solid #ddd;
+      padding: 2rem;
+      border-right: 1px solid #ccc;
       overflow-y: auto;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
       z-index: 10;
+      display: flex;
+      flex-direction: column;
     }
 
-    .sidebar h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: #444; font-size: 1.1rem; }
+    .sidebar h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: #333; font-size: 1.1rem; font-weight: 700;}
     .sidebar h3:first-of-type { margin-top: 0; }
-    .sidebar p { margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.5; }
-    .sidebar ol { padding-left: 20px; margin-bottom: 20px; }
+    .sidebar p { margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.6; color: #555; }
+    .sidebar ol { padding-left: 20px; margin-bottom: 20px; color: #555; }
     .sidebar li { margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; }
     
     .home-button {
       display: inline-block;
       margin-bottom: 30px;
-      padding: 10px 15px;
+      padding: 10px 18px;
       background-color: var(--primary-color);
       color: white;
       text-decoration: none;
-      border-radius: 5px;
+      border-radius: 4px;
       font-weight: 600;
       font-size: 0.9rem;
       transition: background 0.2s;
+      align-self: flex-start;
     }
     .home-button:hover { background-color: #0056b3; }
 
     .signature {
-      margin-top: 40px;
+      margin-top: auto;
       padding-top: 20px;
-      font-size: 0.85rem;
-      color: #888;
+      font-size: 0.8rem;
+      color: #999;
       border-top: 1px solid #eee;
     }
 
     /* --- Viewer Content Area --- */
     .content {
       flex-grow: 1;
+      position: relative;
+      background-color: var(--bg-color);
+      
+      /* THE FIX: We use flexbox to center the viewer, but give it padding */
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #e5e5e5; /* Distinct background */
-      position: relative;
+      
+      /* This padding ensures the viewer never touches the edge,
+         preventing the bottom bar from being cut off */
+      padding: 20px; 
+      box-sizing: border-box;
     }
 
-    /* --- The Viewer Window (Restoring your "Proportion" logic) --- */
+    /* --- The Viewer Container --- */
+    /* We do NOT set fixed PX height here anymore. 
+       We let it fill the .content area minus the padding */
     #papayaContainer {
-      /* Fixed size logic relative to screen */
-      width: 85% !important; 
-      height: 85% !important; 
-      
-      /* Limits to prevent it becoming massive on huge screens */
-      max-width: 1400px;
-      max-height: 900px;
-      
-      background: #000;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      border-radius: 4px; /* Optional: Slight curve like a window */
-      overflow: hidden;   /* Keeps the UI inside */
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100%;
+      max-height: 100%;
+      margin: 0 auto;
+    }
+    
+    /* Ensure the inner canvas doesn't overflow */
+    .papaya-wrapper {
+        width: 100%;
+        height: 100%;
     }
 
     /* --- Papaya UI Customization --- */
-    /* Lighten the Top Menu */
     .papaya-menu-bar {
-        background-color: #555 !important; 
-        border-bottom: 1px solid #666 !important;
+        background-color: #444 !important; 
+        border-bottom: 1px solid #555 !important;
     }
     .papaya-menu-bar ul li { color: #fff !important; }
-    .papaya-menu-bar ul li:hover { background-color: #777 !important; }
+    .papaya-menu-bar ul li:hover { background-color: #666 !important; }
 
-    /* Ensure Bottom Info Bar is Visible */
+    /* Force Bottom Info Bar Visibility & Contrast */
     .papaya-display {
-        background-color: rgba(0,0,0,0.85) !important;
-        border-top: 1px solid #666 !important;
+        background-color: #000 !important;
+        border-top: 1px solid #555 !important;
         color: #fff !important; 
-        margin-bottom: 0 !important;
+        font-size: 14px !important;
+        padding: 5px !important;
+        /* Ensure it sits on top */
+        z-index: 100;
     }
 
     /* --- Mobile Styles --- */
     .mobile-header { display: none; }
 
     @media (max-width: 768px) {
-      .app-container {
-        flex-direction: column; /* Stack vertically on phone */
-      }
+      .app-container { flex-direction: column; }
 
       .sidebar {
         width: 100%;
         height: auto;
-        order: 2; /* Put text below viewer */
-        padding: 1rem;
-        box-shadow: none;
+        order: 2; 
+        padding: 1.5rem;
         border-right: none;
-        border-top: 1px solid #ddd;
+        border-top: 1px solid #ccc;
       }
       
       .home-button { display: none; }
       
       .content {
-        height: 60vh; /* Viewer takes top 60% of screen */
+        height: 60vh; /* Fixed height on mobile to ensure viewability */
         order: 1;
+        padding: 0; /* Remove padding on mobile for max size */
         background-color: #000;
-      }
-
-      #papayaContainer {
-        width: 100% !important;
-        height: 100% !important;
-        border-radius: 0;
-        box-shadow: none;
       }
 
       .mobile-header {
@@ -207,49 +209,33 @@
   </div>
 
   <script type="text/javascript">
-    // 1. Initial Parameters
     var params = {
       images: ['images/mni152.nii.gz'],
-      
-      // Configuration
-      worldSpace: true,       // Enable MNI Coordinates
-      showControls: true,     // Enable Toolbar (Colors, etc)
-      kioskMode: false,       // Enable Menu (File, Edit)
-      allowBodyScroll: false, // Help block scrolling
-      expandable: true,       // Allow filling the container
-      
+      worldSpace: true,       
+      showControls: true,     
+      kioskMode: false,       
+      allowBodyScroll: false, 
+      expandable: true,       // ALLOWS IT TO FILL CONTAINER
       mainView: 'axial',
       coordinate: [0, 0, 0]   
     };
 
-    // 2. Start Papaya
     window.onload = function() {
-      // Create viewer in the container
       papaya.Container.addViewer('papayaContainer', params);
       
-      // Resize Trigger: 
-      // We manually trigger a resize event shortly after load to ensure
-      // the canvas calculates its size correctly inside the flexbox.
+      // AUTO-RESIZE: 
+      // This is the key. We trigger a resize after the layout settles.
       setTimeout(function() {
         window.dispatchEvent(new Event('resize'));
         fixScrollBehavior();
       }, 500);
     };
 
-    // 3. Scroll Fix (Keeps the feel "Tight")
     function fixScrollBehavior() {
       const container = document.getElementById('papayaContainer');
-      
-      // Stop webpage from scrolling when using mouse wheel on viewer
-      container.addEventListener('wheel', function(e) {
-        e.preventDefault(); 
-      }, { passive: false });
-      
-      // Stop webpage dragging on mobile touch
-      container.addEventListener('touchmove', function(e) {
-        if (e.target.tagName === 'CANVAS') {
-          e.preventDefault();
-        }
+      container.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
+      container.addEventListener('touchmove', function(e) { 
+        if (e.target.tagName === 'CANVAS') e.preventDefault(); 
       }, { passive: false });
     }
   </script>
