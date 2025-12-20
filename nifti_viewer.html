@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://neuropsis.org/nifti_viewer.html" />
 
   <meta name="description" content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js." />
-  <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan" />
+  <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan, Neuroradiology, MD,PhD" />
   <meta name="author" content="Remy Cohan" />
 
   <title>Interactive MRI Viewer | Remy Cohan</title>
@@ -91,8 +91,10 @@
       height: 100%;
       position: relative;
       background: #000; 
-      /* Padding to ensure bottom labels aren't cut off */
-      padding-bottom: 0px; 
+      
+      /* FIX 1: Add padding to bottom so the info bar isn't cut off */
+      padding-bottom: 5px; 
+      box-sizing: border-box;
     }
 
     /* Papaya Wrapper */
@@ -112,10 +114,24 @@
       padding: 0;
     }
 
-    /* FIX: Ensure bottom info bar is visible */
+    /* FIX 2: Override Papaya Menu Color (Make it Lighter Grey) */
+    .papaya-menu-bar {
+        background-color: #444 !important; /* Lighter Grey */
+        border-bottom: 1px solid #555 !important;
+    }
+    .papaya-menu-bar ul li {
+        color: #fff !important; /* White Text */
+    }
+    .papaya-menu-bar ul li:hover {
+        background-color: #666 !important; /* Even lighter on hover */
+    }
+
+    /* FIX 3: Force Bottom Info Bar Visibility */
     .papaya-display {
-        background-color: rgba(0,0,0,0.8);
-        border-top: 1px solid #444;
+        background-color: rgba(0,0,0,0.85) !important;
+        border-top: 1px solid #555 !important;
+        margin-bottom: 0 !important; /* Ensure no negative margin hides it */
+        z-index: 100;
     }
 
     /* --- Mobile Optimization --- */
@@ -170,7 +186,7 @@
       <a href="index.html" class="home-button">← Back to Home</a>
       
       <h3>Instructions</h3>
-      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates at the very bottom.</p>
+      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Hover over the brain</strong> to see anatomical labels and coordinates.</p>
       
       <h3>To load your own image:</h3>
       <ol>
@@ -194,40 +210,32 @@
     // 1. Initial Parameters
     var params = {
       images: ['images/mni152.nii.gz'],
+      worldSpace: true,
+      showControls: true,     
+      kioskMode: false,       
       
-      // CRITICAL SETTINGS FOR UI:
-      worldSpace: true,       // Enables MNI Coordinates & Labels
-      showControls: true,     // Shows the toolbar (Ruler, Color, etc)
-      kioskMode: false,       // Shows the top menu (File, Edit, View)
-      
-      // Layout Settings
       allowBodyScroll: false, 
-      expandable: true,       // Helps it fill the container
+      expandable: true,       
       
-      // Styling
       mainView: 'axial',
-      coordinate: [0, 0, 0]   // Start at center
+      coordinate: [0, 0, 0]   
     };
 
     // 2. Start Papaya
     window.onload = function() {
       papaya.Container.addViewer('papayaContainer', params);
       
-      // Apply scroll fix after load
       setTimeout(fixScrollBehavior, 500);
     };
 
     // 3. THE SCROLL FIX
-    // Prevents the webpage from moving when adjusting slices/contrast
     function fixScrollBehavior() {
       const wrapper = document.getElementById('wrapper');
       
-      // Prevent wheel scrolling on the webpage
       wrapper.addEventListener('wheel', function(e) {
         e.preventDefault(); 
       }, { passive: false });
 
-      // Prevent touch dragging the webpage (but allow pinch/drag on canvas)
       wrapper.addEventListener('touchmove', function(e) {
         if (e.target.tagName === 'CANVAS') {
           e.preventDefault();
