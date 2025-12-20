@@ -19,7 +19,7 @@
     /* --- CSS Reset & Base --- */
     :root {
       --primary-color: #007bff;
-      --bg-color: #f8f9fa;
+      --bg-color: #f4f4f4;
       --sidebar-bg: #ffffff;
       --text-color: #333;
     }
@@ -32,161 +32,159 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      overscroll-behavior: none; 
-      overflow: hidden; 
+      overscroll-behavior: none; /* Stops "bounce" on Mac */
+      overflow: hidden; /* Stops whole page scroll */
     }
 
-    /* --- Main Layout Grid --- */
+    /* --- Layout Container --- */
     .app-container {
-      display: grid;
-      grid-template-columns: 300px 1fr; 
-      grid-template-rows: 100%;
-      height: 100vh; 
-      /* Use dvh (dynamic viewport height) to handle mobile address bars */
-      height: 100dvh; 
+      display: flex;
+      flex-direction: row; /* Sidebar Left, Content Right */
+      height: 100vh;
       width: 100vw;
     }
 
-    /* --- Sidebar Styling --- */
+    /* --- Sidebar --- */
     .sidebar {
+      width: 300px; /* Fixed width */
+      flex-shrink: 0; /* Prevent shrinking */
       background: var(--sidebar-bg);
-      padding: 20px;
+      padding: 2rem 1.5rem;
       border-right: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
       overflow-y: auto;
-      z-index: 20;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      z-index: 10;
     }
 
-    .sidebar h3 { margin-top: 0; color: #444; font-size: 1.2rem;}
+    .sidebar h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: #444; font-size: 1.1rem; }
+    .sidebar h3:first-of-type { margin-top: 0; }
+    .sidebar p { margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.5; }
     .sidebar ol { padding-left: 20px; margin-bottom: 20px; }
-    .sidebar li { margin-bottom: 12px; font-size: 0.95rem; line-height: 1.5; }
+    .sidebar li { margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; }
     
     .home-button {
       display: inline-block;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       padding: 10px 15px;
       background-color: var(--primary-color);
       color: white;
       text-decoration: none;
-      border-radius: 6px;
+      border-radius: 5px;
       font-weight: 600;
-      text-align: center;
+      font-size: 0.9rem;
       transition: background 0.2s;
     }
     .home-button:hover { background-color: #0056b3; }
 
     .signature {
-      margin-top: auto;
+      margin-top: 40px;
       padding-top: 20px;
       font-size: 0.85rem;
       color: #888;
       border-top: 1px solid #eee;
     }
 
-    /* --- Viewer Area Styling --- */
-    .viewer-area {
+    /* --- Viewer Content Area --- */
+    .content {
+      flex-grow: 1;
       display: flex;
-      flex-direction: column;
-      height: 100%;
-      background: #000; 
-      
-      /* KEY FIX: Large padding ensures the window is smaller than the screen */
-      padding: 30px; 
-      box-sizing: border-box;
-      justify-content: center; 
-      align-items: center;     
-    }
-
-    /* Papaya Wrapper */
-    .papaya-wrapper {
+      justify-content: center;
+      align-items: center;
+      background-color: #e5e5e5; /* Distinct background */
       position: relative;
-      /* Ensure it takes up space but leaves room for the padding */
-      width: 100%;
-      height: 100%;
-      
-      border-radius: 4px; 
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
 
-    /* Force Papaya to fill the wrapper */
+    /* --- The Viewer Window (Restoring your "Proportion" logic) --- */
     #papayaContainer {
-      width: 100% !important; 
-      height: 100% !important; 
-      margin: 0;
-      padding: 0;
+      /* Fixed size logic relative to screen */
+      width: 85% !important; 
+      height: 85% !important; 
+      
+      /* Limits to prevent it becoming massive on huge screens */
+      max-width: 1400px;
+      max-height: 900px;
+      
+      background: #000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      border-radius: 4px; /* Optional: Slight curve like a window */
+      overflow: hidden;   /* Keeps the UI inside */
     }
 
-    /* Make Menu Lighter */
+    /* --- Papaya UI Customization --- */
+    /* Lighten the Top Menu */
     .papaya-menu-bar {
-        background-color: #444 !important; 
-        border-bottom: 1px solid #555 !important;
+        background-color: #555 !important; 
+        border-bottom: 1px solid #666 !important;
     }
     .papaya-menu-bar ul li { color: #fff !important; }
-    .papaya-menu-bar ul li:hover { background-color: #666 !important; }
+    .papaya-menu-bar ul li:hover { background-color: #777 !important; }
 
-    /* Force Bottom Info Bar Visibility */
+    /* Ensure Bottom Info Bar is Visible */
     .papaya-display {
         background-color: rgba(0,0,0,0.85) !important;
-        border-top: 1px solid #555 !important;
-        margin-bottom: 0 !important;
-        z-index: 100;
+        border-top: 1px solid #666 !important;
         color: #fff !important; 
+        margin-bottom: 0 !important;
     }
 
-    /* --- Mobile Optimization --- */
+    /* --- Mobile Styles --- */
+    .mobile-header { display: none; }
+
     @media (max-width: 768px) {
       .app-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto; 
+        flex-direction: column; /* Stack vertically on phone */
       }
 
       .sidebar {
-        order: 3; 
+        width: 100%;
         height: auto;
-        max-height: 35vh; 
+        order: 2; /* Put text below viewer */
+        padding: 1rem;
+        box-shadow: none;
         border-right: none;
         border-top: 1px solid #ddd;
-        padding: 15px;
       }
       
-      /* Smaller padding on mobile */
-      .viewer-area { padding: 10px; }
       .home-button { display: none; }
       
+      .content {
+        height: 60vh; /* Viewer takes top 60% of screen */
+        order: 1;
+        background-color: #000;
+      }
+
+      #papayaContainer {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
       .mobile-header {
         display: flex;
         justify-content: space-between;
-        padding: 10px;
+        align-items: center;
+        padding: 10px 15px;
         background: #fff;
         border-bottom: 1px solid #ddd;
-        align-items: center;
       }
       .mobile-home-btn {
-        text-decoration: none;
         color: var(--primary-color);
+        text-decoration: none;
         font-weight: bold;
-        font-size: 0.9rem;
       }
-    }
-    
-    @media (min-width: 769px) {
-      .mobile-header { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="app-container">
-    
-    <div class="mobile-header">
-      <strong>MRI Viewer</strong>
-      <a href="index.html" class="mobile-home-btn">Exit</a>
-    </div>
+  <div class="mobile-header">
+    <strong>MRI Viewer</strong>
+    <a href="index.html" class="mobile-home-btn">Exit</a>
+  </div>
 
-    <aside class="sidebar">
+  <div class="app-container">
+    <div class="sidebar">
       <a href="index.html" class="home-button">← Back to Home</a>
       
       <h3>Instructions</h3>
@@ -201,50 +199,54 @@
       </ol>
 
       <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
-    </aside>
+    </div>
 
-    <main class="viewer-area">
-      <div class="papaya-wrapper" id="wrapper">
-        <div id="papayaContainer"></div>
-      </div>
-    </main>
+    <div class="content">
+      <div id="papayaContainer"></div>
+    </div>
   </div>
 
   <script type="text/javascript">
+    // 1. Initial Parameters
     var params = {
       images: ['images/mni152.nii.gz'],
-      worldSpace: true,       // MNI Coordinates ON
-      showControls: true,     // Toolbar ON
-      kioskMode: false,       // Menu ON
-      allowBodyScroll: false, 
-      expandable: true,       
+      
+      // Configuration
+      worldSpace: true,       // Enable MNI Coordinates
+      showControls: true,     // Enable Toolbar (Colors, etc)
+      kioskMode: false,       // Enable Menu (File, Edit)
+      allowBodyScroll: false, // Help block scrolling
+      expandable: true,       // Allow filling the container
+      
       mainView: 'axial',
       coordinate: [0, 0, 0]   
     };
 
+    // 2. Start Papaya
     window.onload = function() {
+      // Create viewer in the container
       papaya.Container.addViewer('papayaContainer', params);
       
-      // AUTO-RESIZE FIX:
-      // This forces the viewer to recalculate its size 500ms after loading.
-      // This simulates "pressing the button" automatically.
+      // Resize Trigger: 
+      // We manually trigger a resize event shortly after load to ensure
+      // the canvas calculates its size correctly inside the flexbox.
       setTimeout(function() {
-         window.dispatchEvent(new Event('resize'));
-         // Also verify scroll fix
-         fixScrollBehavior();
+        window.dispatchEvent(new Event('resize'));
+        fixScrollBehavior();
       }, 500);
     };
 
+    // 3. Scroll Fix (Keeps the feel "Tight")
     function fixScrollBehavior() {
-      const wrapper = document.getElementById('wrapper');
+      const container = document.getElementById('papayaContainer');
       
-      // Prevent webpage scrolling when using mouse wheel over image
-      wrapper.addEventListener('wheel', function(e) {
+      // Stop webpage from scrolling when using mouse wheel on viewer
+      container.addEventListener('wheel', function(e) {
         e.preventDefault(); 
       }, { passive: false });
-
-      // Prevent webpage scrolling when dragging image on mobile
-      wrapper.addEventListener('touchmove', function(e) {
+      
+      // Stop webpage dragging on mobile touch
+      container.addEventListener('touchmove', function(e) {
         if (e.target.tagName === 'CANVAS') {
           e.preventDefault();
         }
