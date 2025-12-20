@@ -56,13 +56,13 @@
             top: 0;
             left: 0;
             height: 100%;
-            width: 0; /* Initially set width to 0 */
+            width: 0;
             overflow: hidden;
             background-color: #34495e;
             padding: 20px 0;
             box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
             transition: width 0.5s ease;
-            z-index: 1001; /* Ensure above main content */
+            z-index: 1001;
         }
 
         .sidebar:hover,
@@ -121,6 +121,7 @@
             border-radius: 8px;
             border: 1px solid #e1e4e8;
             margin-bottom: 40px;
+            box-sizing: border-box;
         }
 
         .canvas-wrapper {
@@ -129,13 +130,15 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             position: relative;
+            flex: 1 1 500px; /* Grow to fill, min width 500px */
         }
         
         canvas {
             border: 1px solid #ddd;
             border-radius: 4px;
             background-color: #fff;
-            max-width: 100%; /* Responsive canvas */
+            width: 100%;
+            height: 350px;
         }
 
         .legend {
@@ -147,13 +150,13 @@
             border-radius: 4px;
             border: 1px solid #ccc;
             font-size: 0.8em;
+            pointer-events: none;
         }
         .legend-item { display: flex; align-items: center; margin-bottom: 2px; }
         .color-box { width: 12px; height: 12px; margin-right: 8px; border-radius: 2px; }
 
         .controls {
-            flex: 1;
-            min-width: 300px;
+            flex: 1 1 300px; /* Grow to fill, min width 300px */
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -178,6 +181,20 @@
         input[type=range] { flex: 3; margin: 0 10px; cursor: pointer; }
         .slider-value { flex: 1; text-align: right; font-family: monospace; font-size: 0.85em; color: #555; }
 
+        .preset-btn {
+            padding: 6px 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover { background: #f0f0f0; border-color: #bbb; }
+        .preset-active { background: #e3f2fd; border-color: #2E86C1; color: #2E86C1; font-weight: 600; }
+
         .na-header { color: #27ae60 !important; border-bottom-color: #27ae60 !important; }
         .k-header { color: #2980b9 !important; border-bottom-color: #2980b9 !important; }
         .input-header { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
@@ -195,6 +212,9 @@
             }
             nav a {
                 margin: 5px 0;
+            }
+            .canvas-wrapper, .controls {
+                flex: 1 1 100%;
             }
         }
     </style>
@@ -227,7 +247,7 @@
 
         <section>
             <h2>Interactive Hodgkin-Huxley Lab</h2>
-            <p><strong>Try it yourself:</strong> Use the sliders below to adjust the ion channel conductance and current stimulation in real-time. Notice how low Sodium (Na+) prevents the spike, or how high Potassium (K+) changes the reset.</p>
+            <p><strong>Real-time Browser Simulation:</strong> This tool solves the Hodgkin-Huxley differential equations in real-time. Use the controls to adjust ion channel conductance or select a preset to simulate clinical conditions.</p>
             
             <div class="sim-container">
                 <div class="canvas-wrapper">
@@ -241,9 +261,16 @@
                 <div class="controls">
                     
                     <div class="control-group">
+                        <h3>Quick Presets</h3>
+                        <button class="preset-btn" onclick="applyPreset('normal')">Normal Fire</button>
+                        <button class="preset-btn" onclick="applyPreset('low_na')">Low Sodium</button>
+                        <button class="preset-btn" onclick="applyPreset('high_k')">High Potassium</button>
+                    </div>
+
+                    <div class="control-group">
                         <h3 class="input-header">Stimulation</h3>
                         <div class="slider-container">
-                            <span class="slider-label">Current (I_ext)</span>
+                            <span class="slider-label">Current (I)</span>
                             <input type="range" id="i_ext" min="0" max="50" step="0.5" value="10">
                             <span class="slider-value" id="val_i_ext">10.0 µA</span>
                         </div>
@@ -276,8 +303,6 @@
                             <span class="slider-value" id="val_e_k">-77 mV</span>
                         </div>
                     </div>
-                    
-                    <button onclick="resetDefaults()" style="width:100%; padding:8px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em;">Reset to Defaults</button>
                 </div>
             </div>
             
@@ -327,13 +352,7 @@
             dt: 0.05
         };
     
-        let state = {
-            V: -65.0,
-            m: 0.05,
-            h: 0.6,
-            n: 0.32,
-            t: 0
-        };
+        let state = { V: -65.0, m: 0.05, h: 0.6, n: 0.32, t: 0 };
     
         // Rolling buffer for plotting
         const historyLength = 800; 
@@ -377,16 +396,21 @@
         // --- 3. Animation Loop ---
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
-        let speedMult = 1.5; // Fixed speed multiplier
+        
+        // SPEED CONTROL: 2 = Slower/Smoother, 5 = Fast
+        let speedMult = 2; 
     
         function animate() {
-            // Calculate multiple physics steps per animation frame for smoothness
+            // Adjust canvas size dynamically if needed
+            if(canvas.width !== canvas.offsetWidth) {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            }
+
             for(let i=0; i < speedMult * 5; i++) {
                 const newV = runTimeStep();
-                
                 vHistory.shift();
                 vHistory.push(newV);
-                
                 iHistory.shift();
                 iHistory.push(params.I_ext);
             }
@@ -455,29 +479,39 @@
             { id: 'e_k', param: 'E_K' }
         ];
     
-        inputs.forEach(item => {
-            const el = document.getElementById(item.id);
-            const valEl = document.getElementById('val_' + item.id);
-            
-            el.addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                params[item.param] = val;
-                valEl.textContent = val + (item.param.includes('E') ? ' mV' : (item.param.includes('I') ? ' µA' : ' mS'));
-            });
-        });
-    
-        function resetDefaults() {
-            document.getElementById('i_ext').value = 10; params.I_ext = 10;
-            document.getElementById('g_na').value = 120; params.g_Na = 120;
-            document.getElementById('e_na').value = 50; params.E_Na = 50;
-            document.getElementById('g_k').value = 36; params.g_K = 36;
-            document.getElementById('e_k').value = -77; params.E_K = -77;
-            
-            inputs.forEach(item => {
+        function updateUI() {
+             inputs.forEach(item => {
+                document.getElementById(item.id).value = params[item.param];
                 document.getElementById('val_' + item.id).textContent = params[item.param] + (item.param.includes('E') ? ' mV' : (item.param.includes('I') ? ' µA' : ' mS'));
             });
         }
+
+        inputs.forEach(item => {
+            document.getElementById(item.id).addEventListener('input', (e) => {
+                params[item.param] = parseFloat(e.target.value);
+                updateUI();
+            });
+        });
     
+        // PRESET LOGIC
+        function applyPreset(type) {
+            if(type === 'normal') {
+                params.g_Na = 120; params.E_Na = 50;
+                params.g_K = 36; params.E_K = -77;
+                params.I_ext = 10;
+            } else if (type === 'low_na') {
+                params.g_Na = 30; // Very low sodium
+                params.E_Na = 50; params.g_K = 36; params.E_K = -77;
+                params.I_ext = 10;
+            } else if (type === 'high_k') {
+                params.g_Na = 120; params.E_Na = 50;
+                params.g_K = 36; 
+                params.E_K = -40; // Raised Potassium floor
+                params.I_ext = 10;
+            }
+            updateUI();
+        }
+
         // Start
         animate();
     </script>
