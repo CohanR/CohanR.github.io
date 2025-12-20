@@ -193,11 +193,22 @@
             transition: all 0.2s;
         }
         .preset-btn:hover { background: #f0f0f0; border-color: #bbb; }
-        .preset-active { background: #e3f2fd; border-color: #2E86C1; color: #2E86C1; font-weight: 600; }
-
+        
         .na-header { color: #27ae60 !important; border-bottom-color: #27ae60 !important; }
         .k-header { color: #2980b9 !important; border-bottom-color: #2980b9 !important; }
         .input-header { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
+
+        /* Explanation Box */
+        .info-box {
+            background: #eef5fb;
+            border-left: 5px solid #2E86C1;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #444;
+        }
+        .info-box strong { color: #2E86C1; }
 
         @media (max-width: 768px) {
             .sidebar {
@@ -209,9 +220,6 @@
             main {
                 padding: 20px;
                 margin: 10px;
-            }
-            nav a {
-                margin: 5px 0;
             }
             .canvas-wrapper, .controls {
                 flex: 1 1 100%;
@@ -247,8 +255,19 @@
 
         <section>
             <h2>Interactive Hodgkin-Huxley Lab</h2>
-            <p><strong>Real-time Browser Simulation:</strong> This tool solves the Hodgkin-Huxley differential equations in real-time. Use the controls to adjust ion channel conductance or select a preset to simulate clinical conditions.</p>
             
+            <div class="info-box">
+                <p style="margin-top:0"><strong>Quick Guide:</strong>
+                <ul>
+                    <li><strong>Action Potential:</strong> The "spike" where the neuron fires.</li>
+                    <li><strong>Depolarization:</strong> Voltage rises (Sodium IN).</li>
+                    <li><strong>Hyperpolarization:</strong> Voltage falls below rest (Potassium OUT).</li>
+                    <li><strong>Na/K Difference:</strong> Sodium (Na+) drives the spike UP. Potassium (K+) drives the reset DOWN.</li>
+                </ul>
+                <em style="font-size:0.85em">Ref: Hodgkin, A. L., & Huxley, A. F. (1952). The Journal of Physiology.</em>
+                </p>
+            </div>
+
             <div class="sim-container">
                 <div class="canvas-wrapper">
                     <canvas id="simCanvas" width="600" height="350"></canvas>
@@ -304,7 +323,7 @@
                         </div>
                     </div>
                     
-                    <button onclick="resetDefaults()" style="width:100%; padding:8px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em; margin-top:10px;">Reset to Defaults (Fixes Crash)</button>
+                    <button onclick="resetDefaults()" style="width:100%; padding:8px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em; margin-top:10px;">Reset to Defaults</button>
                 </div>
             </div>
             
@@ -344,7 +363,6 @@
     </script>
 
     <script>
-        // --- 1. Physics Constants & State ---
         const params = {
             C_m: 1.0,
             g_Na: 120.0, E_Na: 50.0,
@@ -354,29 +372,21 @@
             dt: 0.05
         };
     
-        // Initial state
         let state = { V: -65.0, m: 0.05, h: 0.6, n: 0.32, t: 0 };
     
-        // Rolling buffer for plotting
         const historyLength = 800; 
         let vHistory = new Array(historyLength).fill(-65);
         let iHistory = new Array(historyLength).fill(0);
     
-        // --- 2. Math Functions (The HH Equations) ---
         function runTimeStep() {
             let { V, m, h, n } = state;
-            
-            // --- SAFETY CHECK ---
-            // If voltage is NaN or goes to infinity, reset automatically
             if (isNaN(V) || !isFinite(V) || Math.abs(V) > 500) {
-                // Return resting potential to "heal" the simulation
                 state.V = -65.0; state.m = 0.05; state.h = 0.6; state.n = 0.32;
                 return -65.0; 
             }
 
             const { g_Na, E_Na, g_K, E_K, g_L, E_L, I_ext, C_m, dt } = params;
-    
-            // Helper functions for gating variables
+            
             const alpha_n = (v) => 0.01 * (v + 55) / (1 - Math.exp(-(v + 55) / 10));
             const beta_n  = (v) => 0.125 * Math.exp(-(v + 65) / 80);
             const alpha_m = (v) => 0.1 * (v + 40) / (1 - Math.exp(-(v + 40) / 10));
@@ -384,32 +394,27 @@
             const alpha_h = (v) => 0.07 * Math.exp(-(v + 65) / 20);
             const beta_h  = (v) => 1 / (1 + Math.exp(-(v + 35) / 10));
     
-            // Currents
             const I_Na = g_Na * Math.pow(m, 3) * h * (V - E_Na);
             const I_K  = g_K  * Math.pow(n, 4) * (V - E_K);
             const I_L  = g_L  * (V - E_L);
-    
-            // Derivatives
             const dV = (I_ext - I_Na - I_K - I_L) / C_m;
             const dm = alpha_m(V) * (1 - m) - beta_m(V) * m;
             const dh = alpha_h(V) * (1 - h) - beta_h(V) * h;
             const dn = alpha_n(V) * (1 - n) - beta_n(V) * n;
-    
-            // Euler Update
+            
             state.V += dV * dt;
             state.m += dm * dt;
             state.h += dh * dt;
             state.n += dn * dt;
             state.t += dt;
-    
             return state.V;
         }
     
-        // --- 3. Animation Loop ---
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
         
-        let speedMult = 2; // Slow/Medium speed
+        // --- SPEED SETTING ---
+        let speedMult = 0.8; // Very slow speed (was 2)
     
         function animate() {
             if(canvas.width !== canvas.offsetWidth) {
@@ -424,26 +429,22 @@
                 iHistory.shift();
                 iHistory.push(params.I_ext);
             }
-            
             draw();
             requestAnimationFrame(animate);
         }
     
-        // --- 4. Drawing Logic ---
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
             const vMin = -90;
             const vMax = 60;
             const yScale = canvas.height / (vMax - vMin);
             
-            // Draw Grid
+            // Grid
             ctx.strokeStyle = '#eee';
             ctx.lineWidth = 1;
             ctx.beginPath();
             const zeroY = canvas.height - (0 - vMin) * yScale;
             ctx.moveTo(0, zeroY); ctx.lineTo(canvas.width, zeroY);
-            
             const restY = canvas.height - (-65 - vMin) * yScale;
             ctx.strokeStyle = '#ddd';
             ctx.setLineDash([5, 5]);
@@ -451,13 +452,12 @@
             ctx.stroke();
             ctx.setLineDash([]);
     
-            // Draw Voltage Trace
+            // Trace
             ctx.beginPath();
             ctx.strokeStyle = '#e74c3c';
             ctx.lineWidth = 2;
-            
             for (let i = 0; i < historyLength; i++) {
-                if (isNaN(vHistory[i])) continue; // Skip bad points
+                if (isNaN(vHistory[i])) continue;
                 const x = (i / historyLength) * canvas.width;
                 const y = canvas.height - (vHistory[i] - vMin) * yScale;
                 if (i === 0) ctx.moveTo(x, y);
@@ -465,7 +465,7 @@
             }
             ctx.stroke();
     
-            // Draw Input Current Indicator
+            // Current indicator
             ctx.beginPath();
             ctx.strokeStyle = '#3498db';
             ctx.lineWidth = 1;
@@ -480,19 +480,18 @@
             ctx.stroke();
             ctx.globalAlpha = 1.0;
 
-            // --- AXIS LABELS ---
-            ctx.fillStyle = '#777';
-            ctx.font = '12px Poppins, sans-serif';
+            // --- FIXED AXIS LABELS ---
+            ctx.fillStyle = '#444'; // Darker for visibility
+            ctx.font = 'bold 12px Poppins, sans-serif';
             // Y-Axis
             ctx.fillText("Voltage (mV)", 10, 20);
-            // X-Axis
-            ctx.fillText("Time →", canvas.width - 55, canvas.height - 10);
-            // Resting Potential Label
-            ctx.fillStyle = '#aaa';
+            // X-Axis (Moved inward to ensure visibility)
+            ctx.fillText("Time →", canvas.width - 80, canvas.height - 20);
+            // Resting Label
+            ctx.fillStyle = '#999';
             ctx.fillText("-65mV", 5, restY - 5);
         }
     
-        // --- 5. UI Interactions ---
         const inputs = [
             { id: 'i_ext', param: 'I_ext' },
             { id: 'g_na', param: 'g_Na' },
@@ -521,40 +520,27 @@
                 params.g_K = 36; params.E_K = -77;
                 params.I_ext = 10;
             } else if (type === 'low_na') {
-                params.g_Na = 30; // Very low sodium
-                params.E_Na = 50; params.g_K = 36; params.E_K = -77;
+                params.g_Na = 30; params.E_Na = 50; params.g_K = 36; params.E_K = -77;
                 params.I_ext = 10;
             } else if (type === 'high_k') {
                 params.g_Na = 120; params.E_Na = 50;
-                params.g_K = 36; 
-                params.E_K = -40; // Raised Potassium floor
+                params.g_K = 36; params.E_K = -40;
                 params.I_ext = 10;
             }
-            // Ensure physics is safe when applying preset
             state.V = -65.0; 
             updateUI();
         }
 
         function resetDefaults() {
-            // 1. Reset Parameters
             params.I_ext = 10;
             params.g_Na = 120; params.E_Na = 50;
             params.g_K = 36; params.E_K = -77;
-
-            // 2. FORCE RESET Physics State (The key fix)
-            state.V = -65.0;
-            state.m = 0.05;
-            state.h = 0.6;
-            state.n = 0.32;
-
-            // 3. Clear History so bad lines disappear immediately
+            state.V = -65.0; state.m = 0.05; state.h = 0.6; state.n = 0.32;
             vHistory.fill(-65.0);
-            
             updateUI();
         }
 
-        // Start
-        updateUI(); // Ensure labels are correct at start
+        updateUI();
         animate();
     </script>
 </body>
