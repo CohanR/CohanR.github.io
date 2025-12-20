@@ -2,44 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-  <!-- Canonical Tag -->
   <link rel="canonical" href="https://neuropsis.org/nifti_viewer.html" />
 
-  <!-- SEO Meta Tags -->
-  <meta
-    name="description"
-    content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js."
-  />
-  <meta
-    name="keywords"
-    content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan"
-  />
+  <meta name="description" content="Interactive MRI viewer by Remy Cohan – view NIfTI (.nii.gz) brain images online with anatomical labels using Papaya.js." />
+  <meta name="keywords" content="MRI viewer, NIfTI viewer, neuroimaging, brain viewer, papaya.js, neuroscience, Remy Cohan" />
   <meta name="author" content="Remy Cohan" />
 
-  <!-- Open Graph -->
   <meta property="og:title" content="Interactive MRI Viewer | Remy Cohan" />
-  <meta
-    property="og:description"
-    content="View and interact with NIfTI brain MRI files in your browser. Built using Papaya.js for neuroimaging and research applications."
-  />
+  <meta property="og:description" content="View and interact with NIfTI brain MRI files in your browser. Built using Papaya.js for neuroimaging and research applications." />
   <meta property="og:image" content="https://neuropsis.org/images/RC_profile.png" />
   <meta property="og:url" content="https://neuropsis.org/nifti_viewer.html" />
   <meta property="og:type" content="website" />
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Interactive MRI Viewer | Remy Cohan" />
-  <meta
-    name="twitter:description"
-    content="Web-based NIfTI MRI viewer for neuroimaging research with anatomical label overlays."
-  />
+  <meta name="twitter:description" content="Web-based NIfTI MRI viewer for neuroimaging research with anatomical label overlays." />
   <meta name="twitter:image" content="https://neuropsis.org/images/RC_profile.png" />
 
   <title>Interactive MRI Viewer | Remy Cohan</title>
 
-  <!-- Structured Data -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -56,149 +39,271 @@
     }
   </script>
 
-  <!-- Papaya.js Viewer -->
   <link rel="stylesheet" type="text/css" href="papaya.css?build=1456" />
   <script type="text/javascript" src="papaya.js?build=1456"></script>
 
   <style>
-    body,
-    html {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-      height: 100%;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
+    /* --- CSS Reset & Base --- */
+    :root {
+      --primary-color: #007bff;
+      --bg-color: #f8f9fa;
+      --sidebar-bg: #ffffff;
+      --text-color: #333;
     }
 
-    .container {
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      /* Prevents 'bounce' scrolling on Mac/iOS */
+      overscroll-behavior: none; 
+      overflow: hidden; /* We handle scroll internally */
+    }
+
+    /* --- Main Layout Grid --- */
+    .app-container {
+      display: grid;
+      grid-template-columns: 300px 1fr; /* Sidebar fixed, Viewer flexible */
+      grid-template-rows: 100%;
+      height: 100dvh; /* Dynamic Viewport Height for mobile browsers */
+      width: 100vw;
+    }
+
+    /* --- Sidebar Styling --- */
+    .sidebar {
+      background: var(--sidebar-bg);
+      padding: 20px;
+      border-right: 1px solid #ddd;
       display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-start;
-      height: 100vh;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 20;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+
+    .sidebar h3 { margin-top: 0; color: #444; }
+    .sidebar ol { padding-left: 20px; margin-bottom: 20px; }
+    .sidebar li { margin-bottom: 8px; font-size: 0.95rem; }
+    
+    .home-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 10px 15px;
+      background-color: var(--primary-color);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .home-button:hover { background-color: #0056b3; }
+
+    .signature {
+      margin-top: auto;
+      padding-top: 20px;
+      font-size: 0.85rem;
+      color: #888;
+      border-top: 1px solid #eee;
+    }
+
+    /* --- Viewer Area Styling --- */
+    .viewer-area {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      background: #000; /* Medical imaging background */
+    }
+
+    /* Custom Toolbar above Papaya */
+    .toolbar {
+      background: #333;
+      padding: 8px 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tool-btn {
+      background: #555;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .tool-btn:hover { background: #777; }
+    .tool-btn.primary { background: var(--primary-color); }
+    .tool-btn.primary:hover { background: #0056b3; }
+
+    /* The actual container for Papaya */
+    .papaya-wrapper {
+      flex-grow: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
 
-    .sidebar {
-      width: 25%;
-      max-width: 300px;
-      padding: 4rem 1rem 1rem;
-      background: #ffffff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      overflow-y: auto;
-    }
-
-    .content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 1rem;
-    }
-
+    /* Overwrite Papaya defaults to force full size */
     #papayaContainer {
-      width: 75%;
-      height: 65%;
-      max-width: 1200px;
-      max-height: 850px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      position: relative;
+      width: 100% !important; 
+      height: 100% !important;
+      margin: 0;
+      padding: 0;
     }
 
-    .home-button {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: #fff;
-      border-radius: 5px;
-      text-decoration: none;
-      z-index: 10;
-    }
-
-    /* Optional: slightly lighter, dark-grey signature text */
-    .signature {
-      margin-top: 1rem;
-      color: #6b7280; /* dark grey, lighter than main text */
-      text-align: left; /* keep default; change to center if you want */
-    }
-
+    /* --- Mobile Optimization --- */
     @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
+      .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto; /* Header, Viewer, Footer */
       }
+
       .sidebar {
-        display: none;
+        order: 3; /* Move instructions to bottom */
+        height: auto;
+        max-height: 25vh; /* Limit height */
+        border-right: none;
+        border-top: 1px solid #ddd;
+        padding: 15px;
       }
-      #papayaContainer {
-        width: 90%;
-        height: 50vh;
-        max-width: none;
-        max-height: none;
+
+      .home-button {
+        display: none; /* Hide home button in sidebar to save space */
       }
+      
+      /* Add a mobile header */
+      .mobile-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background: #fff;
+        border-bottom: 1px solid #ddd;
+      }
+      .mobile-home-btn {
+        text-decoration: none;
+        color: var(--primary-color);
+        font-weight: bold;
+      }
+    }
+    
+    @media (min-width: 769px) {
+      .mobile-header { display: none; }
     }
   </style>
 </head>
 <body>
-  <a href="index.html" class="home-button">Home</a>
 
-  <div class="container">
-    <!-- Sidebar -->
-    <div class="sidebar">
+  <div class="app-container">
+    
+    <div class="mobile-header">
+      <strong>MRI Viewer</strong>
+      <a href="index.html" class="mobile-home-btn">Exit</a>
+    </div>
+
+    <aside class="sidebar">
+      <a href="index.html" class="home-button">← Back to Home</a>
+      
       <h3>Instructions</h3>
-      <p>
-        This viewer is pre-loaded with the MNI 152 standard brain. Hover or click on the
-        brain to see anatomical labels.
-      </p>
-      <p>To load your own image:</p>
+      <p>This viewer is pre-loaded with the MNI 152 standard brain.</p>
+      
+      <h3>How to load your data:</h3>
       <ol>
-        <li>Click on <strong>File</strong></li>
-        <li>Click on <strong>Close ALL</strong></li>
+        <li>Click <strong>"Load New Image"</strong> in the toolbar.</li>
+        <li>Select your <code>.nii.gz</code> file.</li>
       </ol>
-      <p>
-        Drag and drop your <code>.nii.gz</code> file (or DICOM folder) or click on <strong>File</strong>
-        → <strong>Add Image</strong>.
-      </p>
+      <p><em>Use 1-finger drag to adjust contrast/brightness. Use 2-finger scroll to navigate slices.</em></p>
 
-      <!-- Keep the signature as plain text -->
-      <p class="signature">Remy Cohan (remycohan@neuropsis.org)</p>
-    </div>
+      <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
+    </aside>
 
-    <!-- Papaya Viewer -->
-    <div class="content">
-      <div id="papayaContainer"></div>
-    </div>
+    <main class="viewer-area">
+      
+      <div class="toolbar">
+        <button class="tool-btn primary" onclick="document.getElementById('file_upload').click()">📂 Load New Image</button>
+        <input type="file" id="file_upload" style="display: none;" onchange="loadFile(this)">
+        
+        <button class="tool-btn" onclick="resetView()">⟲ Reset View</button>
+        <button class="tool-btn" onclick="centerView()">🎯 Go to Center</button>
+      </div>
+
+      <div class="papaya-wrapper" id="wrapper">
+        <div id="papayaContainer"></div>
+      </div>
+
+    </main>
   </div>
 
   <script type="text/javascript">
+    // 1. Initial Parameters
     var params = {
       images: ['images/mni152.nii.gz'],
       worldSpace: true,
-      showControls: true
+      showControls: false, // We use our own toolbar, but standard controls appear on hover
+      kioskMode: true,     // Makes it fill the container better
+      noNewFiles: false    // Allow dropping files
     };
 
-    function resizePapaya() {
-      const container = document.getElementById('papayaContainer');
-      container.style.width = Math.min(window.innerWidth * 0.75, 1200) + 'px';
-      container.style.height = Math.min(window.innerHeight * 0.65, 850) + 'px';
+    // 2. Start Papaya
+    window.onload = function() {
+      papaya.Container.addViewer('papayaContainer', params);
+      
+      // Fix scroll issue immediately after load
+      setTimeout(fixScrollBehavior, 1000);
+    };
 
-      // Call Papaya's internal resize (handles proper scaling)
-      if (papaya.Container && papaya.Container.resizeViewer) {
-        papaya.Container.resizeViewer(0);
+    // 3. Custom Toolbar Functions
+    function resetView() {
+      // Access the first viewer instance and reset
+      if (papayaContainers.length > 0) {
+        papayaContainers[0].viewer.resetCoordinate();
+        papayaContainers[0].viewer.drawViewer(true);
       }
     }
 
-    window.onload = function () {
-      papaya.Container.addViewer('papayaContainer', params);
-      resizePapaya();
-    };
+    function centerView() {
+      if (papayaContainers.length > 0) {
+        var center = papayaContainers[0].viewer.volume.header.imageDimensions.map(d => Math.floor(d/2));
+        papayaContainers[0].viewer.gotoCoordinate({x: center[0], y: center[1], z: center[2]});
+      }
+    }
 
-    window.addEventListener('resize', resizePapaya);
+    // 4. File Loading Logic
+    function loadFile(input) {
+      if (input.files && input.files[0]) {
+        // Reset current viewer
+        papaya.Container.resetViewer(0, {
+          images: [input.files[0]]
+        });
+      }
+    }
+
+    // 5. THE SCROLL FIX
+    // This stops the whole page from moving when you scroll on the image
+    function fixScrollBehavior() {
+      const wrapper = document.getElementById('wrapper');
+      
+      wrapper.addEventListener('wheel', function(e) {
+        e.preventDefault(); // Stop page scroll
+      }, { passive: false });
+
+      wrapper.addEventListener('touchmove', function(e) {
+        // Allow drag inside canvas, but stop page scroll if needed
+        // Papaya handles touch internally, but this ensures safety
+        if (e.target.tagName === 'CANVAS') {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    }
   </script>
 </body>
 </html>
