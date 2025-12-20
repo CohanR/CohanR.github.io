@@ -3,212 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DICOM to NIfTI Converter | Remy Cohan</title>
-  
-  <script src="https://niivue.github.io/niivue/dist/niivue.umd.js"></script>
-
+  <title>DICOM to NIfTI Converter</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f7f9fc; color: #333; display: flex; flex-direction: column; height: 100vh; }
-    header { background: #2E86C1; color: white; text-align: center; padding: 1rem; font-size: 1.5rem; font-weight: 600; }
-    nav { display: flex; justify-content: center; gap: 20px; padding: 10px; background-color: #333; }
-    nav a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; }
-    nav a:hover { background-color: #555; }
-    
-    .main-container { display: flex; flex: 1; justify-content: center; padding: 40px 20px; gap: 40px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-    .control-panel { flex: 1; max-width: 400px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: fit-content; }
-    .preview-panel { flex: 2; background: #000; border-radius: 8px; position: relative; min-height: 400px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    
-    h2 { margin-top: 0; color: #2E86C1; }
-    
-    .drop-zone { border: 2px dashed #ccc; border-radius: 6px; padding: 30px; text-align: center; margin: 20px 0; background: #fafafa; cursor: pointer; transition: 0.2s; }
-    .drop-zone:hover { border-color: #2E86C1; background: #eef6fc; }
-    .drop-icon { font-size: 40px; color: #2E86C1; margin-bottom: 10px; }
-    
-    #file-input { display: none; }
-    
-    input[type="text"] { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-    .btn-primary { display: block; width: 100%; padding: 12px; background-color: #2E86C1; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; }
-    .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
-    
-    #status-msg { margin-top: 15px; font-size: 0.9rem; font-weight: 500; min-height: 20px; white-space: pre-wrap; padding: 10px; border-radius: 4px;}
-    .success { background: #d1fae5; color: #065f46; } 
-    .error { background: #fee2e2; color: #991b1b; } 
-    .loading { background: #ffedd5; color: #9a3412; }
-    
-    canvas { width: 100%; height: 100%; }
-    .empty-state { color: #666; }
+    body { font-family: sans-serif; margin: 40px; background: #f0f2f5; text-align: center; }
+    .box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
+    h2 { color: #007bff; margin-top: 0; }
+    button { background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+    button:disabled { background: #ccc; }
+    #status { margin-top: 20px; font-weight: bold; min-height: 20px; }
+    .error { color: red; } .success { color: green; }
   </style>
 </head>
 <body>
 
-  <header>Remy Cohan</header>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="nifti_viewer.html">Back to Viewer</a>
-  </nav>
+<div class="box">
+  <h2>DICOM to NIfTI</h2>
+  <p>Select a folder containing DICOM files (.dcm)</p>
+  
+  <input type="file" id="fileInput" multiple webkitdirectory style="display:none" onchange="processFiles(this.files)">
+  <button onclick="document.getElementById('fileInput').click()">📂 Select Folder</button>
+  <br><br>
+  
+  <div id="status">Initializing...</div>
+  <button id="saveBtn" style="display:none; background:#28a745" onclick="saveFile()">⬇ Download NIfTI</button>
+</div>
 
-  <div class="main-container">
-    <div class="control-panel">
-      <h2>DICOM to NIfTI</h2>
-      <p>Convert DICOM folders to NIfTI locally.</p>
+<script src="niivue.js" onerror="loadCloudBackup()"></script>
+
+<script>
+  let nv; 
+
+  // Backup Loader if local file fails
+  function loadCloudBackup() {
+      console.warn("Local file missing. Attempting cloud backup...");
+      const script = document.createElement('script');
+      script.src = "https://niivue.github.io/niivue/dist/niivue.umd.js";
+      script.onload = initNiivue;
+      document.head.appendChild(script);
+  }
+
+  // Initialize once library is loaded
+  window.onload = function() {
+      if (typeof niivue !== 'undefined') initNiivue();
+  };
+
+  function initNiivue() {
+      try {
+          nv = new niivue.Niivue();
+          document.getElementById('status').innerText = "✅ System Ready";
+          document.getElementById('status').className = 'success';
+      } catch (e) {
+          document.getElementById('status').innerText = "❌ Engine Error: " + e.message;
+      }
+  }
+
+  async function processFiles(fileList) {
+      if (!nv) return;
+      document.getElementById('status').innerText = "⏳ Converting...";
       
-      <div class="drop-zone" id="drop-zone">
-        <div class="drop-icon">📂</div>
-        <strong>Click or Drag Folder</strong><br>
-        <span style="font-size:0.85rem">Select the folder containing .dcm files</span>
-        <input type="file" id="file-input" multiple webkitdirectory>
-      </div>
+      try {
+          // Attempt both function names to be safe
+          if (nv.loadFromFiles) {
+              await nv.loadFromFiles(fileList);
+          } else {
+              await nv.loadFromFileList(fileList);
+          }
+          
+          if (nv.volumes.length > 0) {
+              document.getElementById('status').innerText = "✅ Conversion Complete!";
+              document.getElementById('saveBtn').style.display = 'inline-block';
+          } else {
+              throw new Error("No volume created. Check files.");
+          }
+      } catch (e) {
+          document.getElementById('status').innerText = "❌ Error: " + e.message;
+          document.getElementById('status').className = 'error';
+      }
+  }
 
-      <label>Output Filename</label>
-      <input type="text" id="filename" value="converted_brain" placeholder="e.g. subject_01">
+  function saveFile() {
+      nv.saveImage('converted_image.nii.gz');
+  }
+</script>
 
-      <button id="convert-btn" class="btn-primary" disabled>⬇ Download NIfTI</button>
-
-      <div id="status-msg">Initializing...</div>
-    </div>
-
-    <div class="preview-panel">
-        <div class="empty-state" id="empty-state"><p>Preview will appear here.</p></div>
-        <canvas id="gl"></canvas>
-    </div>
-  </div>
-
-  <script>
-    let nv;
-    const statusMsg = document.getElementById('status-msg');
-    const convertBtn = document.getElementById('convert-btn');
-    const canvas = document.getElementById('gl');
-    const emptyState = document.getElementById('empty-state');
-    const fileInput = document.getElementById('file-input');
-    const dropZone = document.getElementById('drop-zone');
-
-    // 1. Initialize Engine
-    window.onload = function() {
-        console.log("Window loaded. Checking for NiiVue...");
-        
-        // Safety Check
-        if (typeof niivue === 'undefined') {
-            setStatus("❌ Error: Library not loaded. If you have an ad-blocker, disable it for this page.", "error");
-            return;
-        }
-
-        try {
-            // Initialize
-            nv = new niivue.Niivue();
-            nv.attachTo('gl');
-            nv.setMeshProperty(0, {rgba255: [0, 0, 0, 255]});
-            setStatus("✅ System Ready.", "success");
-            console.log("NiiVue initialized successfully.");
-        } catch (e) {
-            console.error(e);
-            setStatus("❌ Graphics Error: " + e.message, "error");
-        }
-    };
-
-    // 2. Click Handler
-    dropZone.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => handleFiles(e.target.files);
-
-    // 3. Drag & Drop
-    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#2E86C1'; };
-    dropZone.ondragleave = () => { dropZone.style.borderColor = '#ccc'; };
-    
-    dropZone.ondrop = async (e) => {
-        e.preventDefault();
-        dropZone.style.borderColor = '#ccc';
-        
-        const items = e.dataTransfer.items;
-        if (items && items.length > 0) {
-            setStatus("📂 Scanning folder... please wait", "loading");
-            const files = await getAllFileEntries(items);
-            if(files.length > 0) {
-                handleFiles(files);
-            } else {
-                setStatus("❌ No files found.", "error");
-            }
-        } else {
-             handleFiles(e.dataTransfer.files);
-        }
-    };
-
-    // --- RECURSIVE SCANNER ---
-    async function getAllFileEntries(dataTransferItemList) {
-        let fileEntries = [];
-        let queue = [];
-        for (let i = 0; i < dataTransferItemList.length; i++) {
-            queue.push(dataTransferItemList[i].webkitGetAsEntry());
-        }
-        while (queue.length > 0) {
-            let entry = queue.shift();
-            if (entry) {
-                if (entry.isFile) {
-                    fileEntries.push(await readFile(entry));
-                } else if (entry.isDirectory) {
-                    let reader = entry.createReader();
-                    queue.push(...await readDir(reader));
-                }
-            }
-        }
-        return fileEntries;
-    }
-
-    function readFile(entry) { return new Promise(resolve => entry.file(file => resolve(file))); }
-    function readDir(reader) { return new Promise(resolve => reader.readEntries(entries => resolve(entries))); }
-
-    // 4. Main Processing Logic
-    async function handleFiles(fileList) {
-        if (!nv) return;
-        
-        const files = Array.from(fileList).filter(f => !f.name.startsWith('.'));
-        if (files.length === 0) return;
-
-        setStatus(`⏳ Processing ${files.length} files...`, 'loading');
-        convertBtn.disabled = true;
-        canvas.style.display = 'none';
-        emptyState.style.display = 'flex';
-
-        try {
-            // FIX: CHECK WHICH FUNCTION EXISTS
-            if (typeof nv.loadFromFiles === 'function') {
-                console.log("Using loadFromFiles");
-                await nv.loadFromFiles(files);
-            } 
-            else if (typeof nv.loadFromFileList === 'function') {
-                console.log("Using loadFromFileList");
-                await nv.loadFromFileList(files);
-            } 
-            else {
-                throw new Error("No load function found! NiiVue version: " + (niivue.version || "Unknown"));
-            }
-            
-            if (nv.volumes.length > 0) {
-                const vol = nv.volumes[0];
-                setStatus(`✅ Success! Volume: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
-                convertBtn.disabled = false;
-                
-                canvas.style.display = 'block';
-                emptyState.style.display = 'none';
-                
-                nv.setSliceType(nv.sliceTypeMultiplanar);
-            } else {
-                setStatus('❌ Files loaded, but no volume found.', 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            setStatus('❌ Error: ' + err.message, 'error');
-        }
-    }
-
-    // 5. Download
-    convertBtn.onclick = () => {
-        const name = document.getElementById('filename').value || 'converted_brain';
-        nv.saveImage(name + '.nii.gz');
-    };
-
-    function setStatus(msg, type) {
-        statusMsg.innerText = msg;
-        statusMsg.className = type;
-    }
-  </script>
 </body>
 </html>
