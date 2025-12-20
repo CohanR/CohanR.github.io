@@ -6,10 +6,10 @@
   <link rel="canonical" href="https://neuropsis.org/dicom_converter.html" />
   <title>DICOM to NIfTI Converter | Remy Cohan</title>
   
-  <script src="https://cdn.jsdelivr.net/npm/@niivue/niivue/dist/niivue.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@niivue/niivue@0.41.0/dist/niivue.umd.js"></script>
 
   <style>
-    /* --- Base Styles --- */
+    /* --- Styles --- */
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f7f9fc; color: #333; display: flex; flex-direction: column; height: 100vh; }
     header { background: #2E86C1; color: white; text-align: center; padding: 1rem; font-size: 1.5rem; font-weight: 600; }
     nav { display: flex; justify-content: center; gap: 20px; padding: 10px; background-color: #333; }
@@ -84,20 +84,16 @@
 
     // 1. Initialize Engine
     window.onload = function() {
-        // Check if library loaded
         if (typeof niivue === 'undefined') {
-            setStatus("❌ Error: Library blocked. Try disabling ad-blockers.", "error");
+            setStatus("❌ Error: Library not loaded.", "error");
             return;
         }
-
         try {
-            // Note the capital 'N' in Niivue
             nv = new niivue.Niivue();
             nv.attachTo('gl');
             setStatus("✅ System Ready.", "success");
         } catch (e) {
-            console.error(e);
-            setStatus("❌ Error initializing graphics.", "error");
+            setStatus("❌ Graphics Error.", "error");
         }
     };
 
@@ -105,7 +101,7 @@
     dropZone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => handleFiles(e.target.files);
 
-    // 3. Drag & Drop (With Folder Parsing)
+    // 3. Drag & Drop
     dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#2E86C1'; };
     dropZone.ondragleave = () => { dropZone.style.borderColor = '#ccc'; };
     
@@ -116,20 +112,18 @@
         const items = e.dataTransfer.items;
         if (items && items.length > 0) {
             setStatus("📂 Scanning folder... please wait", "loading");
-            // Recursively scan folder to get actual files
             const files = await getAllFileEntries(items);
             if(files.length > 0) {
                 handleFiles(files);
             } else {
-                setStatus("❌ No files found inside folder.", "error");
+                setStatus("❌ No files found.", "error");
             }
         } else {
              handleFiles(e.dataTransfer.files);
         }
     };
 
-    // --- HELPER: Recursive Folder Scanner ---
-    // This allows dropping a folder like "T1_Images" and getting all the .dcm files inside
+    // --- Recursive Folder Scanner ---
     async function getAllFileEntries(dataTransferItemList) {
         let fileEntries = [];
         let queue = [];
@@ -157,9 +151,7 @@
     async function handleFiles(fileList) {
         if (!nv) return;
         
-        // Filter out system files (like .DS_Store on Mac)
         const files = Array.from(fileList).filter(f => !f.name.startsWith('.'));
-
         if (files.length === 0) return;
 
         setStatus(`⏳ Processing ${files.length} files...`, 'loading');
@@ -168,24 +160,22 @@
         emptyState.style.display = 'flex';
 
         try {
-            // NiiVue can load a list of DICOM files directly and build the volume
-            await nv.loadFromFileList(files);
+            // FIX: Use 'loadFromFiles' instead of 'loadFromFileList'
+            await nv.loadFromFiles(files);
             
             if (nv.volumes.length > 0) {
                 const vol = nv.volumes[0];
-                setStatus(`✅ Success! Volume Created: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
+                setStatus(`✅ Success! Volume: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
                 convertBtn.disabled = false;
                 
                 canvas.style.display = 'block';
                 emptyState.style.display = 'none';
                 
-                // Set view to Axial
                 nv.setSliceType(nv.sliceTypeMultiplanar);
             } else {
-                setStatus('❌ Files loaded, but no valid 3D volume found.', 'error');
+                setStatus('❌ Files loaded, but no volume found.', 'error');
             }
         } catch (err) {
-            console.error(err);
             setStatus('❌ Parse Error: ' + err.message, 'error');
         }
     }
