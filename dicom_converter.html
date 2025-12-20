@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DICOM to NIfTI Converter | Remy Cohan</title>
   
+  <script src="https://niivue.github.io/niivue/dist/niivue.umd.js"></script>
+
   <style>
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f7f9fc; color: #333; display: flex; flex-direction: column; height: 100vh; }
     header { background: #2E86C1; color: white; text-align: center; padding: 1rem; font-size: 1.5rem; font-weight: 600; }
@@ -28,7 +30,7 @@
     .btn-primary { display: block; width: 100%; padding: 12px; background-color: #2E86C1; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; }
     .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
     
-    #status-msg { margin-top: 15px; font-size: 0.9rem; font-weight: 500; min-height: 20px; white-space: pre-wrap; padding: 10px; border-radius: 4px; }
+    #status-msg { margin-top: 15px; font-size: 0.9rem; font-weight: 500; min-height: 20px; white-space: pre-wrap; padding: 10px; border-radius: 4px;}
     .success { background: #d1fae5; color: #065f46; } 
     .error { background: #fee2e2; color: #991b1b; } 
     .loading { background: #ffedd5; color: #9a3412; }
@@ -62,7 +64,7 @@
 
       <button id="convert-btn" class="btn-primary" disabled>⬇ Download NIfTI</button>
 
-      <div id="status-msg">Initializing System...</div>
+      <div id="status-msg">Initializing...</div>
     </div>
 
     <div class="preview-panel">
@@ -71,9 +73,7 @@
     </div>
   </div>
 
-  <script type="module">
-    import { Niivue } from 'https://niivue.github.io/niivue/dist/niivue.es.js';
-
+  <script>
     let nv;
     const statusMsg = document.getElementById('status-msg');
     const convertBtn = document.getElementById('convert-btn');
@@ -82,18 +82,30 @@
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
 
-    // 1. Initialize
-    try {
-        nv = new Niivue();
-        nv.attachTo('gl');
-        nv.setMeshProperty(0, {rgba255: [0, 0, 0, 255]});
-        setStatus("✅ System Ready.", "success");
-    } catch (e) {
-        setStatus("❌ Failed to load graphics engine.", "error");
-        console.error(e);
-    }
+    // 1. Initialize Engine
+    window.onload = function() {
+        console.log("Window loaded. Checking for NiiVue...");
+        
+        // Safety Check
+        if (typeof niivue === 'undefined') {
+            setStatus("❌ Error: Library not loaded. If you have an ad-blocker, disable it for this page.", "error");
+            return;
+        }
 
-    // 2. Click Handlers
+        try {
+            // Initialize
+            nv = new niivue.Niivue();
+            nv.attachTo('gl');
+            nv.setMeshProperty(0, {rgba255: [0, 0, 0, 255]});
+            setStatus("✅ System Ready.", "success");
+            console.log("NiiVue initialized successfully.");
+        } catch (e) {
+            console.error(e);
+            setStatus("❌ Graphics Error: " + e.message, "error");
+        }
+    };
+
+    // 2. Click Handler
     dropZone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => handleFiles(e.target.files);
 
@@ -156,16 +168,17 @@
         emptyState.style.display = 'flex';
 
         try {
-            // --- DUAL METHOD CHECK ---
-            // This ensures it works regardless of which NiiVue version loads
+            // FIX: CHECK WHICH FUNCTION EXISTS
             if (typeof nv.loadFromFiles === 'function') {
+                console.log("Using loadFromFiles");
                 await nv.loadFromFiles(files);
             } 
             else if (typeof nv.loadFromFileList === 'function') {
+                console.log("Using loadFromFileList");
                 await nv.loadFromFileList(files);
             } 
             else {
-                throw new Error("Compatible load function not found.");
+                throw new Error("No load function found! NiiVue version: " + (niivue.version || "Unknown"));
             }
             
             if (nv.volumes.length > 0) {
@@ -182,7 +195,7 @@
             }
         } catch (err) {
             console.error(err);
-            setStatus('❌ Parse Error: ' + err.message, 'error');
+            setStatus('❌ Error: ' + err.message, 'error');
         }
     }
 
@@ -193,7 +206,7 @@
     };
 
     function setStatus(msg, type) {
-        statusMsg.textContent = msg;
+        statusMsg.innerText = msg;
         statusMsg.className = type;
     }
   </script>
