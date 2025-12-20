@@ -6,10 +6,10 @@
   <link rel="canonical" href="https://neuropsis.org/dicom_converter.html" />
   <title>DICOM to NIfTI Converter | Remy Cohan</title>
   
-  <script src="https://unpkg.com/@niivue/niivue@0.41.0/dist/niivue.umd.js"></script>
+  <script src="niivue.js"></script>
 
   <style>
-    /* --- Styles (Unchanged) --- */
+    /* --- Styles --- */
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f7f9fc; color: #333; display: flex; flex-direction: column; height: 100vh; }
     header { background: #2E86C1; color: white; text-align: center; padding: 1rem; font-size: 1.5rem; font-weight: 600; }
     nav { display: flex; justify-content: center; gap: 20px; padding: 10px; background-color: #333; }
@@ -26,7 +26,6 @@
     .drop-zone:hover { border-color: #2E86C1; background: #eef6fc; }
     .drop-icon { font-size: 40px; color: #2E86C1; margin-bottom: 10px; }
     
-    /* Input covers the zone */
     #file-input { display: none; }
     
     input[type="text"] { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
@@ -75,7 +74,6 @@
   </div>
 
   <script>
-    // Global variables
     let nv;
     const statusMsg = document.getElementById('status-msg');
     const convertBtn = document.getElementById('convert-btn');
@@ -84,82 +82,95 @@
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
 
-    // 1. Initialize NiiVue using standard window global
+    // 1. Initialize using your LOCAL file
     window.onload = function() {
         if (typeof niivue === 'undefined') {
-            setStatus("❌ Critical Error: Library failed to load.\nCheck your internet connection.", "error");
+            setStatus("❌ Error: 'niivue.js' is missing.\nDownload it and place it in this folder.", "error");
             return;
         }
 
         try {
-            // Niivue is attached to window object
             nv = new niivue.Niivue();
             nv.attachTo('gl');
             setStatus("✅ System Ready.", "success");
         } catch (e) {
             console.error(e);
-            setStatus("❌ Error initializing graphics engine.", "error");
+            setStatus("❌ Error initializing graphics.", "error");
         }
     };
 
-    // 2. Click Handlers
+    // 2. Click Handler
     dropZone.onclick = () => fileInput.click();
-    
-    fileInput.onchange = (e) => {
-        handleFiles(e.target.files);
-    };
+    fileInput.onchange = (e) => handleFiles(e.target.files);
 
-    // 3. Drag & Drop Handlers
+    // 3. Drag & Drop
     dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#2E86C1'; };
     dropZone.ondragleave = () => { dropZone.style.borderColor = '#ccc'; };
     
-    dropZone.ondrop = (e) => {
+    dropZone.ondrop = async (e) => {
         e.preventDefault();
         dropZone.style.borderColor = '#ccc';
         
-        // Handle files dropped
-        if (e.dataTransfer.files.length > 0) {
-            handleFiles(e.dataTransfer.files);
+        const items = e.dataTransfer.items;
+        if (items && items.length > 0) {
+            setStatus("📂 Scanning folder... please wait", "loading");
+            const files = await getAllFileEntries(items);
+            if(files.length > 0) handleFiles(files);
+            else setStatus("❌ No files found.", "error");
+        } else {
+             handleFiles(e.dataTransfer.files);
         }
     };
+
+    // --- HELPER: Folder Scanner ---
+    async function getAllFileEntries(dataTransferItemList) {
+        let fileEntries = [];
+        let queue = [];
+        for (let i = 0; i < dataTransferItemList.length; i++) {
+            queue.push(dataTransferItemList[i].webkitGetAsEntry());
+        }
+        while (queue.length > 0) {
+            let entry = queue.shift();
+            if (entry) {
+                if (entry.isFile) {
+                    fileEntries.push(await readFile(entry));
+                } else if (entry.isDirectory) {
+                    let reader = entry.createReader();
+                    queue.push(...await readDir(reader));
+                }
+            }
+        }
+        return fileEntries;
+    }
+
+    function readFile(entry) { return new Promise(resolve => entry.file(file => resolve(file))); }
+    function readDir(reader) { return new Promise(resolve => reader.readEntries(entries => resolve(entries))); }
 
     // 4. Main Logic
     async function handleFiles(fileList) {
         if (!nv) return;
-        
-        // Filter hidden files
         const files = Array.from(fileList).filter(f => !f.name.startsWith('.'));
-
         if (files.length === 0) return;
 
-        setStatus(`⏳ Reading ${files.length} files...`, 'loading');
-        
-        // Reset UI
+        setStatus(`⏳ Processing ${files.length} files...`, 'loading');
         convertBtn.disabled = true;
         canvas.style.display = 'none';
         emptyState.style.display = 'flex';
 
         try {
-            // Load file list directly
             await nv.loadFromFileList(files);
-            
-            // Wait for volume to populate
             if (nv.volumes.length > 0) {
                 const vol = nv.volumes[0];
-                setStatus(`✅ Loaded Volume: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
+                setStatus(`✅ Success! Volume: ${vol.dims[1]}x${vol.dims[2]}x${vol.dims[3]}`, 'success');
                 convertBtn.disabled = false;
-                
                 canvas.style.display = 'block';
                 emptyState.style.display = 'none';
-                
-                // Set Default View
                 nv.setSliceType(nv.sliceTypeMultiplanar);
             } else {
-                setStatus('❌ Files loaded, but no volume found.\nEnsure you uploaded a valid DICOM series.', 'error');
+                setStatus('❌ Failed to build volume. Check DICOM files.', 'error');
             }
         } catch (err) {
-            console.error(err);
-            setStatus('❌ Parse Error: ' + err.message, 'error');
+            setStatus('❌ Error: ' + err.message, 'error');
         }
     }
 
