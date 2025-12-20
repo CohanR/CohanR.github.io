@@ -8,9 +8,9 @@
 
   <title>DICOM to NIfTI Converter | Remy Cohan</title>
   
-  <meta name="description" content="Free online DICOM to NIfTI converter. Browser-based, secure, and fast. No server uploads required." />
+  <meta name="description" content="Free online DICOM to NIfTI converter. Browser-based, secure, and fast." />
   
-  <script src="https://niivue.github.io/niivue/features/niivue.umd.js"></script>
+  <script src="https://niivue.github.io/niivue/dist/niivue.umd.js"></script>
 
   <style>
     /* --- Base Styles --- */
@@ -25,12 +25,13 @@
       height: 100vh;
     }
 
+    /* --- Navigation --- */
     header {
       background: #2E86C1;
       color: white;
       text-align: center;
-      padding: 1.5rem 0;
-      font-size: 2rem;
+      padding: 1rem 0;
+      font-size: 1.8rem;
       font-weight: 600;
       box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
     }
@@ -53,7 +54,7 @@
     }
     nav a:hover { background-color: #555; }
 
-    /* --- Main Converter Layout --- */
+    /* --- Main Layout --- */
     .main-container {
       display: flex;
       flex-grow: 1;
@@ -109,7 +110,6 @@
     }
     .drop-icon { font-size: 40px; color: #2E86C1; margin-bottom: 10px; }
     
-    /* File Inputs (Hidden but functional) */
     #file-input { display: none; }
 
     /* --- Form Elements --- */
@@ -141,19 +141,14 @@
     .btn-primary:hover:not(:disabled) { background-color: #1a5276; }
 
     /* --- Status & Canvas --- */
-    #status-msg { margin-top: 15px; font-size: 0.9rem; min-height: 20px; }
+    #status-msg { margin-top: 15px; font-size: 0.9rem; min-height: 20px; font-weight: 500; }
     .success { color: #27ae60; }
     .error { color: #c0392b; }
     .loading { color: #e67e22; }
 
-    /* NiiVue Canvas */
     canvas { width: 100%; height: 100%; }
 
-    /* Overlay text when no image */
-    .empty-state {
-        color: #666;
-        text-align: center;
-    }
+    .empty-state { color: #666; text-align: center; }
 
     @media (max-width: 768px) {
         .main-container { flex-direction: column; }
@@ -168,27 +163,26 @@
 
   <nav>
     <a href="index.html">Home</a>
-    <a href="Projects.html">Current Projects</a>
-    <a href="nifti_viewer.html">MRI Viewer</a>
-    <a href="#" style="background:#555">DICOM Converter</a>
+    <a href="nifti_viewer.html">Back to Viewer</a>
   </nav>
 
   <div class="main-container">
     
     <div class="control-panel">
       <h2>DICOM to NIfTI</h2>
-      <p>Convert medical images entirely in your browser. Your data stays on your device and is never uploaded to a server.</p>
+      <p>Convert DICOM folders to NIfTI entirely in your browser. Data is processed locally and never uploaded.</p>
       
       <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
         <div class="drop-icon">📂</div>
         <strong>Click to Select Folder</strong><br>
-        <span style="font-size:0.85rem">or Drag & Drop DICOM files here</span>
+        <span style="font-size:0.85rem">or Drag Files here</span>
+        
         <input type="file" id="file-input" multiple webkitdirectory>
       </div>
 
       <div class="input-group">
         <label for="filename">Output Filename</label>
-        <input type="text" id="filename" value="converted_image" placeholder="e.g. subject_01">
+        <input type="text" id="filename" value="converted_brain" placeholder="e.g. subject_01">
       </div>
 
       <button id="convert-btn" class="btn-primary" disabled onclick="downloadNifti()">
@@ -208,10 +202,16 @@
   </div>
 
   <script>
-    // 1. Initialize NiiVue
-    const nv = new niivue.Niivue();
-    nv.attachTo('gl');
-    nv.setSliceType(nv.sliceTypeMultiplanar);
+    // 1. Setup NiiVue
+    let nv;
+    try {
+        nv = new niivue.Niivue();
+        nv.attachTo('gl');
+        nv.setSliceType(nv.sliceTypeMultiplanar);
+    } catch (e) {
+        document.getElementById('status-msg').innerText = "❌ Error: NiiVue library failed to load.";
+        document.getElementById('status-msg').className = 'error';
+    }
 
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
@@ -220,58 +220,63 @@
     const canvas = document.getElementById('gl');
     const emptyState = document.getElementById('empty-state');
 
-    // 2. Handle Drag & Drop Visuals
+    // 2. Drag & Drop Visuals
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropZone.classList.add('dragover');
     });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
     
+    // 3. Handle File Drop
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
         handleFiles(e.dataTransfer.files);
     });
 
-    // 3. Handle Click Selection
+    // 4. Handle Click Select
     fileInput.addEventListener('change', (e) => {
         handleFiles(e.target.files);
     });
 
-    // 4. Main Logic: Load DICOMs
+    // 5. Main Processing Logic
     async function handleFiles(fileList) {
-        if (fileList.length === 0) return;
+        if (!fileList || fileList.length === 0) return;
 
-        setStatus('⏳ Parsing DICOM files... (this may take a moment)', 'loading');
+        // Feedback to user
+        setStatus(`⏳ Processing ${fileList.length} files... Please wait.`, 'loading');
         convertBtn.disabled = true;
+        canvas.style.display = 'none';
+        emptyState.style.display = 'flex';
 
         try {
-            // NiiVue can load DICOMs directly from a list of file objects
+            // NiiVue magic: loads list of files and detects DICOM series
             await nv.loadFromFileList(fileList);
             
-            // Check if volume loaded
+            // Wait a tiny bit for volume to initialize
             if (nv.volumes.length > 0) {
-                setStatus('✅ Successfully loaded! Ready to download.', 'success');
+                setStatus(`✅ Success! Loaded ${nv.volumes[0].dims[1]}x${nv.volumes[0].dims[2]}x${nv.volumes[0].dims[3]} volume.`, 'success');
                 convertBtn.disabled = false;
                 
-                // Show Canvas, Hide Empty State
+                // Show Preview
                 canvas.style.display = 'block';
                 emptyState.style.display = 'none';
+                
+                // Trigger a resize to ensure it fits
+                nv.resizeListener();
             } else {
-                setStatus('❌ No valid 3D volume found. Are these DICOMs?', 'error');
+                setStatus('❌ No 3D volume found. Are these valid DICOMs?', 'error');
             }
         } catch (err) {
             console.error(err);
-            setStatus('❌ Error parsing files.', 'error');
+            setStatus('❌ Error: ' + err.message, 'error');
         }
     }
 
-    // 5. Download Logic
+    // 6. Download Logic
     function downloadNifti() {
-        const nameInput = document.getElementById('filename').value || 'converted_image';
-        // NiiVue has a built-in function to save the current volume as NIfTI
-        // The first argument is the volume index (usually 0)
-        // The second argument is the filename
+        const nameInput = document.getElementById('filename').value || 'converted_brain';
+        // Save the currently loaded volume
         nv.saveImage(nameInput + '.nii.gz');
     }
 
@@ -279,6 +284,11 @@
         statusMsg.textContent = msg;
         statusMsg.className = type;
     }
+    
+    // Global Error Handler to catch unexpected issues
+    window.onerror = function(message, source, lineno, colno, error) {
+        setStatus("❌ System Error: " + message, 'error');
+    };
   </script>
 
 </body>
