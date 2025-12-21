@@ -1,16 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DICOM → NIfTI converter</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neuroimaging Viewer | 3D + Multiplanar</title>
+  <style>
+    body { margin: 0; padding: 0; background: #000; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+    
+    header { 
+      background: #202020; color: #fff; padding: 10px 20px; 
+      display: flex; justify-content: space-between; align-items: center; 
+      border-bottom: 1px solid #333; height: 40px;
+    }
+    
+    h1 { margin: 0; font-size: 16px; font-weight: 500; color: #ccc; }
+    
+    .status { font-size: 14px; color: #aaa; }
+    .status.ready { color: #4caf50; }
+    
+    #drop-overlay {
+      position: absolute; top: 50px; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none; z-index: 10;
+    }
+    
+    .instruction-box {
+      background: rgba(30, 30, 30, 0.8); color: white; padding: 20px 40px;
+      border-radius: 8px; border: 2px dashed #555; text-align: center;
+    }
 
-  <!-- these MUST be local files in your repo -->
-  <link rel="stylesheet" href="./assets/niivue-dcm2niix/index-C0DiJ5au.css" />
+    /* Fullscreen Canvas */
+    canvas { width: 100%; flex: 1; outline: none; }
+  </style>
 </head>
 <body>
-  <!-- the app renders its own UI -->
-  <script type="module" src="./assets/niivue-dcm2niix/index-YL2Ui7PD.js"></script>
+
+  <header>
+    <h1>NiiVue: DICOM & NIfTI Viewer</h1>
+    <div id="status" class="status">Initializing...</div>
+  </header>
+
+  <div id="drop-overlay">
+    <div class="instruction-box">
+      <h2>Drag & Drop</h2>
+      <p>📂 DICOM Folder<br>📄 NIfTI File (.nii.gz)</p>
+    </div>
+  </div>
+
+  <canvas id="gl"></canvas>
+
+  <script type="module">
+    import { Niivue } from 'https://niivue.github.io/niivue/dist/niivue.es.js';
+
+    let nv;
+    const statusEl = document.getElementById('status');
+    const overlay = document.getElementById('drop-overlay');
+
+    // 1. Initialize
+    try {
+      nv = new Niivue({
+        dragAndDropEnabled: true,
+        backColor: [0, 0, 0, 1], // Black background
+        show3Dcrosshair: true,   // Show crosshair in 3D view
+      });
+      
+      nv.attachTo('gl');
+      
+      // Set Default View: 4-Panel (Axial, Sagittal, Coronal, 3D)
+      nv.setSliceType(nv.sliceTypeMultiplanar); 
+      
+      // Additional visual settings for the 3D render
+      nv.opts.multiplanarForceRender = true;
+      nv.setVolumeRenderOpacity(0.3); // Make 3D view transparent/glassy
+      
+      statusEl.innerText = "✅ Ready";
+      statusEl.classList.add('ready');
+      
+    } catch (e) {
+      statusEl.innerText = "❌ Error: " + e.message;
+      console.error(e);
+    }
+
+    // 2. Custom Drop Handler to Hide Overlay
+    // NiiVue handles the actual file loading automatically when dragAndDropEnabled is true.
+    // We just listen to update the UI.
+    nv.onLocationChange = (data) => {
+        statusEl.innerText = `Loaded: ${data.string}`;
+        overlay.style.display = 'none'; // Hide the "Drag & Drop" box
+        
+        // Ensure we are in 4-panel mode
+        nv.setSliceType(nv.sliceTypeMultiplanar);
+    };
+
+    // 3. Fallback: If user drags a FOLDER, NiiVue might need help finding all files
+    // This listener catches the drop event on the body to handle folders manually if needed
+    document.body.ondragover = (e) => e.preventDefault();
+    document.body.ondrop = async (e) => {
+        e.preventDefault();
+        // NiiVue's internal handler usually catches this, but for folders specifically:
+        const items = e.dataTransfer.items;
+        if (items && items.length > 0 && items[0].webkitGetAsEntry().isDirectory) {
+            statusEl.innerText = "📂 Scanning folder...";
+            const files = await scanFiles(items);
+            if(files.length > 0) {
+               await nv.loadFromFiles(files);
+               overlay.style.display = 'none';
+            }
+        }
+    };
+
+    // Helper to scan directories
+    async function scanFiles(items) {
+        let files = [];
+        let queue = [];
+        for (let i=0; i<items.length; i++) queue.push(items[i].webkitGetAsEntry());
+        
+        while (queue.length > 0) {
+            let entry = queue.shift();
+            if (entry.isFile) {
+                files.push(await new Promise(r => entry.file(r)));
+            } else if (entry.isDirectory) {
+                let reader = entry.createReader();
+                queue.push(...await new Promise(r => reader.readEntries(r)));
+            }
+        }
+        return files;
+    }
+
+  </script>
 </body>
 </html>
-
