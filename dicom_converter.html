@@ -1,247 +1,612 @@
+<!-- dicom_converter.html
+     Drop-in page for GitHub Pages.
+     Uses NiiVue + @niivue/dicom-loader (dcm2niix WASM) to convert DICOM → NIfTI locally in the browser.
+-->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DICOM → NIfTI (in-browser)</title>
+  <title>DICOM → NIfTI converter (browser-only)</title>
   <style>
-    :root { --bg:#0b0b0c; --fg:#e9e9ea; --muted:#a8a8ad; --card:#151518; --line:#2a2a30; }
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-    a { color: #9ecbff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; }
-    .top { display:flex; gap:16px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; }
-    .title { font-size: 18px; font-weight: 650; }
-    .sub { color: var(--muted); font-size: 13px; margin-top: 6px; line-height: 1.35; }
-    .grid { display:grid; grid-template-columns: 360px 1fr; gap: 14px; margin-top: 14px; }
-    @media (max-width: 900px){ .grid { grid-template-columns: 1fr; } }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
-    .card h3 { margin: 0 0 10px 0; font-size: 14px; font-weight: 650; }
-    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .btn {
-      border: 1px solid var(--line);
-      background: #1b1b20;
-      color: var(--fg);
-      border-radius: 10px;
-      padding: 9px 11px;
-      cursor: pointer;
+    :root{
+      --bg:#0b0b0c;
+      --panel:#121214;
+      --panel2:#0f0f11;
+      --border:#232326;
+      --text:#eaeaea;
+      --muted:#b8b8b8;
+      --muted2:#8a8a8a;
+      --accent:#7dd3fc;
+      --danger:#fb7185;
+      --ok:#34d399;
+      --btn:#17171a;
+      --btn2:#1c1c20;
+      --shadow: 0 10px 30px rgba(0,0,0,.45);
+      --radius:14px;
+      --radius2:10px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Layout */
+    .wrap{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+    header{
+      margin-bottom: 18px;
+    }
+    h1{
+      margin: 0 0 6px 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .sub code{
+      background: rgba(255,255,255,.06);
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .grid{
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 14px;
+      align-items: stretch;
+      min-height: 680px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card .inner{
+      padding: 14px;
+    }
+    .card h2{
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      letter-spacing:.2px;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .muted{
+      color: var(--muted2);
       font-size: 13px;
+      line-height: 1.35;
+      margin: 0 0 12px 0;
     }
-    .btn:hover { background:#23232a; }
-    .btn:disabled { opacity: 0.5; cursor:not-allowed; }
-    .hint { color: var(--muted); font-size: 12px; margin-top: 8px; line-height: 1.35; }
-    textarea {
-      width: 100%;
-      min-height: 90px;
-      resize: vertical;
-      background: #0f0f13;
-      color: var(--fg);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 12px;
-      box-sizing: border-box;
+
+    .btnrow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
-    .status {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: #101015;
-      color: var(--muted);
-      font-size: 12px;
-      white-space: pre-wrap;
-    }
-    canvas { width: 100%; height: 640px; display:block; border-radius: 12px; border: 1px solid var(--line); background: #070708; }
-    .drop {
-      margin-top: 10px;
-      padding: 10px;
+    button{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.10);
+      background: var(--btn);
+      color: var(--text);
       border-radius: 12px;
-      border: 1px dashed #3a3a44;
-      color: var(--muted);
-      font-size: 12px;
+      padding: 9px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .03s ease, background .12s ease, border-color .12s ease;
     }
-    .small { font-size: 12px; color: var(--muted); }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; background:#0f0f13; border:1px solid var(--line); padding: 1px 6px; border-radius: 7px; }
+    button:hover{ background: var(--btn2); border-color: rgba(255,255,255,.16); }
+    button:active{ transform: translateY(1px); }
+    button.primary{
+      border-color: rgba(125,211,252,.35);
+    }
+    button.danger{
+      border-color: rgba(251,113,133,.35);
+      color: #ffd7de;
+    }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .box{
+      background: rgba(0,0,0,.25);
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .box strong{ color:#fff; }
+    .small{
+      font-size: 12.5px;
+      color: var(--muted);
+      margin: 8px 0 0 0;
+    }
+
+    textarea, input[type="text"]{
+      width:100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      padding: 10px 10px;
+      font-size: 13px;
+      outline: none;
+    }
+    textarea{
+      resize: vertical;
+      min-height: 104px;
+      line-height: 1.35;
+    }
+    .hint{
+      font-size: 12px;
+      color: var(--muted2);
+      margin-top: 8px;
+    }
+
+    .status{
+      border-top: 1px solid rgba(255,255,255,.06);
+      background: rgba(0,0,0,.22);
+      padding: 10px 12px;
+      font-size: 12.5px;
+      color: var(--muted);
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.18);
+      margin-top: 3px;
+      flex: 0 0 auto;
+    }
+    .dot.ok{ background: rgba(52,211,153,.85); }
+    .dot.bad{ background: rgba(251,113,133,.85); }
+    .dot.work{ background: rgba(125,211,252,.85); }
+
+    /* Viewer */
+    .viewerHead{
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,.18);
+    }
+    .viewerHead .title{
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .viewerHead .meta{
+      font-size: 12px;
+      color: var(--muted2);
+    }
+    .viewerWrap{
+      position: relative;
+      height: calc(100% - 42px);
+      min-height: 620px;
+      background: #000;
+    }
+    canvas{
+      width: 100%;
+      height: 100%;
+      display:block;
+      outline: none;
+    }
+    .dropOverlay{
+      position:absolute;
+      inset: 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      pointer-events: none; /* becomes enabled only during drag */
+      opacity: 0;
+      transition: opacity .12s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding: 18px;
+    }
+    .dropOverlay.active{
+      opacity: 1;
+      pointer-events: auto;
+      border: 1px dashed rgba(125,211,252,.55);
+      box-shadow: 0 0 0 2px rgba(125,211,252,.12) inset;
+      background: linear-gradient(180deg, rgba(125,211,252,.10), rgba(0,0,0,.25));
+    }
+    .dropOverlay .big{
+      font-weight: 800;
+      letter-spacing:.2px;
+      margin-bottom: 6px;
+    }
+    .dropOverlay .small2{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    /* Hidden inputs */
+    input[type="file"]{ display:none; }
   </style>
 </head>
+
 <body>
   <div class="wrap">
-    <div class="top">
-      <div>
-        <div class="title">DICOM → NIfTI converter (runs in your browser)</div>
-        <div class="sub">
-          No uploads to a server: conversion happens locally using NiiVue + the <span class="kbd">dcm2niix</span> WebAssembly plugin.
-          Drop a DICOM folder onto the canvas, or load a DICOM manifest.
-        </div>
-      </div>
-      <div class="small">
-        Built with NiiVue’s DICOM loader plugin.
-      </div>
-    </div>
+    <header>
+      <h1>DICOM → NIfTI converter (runs in your browser)</h1>
+      <p class="sub">
+        No uploads to a server. Conversion happens locally using <code>NiiVue</code> + <code>@niivue/dicom-loader</code> (dcm2niix WASM).
+        Drop a DICOM folder onto the viewer, or pick a folder. You can also load a DICOM manifest (newline-separated URLs/paths).
+      </p>
+    </header>
 
     <div class="grid">
-      <div class="card">
-        <h3>1) Convert from local DICOMs</h3>
-        <div class="row">
-          <button id="btnClear" class="btn">Clear</button>
-          <button id="btnSave" class="btn" disabled>Save NIfTI</button>
+      <!-- LEFT: Controls -->
+      <section class="card">
+        <div class="inner">
+          <h2>1) Convert from local DICOMs</h2>
+
+          <div class="btnrow">
+            <button id="btnPickFolder" class="primary">Choose DICOM folder</button>
+            <button id="btnClear" class="danger">Clear</button>
+            <button id="btnSave" disabled>Save NIfTI</button>
+          </div>
+
+          <div class="box">
+            <div class="muted" style="margin:0;">
+              <strong>Fast path:</strong> drag-and-drop a <strong>folder</strong> of DICOM slices onto the black viewer on the right.
+              <div class="small">
+                If Chrome opens a blank tab, your drop is landing outside the viewer. Drop directly onto the viewer (or use “Choose DICOM folder”).
+              </div>
+            </div>
+          </div>
+
+          <p class="muted" style="margin-top:14px;">
+            2) Load a DICOM manifest (URLs)
+          </p>
+          <textarea id="manifestText" placeholder="Paste a manifest URL here (e.g., ./data/my_series_manifest.txt)&#10;or multiple URLs/paths, one per line"></textarea>
+
+          <div class="btnrow" style="margin-top:10px;">
+            <button id="btnLoadManifestUrl">Load manifest URL(s)</button>
+            <button id="btnLoadManifestFile">Load manifest file</button>
+          </div>
+
+          <div class="hint">
+            A “manifest” is a plain text file listing relative URLs/paths to each DICOM slice (one per line) in order.
+          </div>
+
+          <input id="folderInput" type="file" webkitdirectory directory multiple />
+          <input id="manifestFileInput" type="file" accept=".txt" />
         </div>
 
-        <div class="drop">
-          <div><strong>Fast path:</strong> drag-and-drop a DICOM folder onto the canvas.</div>
-          <div class="hint">Tip: some browsers require dropping the folder itself (not individual files). If it fails, try Chrome/Edge.</div>
+        <div class="status">
+          <div id="statusDot" class="dot"></div>
+          <div id="statusText">Ready.</div>
         </div>
+      </section>
 
-        <div class="status" id="status">Initialising…</div>
-
-        <hr style="border:0;border-top:1px solid var(--line);margin:12px 0;" />
-
-        <h3>2) Load a DICOM manifest (URLs)</h3>
-        <div class="hint">
-          A “manifest” is a text file listing relative URLs to each DICOM slice in a series. You can host it in your repo and point to it here.
+      <!-- RIGHT: Viewer -->
+      <section class="card">
+        <div class="viewerHead">
+          <div>
+            <div class="title">Viewer</div>
+            <div class="meta" id="viewerMeta">No volume loaded</div>
+          </div>
+          <div class="meta" id="buildMeta"></div>
         </div>
-        <textarea id="manifestUrl" placeholder="Paste a manifest URL here (e.g., ./data/my_series_manifest.txt)"></textarea>
-        <div class="row" style="margin-top:10px;">
-          <button id="btnLoadManifestUrl" class="btn">Load manifest URL</button>
-          <input id="manifestFile" type="file" accept=".txt" style="display:none" />
-          <button id="btnPickManifestFile" class="btn">Load manifest file</button>
+        <div class="viewerWrap" id="viewerWrap">
+          <canvas id="niivue-canvas" tabindex="0"></canvas>
+          <div class="dropOverlay" id="dropOverlay">
+            <div>
+              <div class="big">Drop your DICOM folder here</div>
+              <div class="small2">Conversion stays on your machine. Large series can take a bit.</div>
+            </div>
+          </div>
         </div>
-
-        <div class="hint">
-          If you need to create manifests: they are just newline-separated paths/URLs to the DICOM files in order.
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Viewer</h3>
-        <canvas id="gl"></canvas>
-        <div class="hint">
-          Controls: scroll to zoom, click-drag to pan/rotate (depending on layout). If you loaded a series successfully, you can export it with <span class="kbd">Save NIfTI</span>.
-        </div>
-      </div>
+      </section>
     </div>
   </div>
 
   <script type="module">
-    import { Niivue } from "https://esm.sh/@niivue/niivue";
-    import { dicomLoader } from "https://esm.sh/@niivue/dicom-loader";
+    // Versions: align with current docs (API v0.66.0 shown on site).
+    // If you update these, update both imports together.
+    import { Niivue } from "https://esm.sh/@niivue/niivue@0.66.0";
+    import { dicomLoader } from "https://esm.sh/@niivue/dicom-loader@1.0.0";
 
-    const statusEl = document.getElementById("status");
-    const btnSave = document.getElementById("btnSave");
-    const btnClear = document.getElementById("btnClear");
-    const btnLoadManifestUrl = document.getElementById("btnLoadManifestUrl");
-    const btnPickManifestFile = document.getElementById("btnPickManifestFile");
-    const manifestFile = document.getElementById("manifestFile");
-    const manifestUrl = document.getElementById("manifestUrl");
+    const $ = (id) => document.getElementById(id);
 
-    function setStatus(msg) {
-      statusEl.textContent = msg;
+    const statusDot = $("statusDot");
+    const statusText = $("statusText");
+    const viewerMeta = $("viewerMeta");
+    const buildMeta = $("buildMeta");
+    const dropOverlay = $("dropOverlay");
+
+    const btnPickFolder = $("btnPickFolder");
+    const btnClear = $("btnClear");
+    const btnSave = $("btnSave");
+    const btnLoadManifestUrl = $("btnLoadManifestUrl");
+    const btnLoadManifestFile = $("btnLoadManifestFile");
+
+    const folderInput = $("folderInput");
+    const manifestText = $("manifestText");
+    const manifestFileInput = $("manifestFileInput");
+    const canvas = $("niivue-canvas");
+    const viewerWrap = $("viewerWrap");
+
+    let nv = null;
+    let lastSuggestedName = "converted.nii.gz";
+
+    function setStatus(kind, msg){
+      statusDot.className = "dot" + (kind ? " " + kind : "");
+      statusText.textContent = msg;
     }
 
-    // --- Initialise NiiVue
-    const nv = new Niivue({
-      // keep defaults; you can tweak if you want
-    });
-
-    // Attach to canvas (async in modern NiiVue builds)
-    await nv.attachToCanvas(document.getElementById("gl"));
-
-    // Register the DICOM loader plugin (enables DICOM + manifest loading, and folder drag/drop support)
-    nv.useDicomLoader({ loader: dicomLoader });
-
-    // Helper: enable "Save" if a volume exists
-    function refreshButtons() {
-      const hasVolume = Array.isArray(nv.volumes) && nv.volumes.length > 0;
-      btnSave.disabled = !hasVolume;
+    function getLoadedVolume(){
+      // Niivue keeps volumes in nv.volumes (array). We only care about the first one here.
+      if (!nv) return null;
+      if (!Array.isArray(nv.volumes) || nv.volumes.length < 1) return null;
+      return nv.volumes[0] ?? null;
     }
 
-    // Hook into some typical lifecycle moments
-    nv.onImageLoaded = () => {
-      refreshButtons();
-      setStatus(`Loaded.\nVolumes: ${nv.volumes?.length ?? 0}\nYou can now click “Save NIfTI”.`);
-    };
+    function updateUI(){
+      const vol = getLoadedVolume();
+      const hasVol = !!vol;
 
-    nv.onError = (e) => {
-      console.error(e);
-      setStatus(`Error:\n${e?.message ?? e}`);
-      refreshButtons();
-    };
+      btnSave.disabled = !hasVol;
 
-    setStatus(
-      "Ready.\n\nOption A: Drag-and-drop a DICOM folder onto the canvas.\n" +
-      "Option B: Load a manifest (URL or local .txt)."
-    );
-
-    // --- Buttons
-    btnClear.addEventListener("click", () => {
-      try {
-        // Remove all volumes safely
-        if (Array.isArray(nv.volumes)) {
-          for (let i = nv.volumes.length - 1; i >= 0; i--) nv.removeVolumeByIndex(i);
-        }
-        nv.updateGLVolume();
-        refreshButtons();
-        setStatus("Cleared.");
-      } catch (e) {
-        console.error(e);
-        setStatus(`Clear failed:\n${e?.message ?? e}`);
+      if (!hasVol){
+        viewerMeta.textContent = "No volume loaded";
+        return;
       }
+
+      // Try to display something sensible.
+      const name = vol?.name || vol?.hdr?.name || "volume";
+      viewerMeta.textContent = `Loaded: ${name}`;
+      // Use the file name as default download suggestion.
+      if (typeof name === "string" && name.trim().length){
+        // If already .nii, suggest .nii.gz
+        const base = name.replace(/\.(nii|nii\.gz|dcm|dicom)$/i, "");
+        lastSuggestedName = `${base}.nii.gz`;
+      }
+    }
+
+    async function init(){
+      setStatus("", "Initialising viewer…");
+
+      nv = new Niivue({
+        backColor: [0, 0, 0, 1],
+        textHeight: 0.04
+      });
+
+      // Register the DICOM loader (required for DICOM + folder drop handling).
+      // This matches the NiiVue docs for DICOM loading. :contentReference[oaicite:0]{index=0}
+      nv.useDicomLoader({ loader: dicomLoader });
+
+      // Attach viewer.
+      await nv.attachToCanvas(canvas);
+
+      // Keep drag-and-drop enabled (default is true, but be explicit).
+      nv.opts.dragAndDropEnabled = true;
+
+      // A simple default view.
+      nv.setSliceType(nv.sliceTypeMultiplanar || 3); // fallback if enums change
+      nv.drawScene();
+
+      // Helpful metadata.
+      buildMeta.textContent = "NiiVue + dicom-loader (dcm2niix WASM)";
+      setStatus("ok", "Ready. Drop a DICOM folder onto the viewer.");
+      updateUI();
+
+      // Listen for Niivue load events if present.
+      // Not all builds expose the same callbacks, so keep it defensive.
+      if (typeof nv.onImageLoaded === "function") {
+        const prev = nv.onImageLoaded;
+        nv.onImageLoaded = (...args) => {
+          try { prev(...args); } catch {}
+          updateUI();
+        };
+      }
+
+      // Make the whole viewer area a safe drop target:
+      // - Prevent the browser from navigating away (your white new-tab issue)
+      // - Forward the event to Niivue's built-in drop handler (dropListener) :contentReference[oaicite:1]{index=1}
+      const prevent = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+
+      const onDragEnter = (e) => {
+        prevent(e);
+        dropOverlay.classList.add("active");
+      };
+
+      const onDragOver = (e) => {
+        prevent(e);
+        dropOverlay.classList.add("active");
+      };
+
+      const onDragLeave = (e) => {
+        prevent(e);
+        // Only hide when leaving the viewer area (not when moving between children).
+        if (e.target === viewerWrap || e.target === canvas) {
+          dropOverlay.classList.remove("active");
+        }
+      };
+
+      const onDrop = async (e) => {
+        prevent(e);
+        dropOverlay.classList.remove("active");
+
+        try{
+          setStatus("work", "Loading dropped data…");
+          // Forward the real drop event to Niivue so it can handle DICOM folders properly.
+          await nv.dropListener(e);
+          setStatus("ok", "Loaded.");
+          updateUI();
+        } catch (err){
+          console.error(err);
+          setStatus("bad", "Drop failed. Try dropping directly onto the black viewer, or use “Choose DICOM folder”.");
+        }
+      };
+
+      // Bind to viewer wrap and canvas.
+      [viewerWrap, canvas].forEach((el) => {
+        el.addEventListener("dragenter", onDragEnter);
+        el.addEventListener("dragover", onDragOver);
+        el.addEventListener("dragleave", onDragLeave);
+        el.addEventListener("drop", onDrop);
+      });
+
+      // Also prevent the window from hijacking drops (this is what causes navigation/new blank tab).
+      // We *do not* forward these to Niivue unless it happens over the viewer.
+      window.addEventListener("dragover", (e) => e.preventDefault());
+      window.addEventListener("drop", (e) => e.preventDefault());
+    }
+
+    // Convert folder picker → synthetic drop event (so Niivue uses the same robust path).
+    async function handleFolderPicked(files){
+      if (!files || files.length < 1) return;
+
+      // Build a DataTransfer that Niivue's dropListener can understand.
+      // Chrome/Edge support programmatic DataTransfer; Safari may be limited.
+      const dt = new DataTransfer();
+      for (const f of files) dt.items.add(f);
+
+      const syntheticEvent = new DragEvent("drop", {
+        dataTransfer: dt,
+        bubbles: true,
+        cancelable: true
+      });
+
+      try{
+        setStatus("work", `Loading ${files.length} file(s)…`);
+        await nv.dropListener(syntheticEvent);
+        setStatus("ok", "Loaded.");
+        updateUI();
+      } catch (err){
+        console.error(err);
+        setStatus("bad", "Folder load failed. If this is Safari, use Chrome/Edge for folder-based DICOM conversion.");
+      }
+    }
+
+    // Load manifest URL(s) (newline-separated). Uses Niivue's loadDicoms with isManifest.
+    // This matches the NiiVue docs for DICOM manifests. :contentReference[oaicite:2]{index=2}
+    async function loadManifestUrls(lines){
+      const urls = lines
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if (urls.length < 1){
+        setStatus("bad", "No manifest URL/path provided.");
+        return;
+      }
+
+      try{
+        setStatus("work", "Loading manifest…");
+        // Load sequentially so status is predictable.
+        for (const url of urls){
+          await nv.loadDicoms([{ url, isManifest: true }]);
+        }
+        setStatus("ok", "Loaded manifest.");
+        updateUI();
+      } catch (err){
+        console.error(err);
+        setStatus("bad", "Manifest load failed. Check the path/URL and ensure it’s accessible from this site.");
+      }
+    }
+
+    // Buttons
+    btnPickFolder.addEventListener("click", () => folderInput.click());
+
+    folderInput.addEventListener("change", async () => {
+      const files = Array.from(folderInput.files || []);
+      // Reset input so picking the same folder again still fires change.
+      folderInput.value = "";
+      await handleFolderPicked(files);
     });
 
-    btnSave.addEventListener("click", () => {
-      try {
-        // Save the currently loaded base volume as NIfTI
-        // (If you want a different name per series, change this.)
-        nv.saveImage({ filename: "converted.nii" });
-        setStatus("Export started (download should appear).");
-      } catch (e) {
-        console.error(e);
-        setStatus(`Save failed:\n${e?.message ?? e}`);
+    btnClear.addEventListener("click", () => {
+      try{
+        if (!nv) return;
+        nv.volumes = [];
+        nv.meshes = [];
+        nv.drawScene();
+      } catch {}
+      setStatus("ok", "Cleared.");
+      updateUI();
+    });
+
+    btnSave.addEventListener("click", async () => {
+      const vol = getLoadedVolume();
+      if (!vol){
+        setStatus("bad", "Nothing to save.");
+        return;
+      }
+      try{
+        setStatus("work", "Preparing download…");
+        // NVImage.saveToDisk triggers a browser download.
+        // (Method exists on NVImage in NiiVue builds.) :contentReference[oaicite:3]{index=3}
+        await vol.saveToDisk(lastSuggestedName);
+        setStatus("ok", `Saved: ${lastSuggestedName}`);
+      } catch (err){
+        console.error(err);
+        setStatus("bad", "Save failed in this browser build. If it keeps failing, try Chrome/Edge.");
       }
     });
 
     btnLoadManifestUrl.addEventListener("click", async () => {
-      const url = (manifestUrl.value || "").trim();
-      if (!url) {
-        setStatus("Paste a manifest URL first.");
-        return;
-      }
-      try {
-        setStatus(`Loading manifest:\n${url}\n\nWorking…`);
-        await nv.loadDicoms([{ url, isManifest: true }]);
-        refreshButtons();
-      } catch (e) {
-        console.error(e);
-        setStatus(`Manifest load failed:\n${e?.message ?? e}`);
-        refreshButtons();
-      }
+      const lines = manifestText.value.split(/\r?\n/);
+      await loadManifestUrls(lines);
     });
 
-    btnPickManifestFile.addEventListener("click", () => manifestFile.click());
+    btnLoadManifestFile.addEventListener("click", () => manifestFileInput.click());
 
-    manifestFile.addEventListener("change", async (ev) => {
-      const file = ev.target.files?.[0];
+    manifestFileInput.addEventListener("change", async () => {
+      const file = (manifestFileInput.files || [])[0];
+      manifestFileInput.value = "";
       if (!file) return;
 
-      try {
-        // Read manifest text, turn it into a blob URL, and load it as a manifest.
-        setStatus(`Reading manifest file:\n${file.name}\n\nWorking…`);
+      try{
         const text = await file.text();
-        const blobUrl = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-        await nv.loadDicoms([{ url: blobUrl, isManifest: true }]);
-        URL.revokeObjectURL(blobUrl);
-        refreshButtons();
-      } catch (e) {
-        console.error(e);
-        setStatus(`Manifest file load failed:\n${e?.message ?? e}`);
-        refreshButtons();
+        manifestText.value = text.trim();
+        const lines = text.split(/\r?\n/);
+        await loadManifestUrls(lines);
+      } catch (err){
+        console.error(err);
+        setStatus("bad", "Could not read manifest file.");
       }
     });
 
-    // Initial refresh
-    refreshButtons();
+    // Start
+    init().catch((err) => {
+      console.error(err);
+      setStatus("bad", "Failed to initialise. Check the browser console for details.");
+    });
   </script>
 </body>
 </html>
