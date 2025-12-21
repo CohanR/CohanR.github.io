@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>NiiVue Pro (Module Version)</title>
+  <title>NiiVue Pro (Fixed 0.57.0)</title>
   
   <style>
     body { margin: 0; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; background: #000; color: #fff; overflow: hidden; }
@@ -46,7 +46,7 @@
     <div class="dropdown">
       <button class="dropbtn">File ▼</button>
       <div class="dropdown-content">
-        <a onclick="openFile()">📂 Open Folder...</a>
+        <a onclick="openFile()">📂 Open Folder/Files...</a>
         <a onclick="saveScreenshot()">📷 Screenshot</a>
       </div>
     </div>
@@ -79,9 +79,10 @@
   <main>
     <div id="overlay">
       <div class="msg-box">
-        <h2>Drag DICOM Folder Here</h2>
-        <input type="file" id="fileInput" multiple webkitdirectory style="display:none">
-        <button onclick="document.getElementById('fileInput').click()" style="padding:10px 20px; cursor:pointer;">Browse Folder</button>
+        <h2>Drag Files Here</h2>
+        <p style="font-size:12px; color:#999">Supports NIfTI and single DICOMs</p>
+        <input type="file" id="fileInput" multiple style="display:none">
+        <button onclick="document.getElementById('fileInput').click()" style="padding:10px 20px; cursor:pointer;">Browse Files</button>
       </div>
     </div>
     <canvas id="gl"></canvas>
@@ -90,7 +91,6 @@
   <footer id="intensity">Ready.</footer>
 
   <script type="module" async>
-    // Import exactly as shown in the "Usage > Basic" docs
     import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 
     const statusEl = document.getElementById("intensity");
@@ -98,21 +98,21 @@
     
     // Initialize
     const nv = new Niivue({
-      dragAndDropEnabled: false, // We handle drop manually to support folders
+      dragAndDropEnabled: true, // We allow NiiVue's internal handler to work
       onLocationChange: (data) => { statusEl.innerHTML = data.string; }
     });
     
     await nv.attachTo("gl");
     
-    // Set Defaults (4-Panel View)
+    // Set Defaults
     nv.setSliceType(nv.sliceTypeMultiplanar);
     nv.opts.multiplanarForceRender = true;
     nv.setMeshProperty(0, {rgba255: [0, 0, 0, 255]});
     
-    // Show overlay
+    // Show overlay initially
     overlay.classList.add('active');
 
-    // --- EXPOSE FUNCTIONS TO HTML (Required for Modules) ---
+    // --- EXPOSE FUNCTIONS (UI) ---
     window.setSlice = (type) => {
         if(type === 'multi') {
             nv.opts.multiplanarShowRender = true;
@@ -145,54 +145,33 @@
 
     window.openFile = () => document.getElementById('fileInput').click();
 
-    // --- DRAG & DROP HANDLING ---
-    document.body.addEventListener('dragover', (e) => { e.preventDefault(); overlay.classList.add('active'); });
-    document.body.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        const items = e.dataTransfer.items;
-        if (items && items.length > 0) {
-            statusEl.innerText = "Scanning folder...";
-            const files = await scanFiles(items);
-            if(files.length > 0) { 
-                loadFiles(files); 
-                overlay.classList.remove('active'); 
-            }
-        }
+    // --- DRAG & DROP UI HIDING ---
+    // We let NiiVue handle the actual loading, we just hide the overlay when something is dropped
+    document.body.addEventListener('drop', (e) => {
+        overlay.classList.remove('active');
+        statusEl.innerText = "Loading dropped files...";
     });
 
-    // File Input
-    document.getElementById('fileInput').onchange = (e) => {
-        overlay.classList.remove('active');
-        loadFiles(e.target.files);
-    };
-
-    async function loadFiles(fileList) {
-        const files = Array.from(fileList).filter(f => !f.name.startsWith('.'));
+    // --- FILE INPUT HANDLING (FIXED) ---
+    document.getElementById('fileInput').onchange = async (e) => {
+        const files = e.target.files;
         if (files.length === 0) return;
+        
+        overlay.classList.remove('active');
         statusEl.innerText = `Loading ${files.length} files...`;
         
         try {
-            await nv.loadFromFiles(files);
+            // FIX: Using loadFromFile (singular) in a loop because loadFromFiles is gone in 0.57.0
+            for (const file of files) {
+                if(file.name.startsWith('.')) continue; // skip hidden files
+                await nv.loadFromFile(file); 
+            }
             statusEl.innerText = "Loaded.";
         } catch (err) {
             statusEl.innerText = "Error: " + err.message;
+            console.error(err);
         }
-    }
-
-    async function scanFiles(items) {
-        let files = [];
-        let queue = [];
-        for (let i=0; i<items.length; i++) queue.push(items[i].webkitGetAsEntry());
-        while (queue.length > 0) {
-            let entry = queue.shift();
-            if (entry.isFile) files.push(await new Promise(r => entry.file(r)));
-            else if (entry.isDirectory) {
-                let reader = entry.createReader();
-                queue.push(...await new Promise(r => reader.readEntries(r)));
-            }
-        }
-        return files;
-    }
+    };
   </script>
 </body>
 </html>
