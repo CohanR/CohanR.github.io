@@ -1,664 +1,596 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Neuromodulation Explainers | Neuropsis</title>
+
+  <title>Remy Cohan | MNI Atlas + Mesh Viewer | Neuropsis</title>
+  <meta name="description" content="Local-only neuroimaging viewer by Remy Cohan (Neuropsis). Preloaded 3D brain mesh with optional atlas labels. Load your own NIfTI locally. Nothing uploads." />
+  <meta name="keywords" content="Remy Cohan, Neuropsis, NIfTI viewer, neuroimaging, atlas viewer, 3D brain, mesh, TMS" />
+  <meta name="author" content="Remy Cohan" />
+  <link rel="canonical" href="https://www.neuropsis.org/tms_visualiser.html" />
+
+  <meta property="og:title" content="Remy Cohan | MNI Atlas + Mesh Viewer" />
+  <meta property="og:description" content="Local-only: preloaded 3D brain mesh + optional atlas labels. Load your own NIfTI. Nothing uploads." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.neuropsis.org/tms_visualiser.html" />
+
   <style>
     :root{
-      --bg:#0b0f14;
-      --panel:#101826;
-      --panel2:#0e1522;
-      --text:#e7eef7;
-      --muted:#9fb0c2;
-      --line:#223247;
-      --accent:#20c997;
-      --accent2:#6f42c1;
-      --btn:#152236;
-      --btnh:#1b2c45;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      --bg:#05070a;
+      --panel:#0b1017;
+      --line:#101827;
+      --text:#e7eefc;
+      --muted:#9fb0cb;
+      --accent:#7aa2ff;
+      --danger:#ff6b6b;
+      --ok:#4be38a;
+      --shadow:0 12px 40px rgba(0,0,0,.45);
+      --radius:18px;
     }
     *{box-sizing:border-box}
-    body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text)}
-    header{
-      padding:18px 18px 12px;
-      border-bottom:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(16,24,38,0.9), rgba(11,15,20,0.9));
-      position:sticky; top:0; z-index:5;
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 700px at 20% 0%, #0a1330 0%, rgba(10,19,48,0) 60%),
+        radial-gradient(900px 600px at 85% 10%, #0a2a24 0%, rgba(10,42,36,0) 55%),
+        var(--bg);
+      color:var(--text);
     }
-    header h1{margin:0 0 6px; font-size:18px}
-    header p{margin:0; color:var(--muted); font-size:13px; line-height:1.35}
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      padding:14px;
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap:14px;
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px 22px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,0));
+      position:sticky;
+      top:0;
+      backdrop-filter: blur(10px);
+      z-index: 50;
     }
-    .card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    .brand{display:flex; flex-direction:column; gap:2px;}
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
-    .card h2{margin:0 0 10px; font-size:14px; font-weight:650}
-    .small{font-size:12px; color:var(--muted); line-height:1.35}
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:#ff3b3b;
+      box-shadow:0 0 0 4px rgba(255,59,59,.12);
+      flex:0 0 auto;
+    }
+    .brand .sub{color:var(--muted); font-size:12.5px;}
+    .navbtns{display:flex; gap:10px; align-items:center;}
+
     .btn{
-      appearance:none; border:1px solid var(--line);
-      background:var(--btn); color:var(--text);
-      padding:9px 10px; border-radius:10px;
-      cursor:pointer; font-size:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(16,24,39,.65);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:13px;
       transition:.15s ease;
       user-select:none;
     }
-    .btn:hover{background:var(--btnh)}
-    .btn.primary{border-color:rgba(32,201,151,.6); background:rgba(32,201,151,.12)}
-    .btn.purple{border-color:rgba(111,66,193,.6); background:rgba(111,66,193,.12)}
-    .btn:active{transform:translateY(1px)}
-    label{font-size:12px; color:var(--muted)}
-    input[type="range"]{width:100%}
-    .field{
-      margin-top:10px;
-      padding:10px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:var(--panel2);
+    .btn:hover{transform: translateY(-1px); border-color: rgba(122,162,255,.35)}
+    .btn.ghost{background:transparent}
+    .btn.primary{border-color: rgba(122,162,255,.35)}
+    .statuspill{
+      margin-left:10px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
+      font-size:12.5px;
+      color:var(--muted);
+      white-space:nowrap;
     }
-    .kv{
+
+    .wrap{
       display:grid;
-      grid-template-columns: 150px 1fr;
-      gap:8px 10px;
-      align-items:center;
-      font-size:12px;
+      grid-template-columns: 360px 1fr;
+      gap:18px;
+      padding:18px;
+      max-width: 1500px;
+      margin:0 auto;
     }
-    .mono{font-family:var(--mono)}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
-    .tab{
-      padding:8px 10px; border-radius:10px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      font-size:12px; cursor:pointer; color:var(--muted);
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
-    .tab.active{color:var(--text); border-color:rgba(32,201,151,.6); background:rgba(32,201,151,.10)}
-    .stage{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:14px;
-      overflow:hidden;
-      min-height: 640px;
+    .controls{padding:16px;}
+    .controls h2{
+      margin:0 0 10px;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:700;
+      letter-spacing:.2px;
     }
-    .stageTop{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px 12px;
-      border-bottom:1px solid var(--line);
-      background:rgba(0,0,0,.12);
-    }
-    .stageTop .hint{font-size:12px; color:var(--muted)}
-    .stageBody{padding:12px}
-    canvas{width:100%; height:420px; border:1px solid var(--line); border-radius:12px; background:var(--panel2)}
-    .twoCol{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px}
-    .box{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.02);
-      border-radius:12px;
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .spacer{height:14px}
+    label{font-size:12.5px; color:var(--muted)}
+    input[type="range"]{width:100%}
+    input[type="file"]{width:100%; color:var(--muted)}
+    .kv{font-size:12.5px; color:var(--muted); line-height:1.45;}
+    .kv .bad{color:var(--danger); font-weight:700}
+    .kv .ok{color:var(--ok); font-weight:700}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+
+    .viewer{
       padding:10px;
-      min-height:110px;
+      display:flex;
+      flex-direction:column;
+      min-height: 720px;
     }
-    .box h3{margin:0 0 8px; font-size:12px; color:var(--muted); font-weight:650}
-    .footerNote{padding:10px 14px 20px; max-width:1200px; margin:0 auto; color:var(--muted); font-size:12px; line-height:1.4}
+    #glwrap{
+      position:relative;
+      flex:1;
+      border-radius: calc(var(--radius) - 6px);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      background: #000;
+    }
+    canvas{display:block; width:100%; height:100%}
+    .overlayBottom{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px 12px;
+      color:var(--muted);
+      font-size:12.5px;
+    }
   </style>
+
+  <!-- Load local UMD (your repo). We also do a JS fallback if it initialises weirdly. -->
+  <script src="/assets/vendor/niivue/niivue.umd.js?v=0.66.0"></script>
 </head>
+
 <body>
-<header>
-  <h1>🧠 Neuromodulation Explainers</h1>
-  <p>
-    Interactive, no-data demos to build intuition for stimulus timing and dosing.
-    Everything runs locally in your browser.
-  </p>
-</header>
-
-<div class="wrap">
-  <aside class="card">
-    <h2>Choose a module</h2>
-    <div class="tabs" role="tablist">
-      <div class="tab active" id="tabTBS">iTBS vs cTBS</div>
-      <div class="tab" id="tabDose">Distance & dose</div>
-      <div class="tab" id="tabDesign">Design intuition</div>
+  <header class="topbar">
+    <div class="brand">
+      <h1><span class="dot"></span>MNI Atlas + Mesh Viewer</h1>
+      <div class="sub">Remy Cohan • Neuropsis • local-only • 3-plane / 3D / 4-panel</div>
     </div>
-
-    <div class="field">
-      <label><strong>Playback</strong></label>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px">
-        <button class="btn primary" id="playBtn">Play</button>
-        <button class="btn" id="pauseBtn">Pause</button>
-        <button class="btn" id="resetBtn">Reset</button>
-      </div>
-      <div style="margin-top:10px">
-        <label>Speed</label>
-        <input type="range" id="speed" min="0.25" max="3" step="0.05" value="1" />
-      </div>
+    <div class="navbtns">
+      <button class="btn" id="homeBtn">Home</button>
+      <button class="btn ghost" id="backBtn">Back</button>
+      <span class="statuspill" id="pill">Starting…</span>
     </div>
+  </header>
 
-    <div class="field" id="controlsTBS">
-      <label><strong>TBS parameters (canonical defaults)</strong></label>
+  <main class="wrap">
+    <section class="panel controls">
+      <h2>Controls</h2>
 
-      <div style="margin-top:10px">
-        <label>Total pulses</label>
-        <input type="range" id="pulses" min="300" max="1200" step="50" value="600" />
-      </div>
-
-      <div style="margin-top:10px">
-        <label>Burst frequency (Hz)</label>
-        <input type="range" id="burstHz" min="30" max="60" step="1" value="50" />
+      <div class="row">
+        <button class="btn primary" id="addAtlasBtn">Add atlas labels</button>
+        <button class="btn ghost" id="clearBtn">Clear</button>
       </div>
 
-      <div style="margin-top:10px">
-        <label>Theta frequency (Hz)</label>
-        <input type="range" id="thetaHz" min="3" max="8" step="0.5" value="5" />
+      <div class="spacer"></div>
+
+      <div class="row">
+        <button class="btn ghost" id="mode2dBtn">3-plane</button>
+        <button class="btn ghost" id="mode3dBtn">3D</button>
+        <button class="btn" id="mode4Btn">4-panel</button>
       </div>
 
-      <div style="margin-top:10px">
-        <label>iTBS: on/off cycle (s)</label>
-        <input type="range" id="cycle" min="4" max="20" step="1" value="10" />
+      <div class="spacer"></div>
+
+      <label for="opacity">Atlas opacity</label>
+      <input id="opacity" type="range" min="0" max="1" step="0.01" value="0.45" />
+
+      <div class="spacer"></div>
+
+      <label>Load your own NIfTI (.nii / .nii.gz)</label>
+      <input id="userNifti" type="file" accept=".nii,.nii.gz" />
+
+      <div class="spacer"></div>
+
+      <div class="row">
+        <button class="btn" id="loadUserBtn">Clear + load my NIfTI</button>
+        <button class="btn ghost" id="skullBtn">Skull-ish render</button>
       </div>
 
-      <div class="kv" style="margin-top:10px">
-        <div class="small">Mode</div>
-        <div class="mono" id="outMode">iTBS + cTBS</div>
-        <div class="small">Approx duration</div>
-        <div class="mono" id="outDur">~40 s</div>
-        <div class="small">Burst</div>
-        <div class="mono" id="outBurst">3 pulses @ 50 Hz</div>
-      </div>
-      <div class="small" style="margin-top:8px">
-        This animation shows timing structure, not physiology.
-      </div>
-    </div>
+      <div class="spacer"></div>
 
-    <div class="field" id="controlsDose" style="display:none">
-      <label><strong>Distance & dose intuition</strong></label>
-      <div class="small" style="margin-top:6px">
-        A simple rule-of-thumb curve: relative “dose” decays with scalp–cortex distance.
-      </div>
-      <div style="margin-top:10px">
-        <label>Scalp–cortex distance (mm)</label>
-        <input type="range" id="doseSCD" min="5" max="30" step="1" value="15" />
-      </div>
-      <div style="margin-top:10px">
-        <label>Normalise to (mm)</label>
-        <input type="range" id="doseRef" min="8" max="25" step="1" value="15" />
-      </div>
-      <div class="kv" style="margin-top:10px">
-        <div class="small">SCD</div>
-        <div class="mono" id="doseOutSCD">15 mm</div>
-        <div class="small">Relative dose</div>
-        <div class="mono" id="doseOutRel">1.00×</div>
-      </div>
-    </div>
-
-    <div class="field" id="controlsDesign" style="display:none">
-      <label><strong>Design intuition</strong></label>
-      <div class="small" style="margin-top:6px">
-        A fast way to explain why “baseline”, “dose”, and “geometry” can masquerade as an “effect”.
-      </div>
-      <div style="margin-top:10px">
-        <label>True effect size (a.u.)</label>
-        <input type="range" id="trueEff" min="-2" max="2" step="0.1" value="0.6" />
-      </div>
-      <div style="margin-top:10px">
-        <label>Geometry confound strength</label>
-        <input type="range" id="conf" min="0" max="2" step="0.1" value="0.8" />
-      </div>
-      <div style="margin-top:10px">
-        <label>Noise</label>
-        <input type="range" id="noise" min="0.1" max="2.0" step="0.1" value="0.7" />
-      </div>
-      <div class="small" style="margin-top:8px">
-        This generates synthetic points (locally) to show how covariates can dominate small N studies.
-      </div>
-    </div>
-  </aside>
-
-  <section class="stage">
-    <div class="stageTop">
-      <div class="hint" id="stageHint">Timing animation: iTBS (intermittent) vs cTBS (continuous)</div>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <span class="mono" id="timeReadout">t = 0.00 s</span>
-        <button class="btn purple" id="snapBtn">Save snapshot (PNG)</button>
-      </div>
-    </div>
-
-    <div class="stageBody">
-      <canvas id="plot" width="1100" height="420"></canvas>
-
-      <div class="twoCol">
-        <div class="box">
-          <h3>What you’re seeing</h3>
-          <div class="small" id="explainBox">
-            Two stimulus trains drawn on the same time axis.
-            iTBS is “on/off” (bursts during on windows, silent during off windows).
-            cTBS is continuous bursts for the entire duration.
-          </div>
-        </div>
-        <div class="box">
-          <h3>Useful talking points</h3>
-          <div class="small" id="talkingBox">
-            Timing structure alone can change the interpretation of “dose”.
-            If you don’t account for scalp–cortex distance, coil orientation, and baseline excitability,
-            you will over-attribute effects to protocol labels.
-          </div>
+      <div class="kv">
+        <div><b>Status</b></div>
+        <div id="statusLine" class="mono">—</div>
+        <div class="spacer"></div>
+        <div><b>Label</b></div>
+        <div id="labelLine" class="mono">—</div>
+        <div class="spacer"></div>
+        <div class="small">
+          Runs entirely in your browser. Nothing uploads.
         </div>
       </div>
-    </div>
-  </section>
-</div>
+    </section>
 
-<div class="footerNote">
-  This page is intentionally conservative: it explains patterns and confounds without pretending to be an online planning or diagnostic tool.
-</div>
+    <section class="panel viewer">
+      <div id="glwrap">
+        <canvas id="gl"></canvas>
+      </div>
+      <div class="overlayBottom">
+        <div id="coord" class="mono">x y z: —</div>
+        <div class="mono">Scroll: zoom • Drag: pan • Right-drag: window/level</div>
+      </div>
+    </section>
+  </main>
 
-<script>
-  // ---------- Tabs ----------
-  const tabTBS = document.getElementById('tabTBS');
-  const tabDose = document.getElementById('tabDose');
-  const tabDesign = document.getElementById('tabDesign');
+  <script>
+    // -----------------------------
+    // Paths (repo local)
+    // -----------------------------
+    const PATHS = {
+      atlasNii:  '/assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz',
+      atlasTxt:  '/assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt',
+      meshMz3:   '/assets/neurop/mni152_2009.mz3',
+      // CDN fallback if the global initialiser is flaky (rare, but you’ve seen it):
+      cdnUmdMin: 'https://cdn.jsdelivr.net/npm/@niivue/niivue@0.66.0/dist/niivue.umd.min.js'
+    };
 
-  const controlsTBS = document.getElementById('controlsTBS');
-  const controlsDose = document.getElementById('controlsDose');
-  const controlsDesign = document.getElementById('controlsDesign');
+    const ui = {
+      pill: document.getElementById('pill'),
+      status: document.getElementById('statusLine'),
+      label: document.getElementById('labelLine'),
+      coord: document.getElementById('coord'),
+      opacity: document.getElementById('opacity'),
+      userNifti: document.getElementById('userNifti'),
+      loadUserBtn: document.getElementById('loadUserBtn'),
+      skullBtn: document.getElementById('skullBtn'),
+      addAtlasBtn: document.getElementById('addAtlasBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      mode2dBtn: document.getElementById('mode2dBtn'),
+      mode3dBtn: document.getElementById('mode3dBtn'),
+      mode4Btn: document.getElementById('mode4Btn'),
+      homeBtn: document.getElementById('homeBtn'),
+      backBtn: document.getElementById('backBtn'),
+    };
 
-  const stageHint = document.getElementById('stageHint');
-  const explainBox = document.getElementById('explainBox');
-  const talkingBox = document.getElementById('talkingBox');
-
-  function setActiveTab(which){
-    [tabTBS, tabDose, tabDesign].forEach(t=>t.classList.remove('active'));
-    controlsTBS.style.display = 'none';
-    controlsDose.style.display = 'none';
-    controlsDesign.style.display = 'none';
-
-    if(which==='tbs'){
-      tabTBS.classList.add('active');
-      controlsTBS.style.display = '';
-      stageHint.textContent = 'Timing animation: iTBS (intermittent) vs cTBS (continuous)';
-      explainBox.textContent = 'Two stimulus trains on the same time axis. iTBS is on/off (bursts during on windows, silent during off windows). cTBS is continuous bursts for the entire duration.';
-      talkingBox.textContent = 'Timing structure alone changes what “dose” means. If you don’t model distance/orientation/baseline excitability, you will over-attribute effects to protocol labels.';
-      mode = 'tbs';
-      t = 0;
-      draw();
-    }
-    if(which==='dose'){
-      tabDose.classList.add('active');
-      controlsDose.style.display = '';
-      stageHint.textContent = 'Distance & dose intuition (toy curve)';
-      explainBox.textContent = 'A simple decay curve that updates live with scalp–cortex distance. This is a rule of thumb, not an E-field simulation.';
-      talkingBox.textContent = 'Distance is a dominant covariate. If your groups differ in geometry, “protocol effects” can be a mirage.';
-      mode = 'dose';
-      draw();
-    }
-    if(which==='design'){
-      tabDesign.classList.add('active');
-      controlsDesign.style.display = '';
-      stageHint.textContent = 'Design intuition (synthetic demo)';
-      explainBox.textContent = 'Synthetic points showing how geometry confounds and noise can overwhelm small effects. Useful for teaching and lab meetings.';
-      talkingBox.textContent = 'When covariates correlate (distance ↔ E-field ↔ age), naive models produce inconsistent stories. Robust design + covariate planning matters.';
-      mode = 'design';
-      draw();
-    }
-  }
-
-  tabTBS.onclick = ()=>setActiveTab('tbs');
-  tabDose.onclick = ()=>setActiveTab('dose');
-  tabDesign.onclick = ()=>setActiveTab('design');
-
-  // ---------- Controls ----------
-  const playBtn = document.getElementById('playBtn');
-  const pauseBtn = document.getElementById('pauseBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const speedEl = document.getElementById('speed');
-  const timeReadout = document.getElementById('timeReadout');
-  const snapBtn = document.getElementById('snapBtn');
-
-  const pulsesEl = document.getElementById('pulses');
-  const burstHzEl = document.getElementById('burstHz');
-  const thetaHzEl = document.getElementById('thetaHz');
-  const cycleEl = document.getElementById('cycle');
-
-  const outMode = document.getElementById('outMode');
-  const outDur = document.getElementById('outDur');
-  const outBurst = document.getElementById('outBurst');
-
-  const doseSCD = document.getElementById('doseSCD');
-  const doseRef = document.getElementById('doseRef');
-  const doseOutSCD = document.getElementById('doseOutSCD');
-  const doseOutRel = document.getElementById('doseOutRel');
-
-  const trueEff = document.getElementById('trueEff');
-  const conf = document.getElementById('conf');
-  const noise = document.getElementById('noise');
-
-  // ---------- Canvas ----------
-  const canvas = document.getElementById('plot');
-  const ctx = canvas.getContext('2d');
-
-  let running = false;
-  let mode = 'tbs';
-  let t = 0;
-
-  function clear(){
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    ctx.fillStyle = 'rgba(14,21,34,1)';
-    ctx.fillRect(0,0,canvas.width, canvas.height);
-  }
-
-  function text(x,y,s,alpha=1,mono=false){
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = 'rgba(231,238,247,1)';
-    ctx.font = mono ? '12px ui-monospace' : '12px system-ui';
-    ctx.fillText(s,x,y);
-    ctx.globalAlpha = 1;
-  }
-
-  function line(x1,y1,x2,y2,alpha=1){
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = 'rgba(231,238,247,0.65)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  function pulse(x,y,amp,alpha=1){
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = 'rgba(32,201,151,0.9)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, y-amp);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  function pulse2(x,y,amp,alpha=1){
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = 'rgba(111,66,193,0.9)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, y-amp);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  function computeDuration(){
-    // rough duration based on total pulses and bursts.
-    // We use the common idea: 3 pulses per burst, bursts at thetaHz.
-    const totalPulses = +pulsesEl.value;
-    const thetaHz = +thetaHzEl.value;
-    const bursts = totalPulses / 3;
-    const seconds = bursts / thetaHz;
-    return seconds;
-  }
-
-  function drawAxes(){
-    const left = 60, right = canvas.width-20;
-    const top = 40, bottom = canvas.height-50;
-
-    line(left, top, left, bottom, 0.5);
-    line(left, bottom, right, bottom, 0.5);
-    text(left, 25, 'Stimulus timing (schematic)', 0.9);
-    return {left,right,top,bottom};
-  }
-
-  function drawTBS(){
-    clear();
-    const {left,right,top,bottom} = drawAxes();
-
-    const dur = computeDuration();
-    const totalPulses = +pulsesEl.value;
-    const burstHz = +burstHzEl.value;
-    const thetaHz = +thetaHzEl.value;
-    const cycle = +cycleEl.value; // iTBS cycle length, on=2s, off=(cycle-2)s typical; we keep it simple.
-
-    outMode.textContent = 'iTBS + cTBS';
-    outDur.textContent = `~${Math.round(dur)} s`;
-    outBurst.textContent = `3 pulses @ ${burstHz} Hz`;
-
-    const w = right-left;
-    const h = bottom-top;
-
-    // horizontal time mapping
-    function tx(sec){
-      return left + (sec / Math.max(dur,1)) * w;
+    function setPill(t){ ui.pill.textContent = t; }
+    function setStatus(t, isError=false){
+      ui.status.innerHTML = isError ? `<span class="bad">${t}</span>` : t;
     }
 
-    // baselines
-    const yITBS = top + h*0.35;
-    const yCTBS = top + h*0.75;
+    // -----------------------------
+    // Find the constructor reliably (UMD builds vary)
+    // The one you’re serving typically exposes: window.niivue.Niivue
+    // -----------------------------
+    function getNiivueCtor() {
+      if (window.niivue && typeof window.niivue.Niivue === 'function') return window.niivue.Niivue;
+      if (window.niivue && typeof window.niivue === 'function') return window.niivue;
+      if (window.Niivue && typeof window.Niivue.Niivue === 'function') return window.Niivue.Niivue;
+      if (typeof window.Niivue === 'function') return window.Niivue;
+      return null;
+    }
 
-    ctx.strokeStyle = 'rgba(159,176,194,0.35)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(left, yITBS); ctx.lineTo(right, yITBS); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(left, yCTBS); ctx.lineTo(right, yCTBS); ctx.stroke();
+    async function ensureNiivueLoaded() {
+      let ctor = getNiivueCtor();
+      if (ctor) return ctor;
 
-    text(left, yITBS-12, 'iTBS (intermittent)', 0.85);
-    text(left, yCTBS-12, 'cTBS (continuous)', 0.85);
+      // Fallback: inject CDN UMD min
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = PATHS.cdnUmdMin;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
 
-    // bursts at theta frequency => one burst per (1/thetaHz)
-    const burstPeriod = 1/thetaHz;
+      ctor = getNiivueCtor();
+      return ctor;
+    }
 
-    // iTBS gating: typical "2s on / 8s off" when cycle=10
-    const onWindow = Math.min(2, cycle*0.25);
-    const offWindow = Math.max(cycle - onWindow, 0);
+    // -----------------------------
+    // NiiVue state
+    // -----------------------------
+    let nv = null;
+    let atlasVolIndex = null;   // overlay index, once added
+    let labelsLoaded = false;
 
-    // draw pulses as vertical strokes
-    // (not drawing each 50Hz pulse; we draw bursts as a single stroke)
-    for(let sec=0; sec<=dur; sec+=burstPeriod){
-      // iTBS: on/off pattern
-      const cycPos = sec % cycle;
-      const itbsOn = (cycPos <= onWindow);
+    const atlasMap = new Map(); // id -> label
 
-      const x = tx(sec);
+    async function loadAtlasLabelsTxt() {
+      const res = await fetch(PATHS.atlasTxt, { cache:'no-store' });
+      if (!res.ok) throw new Error('Atlas label file not found.');
+      const txt = await res.text();
+      atlasMap.clear();
 
-      if(itbsOn){
-        pulse(x, yITBS, 26, 0.95);
-      } else {
-        // show "silent" as faint dot
-        ctx.fillStyle = 'rgba(32,201,151,0.15)';
-        ctx.beginPath(); ctx.arc(x, yITBS, 1.5, 0, Math.PI*2); ctx.fill();
+      for (const line of txt.split(/\r?\n/)) {
+        const s = line.trim();
+        if (!s) continue;
+        const m = s.match(/^(\d+)[\s,;:\t]+(.+)$/);
+        if (!m) continue;
+        const id = parseInt(m[1], 10);
+        const label = m[2].trim();
+        if (!Number.isNaN(id) && label) atlasMap.set(id, label);
+      }
+      labelsLoaded = true;
+    }
+
+    function attachLocationListener() {
+      if (!nv) return;
+
+      const handler = (loc) => {
+        const mm = loc?.mm || loc?.mmXYZ || loc?.xyzMM || null;
+        if (mm && mm.length >= 3) {
+          ui.coord.textContent = `x y z: ${mm[0].toFixed(1)} ${mm[1].toFixed(1)} ${mm[2].toFixed(1)}`;
+        }
+
+        // Try to extract atlas value at cursor
+        let val = null;
+        if (typeof loc?.value === 'number') val = loc.value;
+        if (Array.isArray(loc?.values) && atlasVolIndex != null && typeof loc.values[atlasVolIndex] === 'number') {
+          val = loc.values[atlasVolIndex];
+        }
+
+        if (val == null) {
+          try {
+            const v = nv.getValueUnderMouse?.();
+            if (typeof v === 'number') val = v;
+          } catch(e) {}
+        }
+
+        if (val == null || atlasVolIndex == null) {
+          ui.label.textContent = '—';
+          return;
+        }
+
+        const id = Math.round(val);
+        if (!id) {
+          ui.label.textContent = '—';
+          return;
+        }
+        const label = atlasMap.get(id) || `Label ${id}`;
+        ui.label.textContent = label;
+      };
+
+      // Most builds accept nv.onLocationChange
+      try { nv.onLocationChange = handler; } catch(e) {}
+      try { if (nv.opts) nv.opts.onLocationChange = handler; } catch(e) {}
+    }
+
+    // -----------------------------
+    // Modes (sliceType differs by version; these are best-effort)
+    // -----------------------------
+    function setMode(mode) {
+      if (!nv) return;
+
+      // Known-ish patterns:
+      // - multi-planar: 0
+      // - render: 4
+      // - multi + render: 2  (often the “4-panel” feel in one canvas)
+      const st = (mode === '2d') ? 0 : (mode === '3d') ? 4 : 2;
+
+      try { nv.setSliceType?.(st); } catch(e) {}
+      setPill(mode === '2d' ? '3-plane' : mode === '3d' ? '3D' : '4-panel');
+    }
+
+    function setAtlasOpacity(v) {
+      if (!nv || atlasVolIndex == null) return;
+      const opacity = parseFloat(v);
+
+      try { nv.setOpacity?.(atlasVolIndex, opacity); } catch(e) {}
+      try {
+        const vol = nv.volumes?.[atlasVolIndex];
+        if (vol) vol.opacity = opacity;
+        nv.updateGLVolume?.();
+      } catch(e) {}
+    }
+
+    // -----------------------------
+    // Core actions
+    // -----------------------------
+    async function init() {
+      setPill('Starting…');
+      setStatus('Initialising…');
+
+      const Ctor = await ensureNiivueLoaded();
+      if (!Ctor) {
+        setPill('Error');
+        setStatus('ERROR: NiiVue initialised but constructor not found. Use the UMD build.', true);
+        return;
       }
 
-      // cTBS always on
-      pulse2(x, yCTBS, 26, 0.95);
+      nv = new Ctor({ isResizeCanvas: true, logLevel: 'error' });
+      nv.attachToCanvas(document.getElementById('gl'));
+
+      attachLocationListener();
+
+      // Start in “wow” mode: mesh + 4-panel layout (if supported)
+      setMode('4d'); // internally maps to 2
+      await preloadMeshOnly();
+
+      setPill('Ready');
+      setStatus('Ready.');
     }
 
-    // moving time marker
-    const xT = tx(Math.min(t, dur));
-    ctx.strokeStyle = 'rgba(231,238,247,0.65)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(xT, top); ctx.lineTo(xT, bottom); ctx.stroke();
+    async function preloadMeshOnly() {
+      if (!nv) return;
 
-    // time readout
-    timeReadout.textContent = `t = ${t.toFixed(2)} s`;
+      setPill('Loading…');
+      setStatus('Loading brain mesh…');
 
-    // annotate
-    text(left, bottom+28, `Total pulses: ${totalPulses} | Theta: ${thetaHz} Hz | iTBS cycle: ${cycle}s (on≈${onWindow.toFixed(1)}s, off≈${offWindow.toFixed(1)}s)`, 0.75, true);
-  }
+      try {
+        nv.closeAll?.(); // clears volumes + meshes
+      } catch(e) {}
 
-  function drawDose(){
-    clear();
-    const {left,right,top,bottom} = drawAxes();
-    const w = right-left, h = bottom-top;
+      atlasVolIndex = null;
+      ui.label.textContent = '—';
 
-    const scd = +doseSCD.value;
-    const ref = +doseRef.value;
-    const rel = ref / scd;
+      // Load mesh first (your “default demo”)
+      try {
+        await nv.loadMeshes?.([{ url: PATHS.meshMz3, name:'MNI mesh', opacity: 0.55 }]);
+      } catch(e) {
+        // Some builds need at least one volume to initialise GL state cleanly.
+        // If mesh-only fails, we keep going and you still have user NIfTI mode.
+        console.warn('Mesh-only load failed:', e);
+      }
 
-    doseOutSCD.textContent = `${Math.round(scd)} mm`;
-    doseOutRel.textContent = `${rel.toFixed(2)}×`;
-
-    // draw curve
-    ctx.strokeStyle = 'rgba(32,201,151,0.85)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-
-    const xMin = 5, xMax = 30;
-    function X(mm){ return left + ((mm-xMin)/(xMax-xMin))*w; }
-    function Y(val){ return bottom - val*h; }
-
-    // normalise curve to [0,1] for display: rel at ref = 1
-    for(let mm=xMin; mm<=xMax; mm+=0.2){
-      const r = ref/mm;
-      // squish for display
-      const v = Math.min(Math.max((r/ (ref/xMax)), 0), 1); // simple scaling
-      const xx = X(mm);
-      const yy = Y(v*0.9 + 0.05);
-      if(mm===xMin) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
-    }
-    ctx.stroke();
-
-    // marker
-    const rNow = ref/scd;
-    const vNow = Math.min(Math.max((rNow/ (ref/xMax)), 0), 1);
-    const xNow = X(scd);
-    const yNow = Y(vNow*0.9 + 0.05);
-
-    ctx.fillStyle = 'rgba(32,201,151,1)';
-    ctx.beginPath(); ctx.arc(xNow,yNow,5,0,Math.PI*2); ctx.fill();
-
-    // axes labels
-    text(left, bottom+28, `Scalp–cortex distance (mm): ${Math.round(scd)} | Relative dose ≈ ${rel.toFixed(2)}× (normalised to ${Math.round(ref)} mm)`, 0.8, true);
-    timeReadout.textContent = 't = —';
-  }
-
-  // simple seeded RNG for stable plots
-  function mulberry32(a){
-    return function(){
-      let t = a += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
-  }
-
-  function drawDesign(){
-    clear();
-    const {left,right,top,bottom} = drawAxes();
-    const w = right-left, h = bottom-top;
-
-    const eff = +trueEff.value;
-    const c = +conf.value;
-    const n = +noise.value;
-
-    // Synthetic: outcome = eff*group + c*geometry + noise
-    // geometry correlates with group slightly (to mimic reality)
-    const rng = mulberry32(12345);
-    const N = 60;
-
-    // axes
-    // x: geometry (0..1), y: outcome (scaled)
-    function X(v){ return left + v*w; }
-    function Y(v){ return bottom - v*h; }
-
-    // generate points
-    let yMin=1e9, yMax=-1e9;
-    const pts = [];
-    for(let i=0;i<N;i++){
-      const group = (i < N/2) ? 0 : 1;
-      const geomBase = rng();
-      const geom = Math.min(Math.max(geomBase + (group?0.15:-0.05), 0), 1);
-      const y = eff*group + c*geom + (rng()-0.5)*2*n;
-      pts.push({group, geom, y});
-      yMin = Math.min(yMin, y);
-      yMax = Math.max(yMax, y);
-    }
-    const pad = 0.5;
-    yMin -= pad; yMax += pad;
-
-    // draw points
-    for(const p of pts){
-      const xv = p.geom;
-      const yv = (p.y - yMin) / (yMax - yMin);
-      ctx.fillStyle = p.group ? 'rgba(111,66,193,0.85)' : 'rgba(32,201,151,0.85)';
-      ctx.beginPath();
-      ctx.arc(X(xv), Y(yv), 4, 0, Math.PI*2);
-      ctx.fill();
+      try { nv.updateGLVolume?.(); } catch(e) {}
+      setPill('Ready');
+      setStatus('Ready.');
     }
 
-    // simple regression line (visual only)
-    // compute slope/intercept on all points
-    let sx=0, sy=0, sxx=0, sxy=0;
-    for(const p of pts){
-      sx += p.geom;
-      sy += p.y;
-      sxx += p.geom*p.geom;
-      sxy += p.geom*p.y;
+    async function addAtlasOverlay() {
+      if (!nv) return;
+
+      setPill('Loading…');
+      setStatus('Adding atlas labels…');
+
+      try {
+        if (!labelsLoaded) await loadAtlasLabelsTxt();
+      } catch(e) {
+        console.warn(e);
+        // Don’t hard fail; labels might still show ids.
+      }
+
+      try {
+        // If already added, just toggle opacity up
+        if (atlasVolIndex != null) {
+          setAtlasOpacity(ui.opacity.value);
+          setPill('Ready');
+          setStatus('Atlas already added.');
+          return;
+        }
+
+        // Add label volume overlay
+        // Different versions support either addVolumeFromUrl OR loadVolumes
+        const overlay = {
+          url: PATHS.atlasNii,
+          name: 'Atlas',
+          opacity: parseFloat(ui.opacity.value),
+          colormap: 'glasbey',
+          isLabel: true
+        };
+
+        if (nv.addVolumeFromUrl) {
+          await nv.addVolumeFromUrl(overlay);
+        } else if (nv.loadVolumes) {
+          // If no volumes yet, loadVolumes will create the volume stack.
+          await nv.loadVolumes([overlay]);
+        } else {
+          throw new Error('This NiiVue build does not support loading volumes.');
+        }
+
+        atlasVolIndex = (nv.volumes?.length ?? 1) - 1;
+
+        try { nv.updateGLVolume?.(); } catch(e) {}
+        attachLocationListener();
+
+        setPill('Ready');
+        setStatus('Atlas added. Click on the brain to see labels.');
+      } catch(e) {
+        console.error(e);
+        setPill('Error');
+        setStatus('ERROR adding atlas. Check DevTools Console.', true);
+      }
     }
-    const denom = (N*sxx - sx*sx) || 1e-6;
-    const m = (N*sxy - sx*sy)/denom;
-    const b = (sy - m*sx)/N;
 
-    ctx.strokeStyle = 'rgba(231,238,247,0.65)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for(let xv=0; xv<=1.001; xv+=0.02){
-      const yPred = m*xv + b;
-      const yv = (yPred - yMin)/(yMax-yMin);
-      const xx = X(xv), yy = Y(yv);
-      if(xv===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
+    async function clearAll() {
+      if (!nv) return;
+      try { nv.closeAll?.(); } catch(e) {}
+      atlasVolIndex = null;
+      ui.coord.textContent = 'x y z: —';
+      ui.label.textContent = '—';
+      setPill('Ready');
+      setStatus('Cleared.');
     }
-    ctx.stroke();
 
-    text(left, bottom+28, `true effect=${eff.toFixed(1)} | confound=${c.toFixed(1)} | noise=${n.toFixed(1)} (synthetic demo)`, 0.8, true);
-    timeReadout.textContent = 't = —';
-  }
+    async function clearAndLoadUserNifti() {
+      if (!nv) return;
+      const f = ui.userNifti.files?.[0];
+      if (!f) {
+        setStatus('Pick a NIfTI first.', true);
+        return;
+      }
 
-  function draw(){
-    if(mode==='tbs') drawTBS();
-    if(mode==='dose') drawDose();
-    if(mode==='design') drawDesign();
-  }
+      setPill('Loading…');
+      setStatus('Loading your NIfTI…');
 
-  // ---------- Animation loop ----------
-  function step(){
-    if(!running) return;
-    const sp = +speedEl.value;
-    // advance time for tbs mode only
-    if(mode==='tbs'){
-      const dur = computeDuration();
-      t += 0.016 * sp * 8; // visually faster than real time
-      if(t > dur) t = 0;
+      try {
+        nv.closeAll?.();
+      } catch(e) {}
+
+      atlasVolIndex = null;
+      ui.label.textContent = '—';
+
+      try {
+        if (nv.addVolumeFromFile) {
+          await nv.addVolumeFromFile(f);
+        } else {
+          // Blob URL fallback
+          const buf = await f.arrayBuffer();
+          const blobUrl = URL.createObjectURL(new Blob([buf]));
+          await nv.loadVolumes([{ url: blobUrl, name: f.name, opacity: 1.0, colormap: 'gray' }]);
+        }
+
+        attachLocationListener();
+        setMode('4d'); // 4-panel feel
+        setPill('Ready');
+        setStatus('Loaded. (Still local-only.)');
+      } catch(e) {
+        console.error(e);
+        setPill('Error');
+        setStatus('ERROR loading NIfTI. Check DevTools Console.', true);
+      }
     }
-    draw();
-    requestAnimationFrame(step);
-  }
 
-  playBtn.onclick = ()=>{ running = true; requestAnimationFrame(step); };
-  pauseBtn.onclick = ()=>{ running = false; };
-  resetBtn.onclick = ()=>{ running = false; t = 0; draw(); };
+    function skullishRenderToggle() {
+      if (!nv) return;
 
-  [pulsesEl, burstHzEl, thetaHzEl, cycleEl, speedEl, doseSCD, doseRef, trueEff, conf, noise].forEach(el=>{
-    el.addEventListener('input', ()=>{
-      draw();
-    });
-  });
+      // Best-effort across versions:
+      // 1) Switch to 3D render
+      // 2) Turn on volume rendering if available
+      setMode('3d');
 
-  snapBtn.onclick = ()=>{
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `neuromodulation_explainer_${mode}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
+      try { nv.setVolumeRendering?.(true); } catch(e) {}
+      try { nv.setRenderAzimuthElevation?.(120, 15); } catch(e) {}
+      try { nv.updateGLVolume?.(); } catch(e) {}
 
-  // Initial state
-  setActiveTab('tbs');
-  draw();
-</script>
+      setStatus('3D render mode. (Skull effect depends on your image and NiiVue build.)');
+    }
+
+    // -----------------------------
+    // UI wiring
+    // -----------------------------
+    ui.homeBtn.addEventListener('click', () => window.location.href = '/');
+    ui.backBtn.addEventListener('click', () => history.back());
+
+    ui.addAtlasBtn.addEventListener('click', addAtlasOverlay);
+    ui.clearBtn.addEventListener('click', clearAll);
+
+    ui.opacity.addEventListener('input', (e) => setAtlasOpacity(e.target.value));
+
+    ui.mode2dBtn.addEventListener('click', () => setMode('2d'));
+    ui.mode3dBtn.addEventListener('click', () => setMode('3d'));
+    ui.mode4Btn.addEventListener('click', () => setMode('4d'));
+
+    ui.loadUserBtn.addEventListener('click', clearAndLoadUserNifti);
+    ui.skullBtn.addEventListener('click', skullishRenderToggle);
+
+    // -----------------------------
+    // Boot: preload mesh immediately
+    // -----------------------------
+    (function boot(){
+      init().catch(err => {
+        console.error(err);
+        setPill('Error');
+        setStatus('ERROR: initialisation failed. Check DevTools Console.', true);
+      });
+    })();
+  </script>
 </body>
 </html>
