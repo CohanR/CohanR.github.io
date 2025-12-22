@@ -408,7 +408,7 @@
         await init4Panel();
         safeClear(nvRen);
         await safeLoadMesh(nvRen, DEMO_MESH_URL);
-        safeSetSliceType(nvRen, 3);
+        safeSetSliceType(nvRen, 4);
         hide3DRedAxes(nvRen);
       } else {
         showSingle();
@@ -442,7 +442,7 @@
         [nvAx,nvCor,nvSag,nvRen].forEach(safeClear);
         await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeUrl(nv, userVolumeObjectUrl)));
         safeSetSliceType(nvAx,0); safeSetSliceType(nvCor,1); safeSetSliceType(nvSag,2);
-        safeSetSliceType(nvRen,3);
+        safeSetSliceType(nvRen,4);
         hide3DRedAxes(nvRen);
         if(atlasLoaded) await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
         [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
@@ -496,7 +496,7 @@
           [nvAx,nvCor,nvSag,nvRen].forEach(safeClear);
           await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeUrl(nv, userVolumeObjectUrl)));
           safeSetSliceType(nvAx,0); safeSetSliceType(nvCor,1); safeSetSliceType(nvSag,2);
-          safeSetSliceType(nvRen,3); hide3DRedAxes(nvRen);
+          safeSetSliceType(nvRen,4); hide3DRedAxes(nvRen);
           if(atlasLoaded) await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
           [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
         }
