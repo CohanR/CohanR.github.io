@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>MNI Atlas + Mesh Viewer | Remy Cohan | Neuropsis</title>
+
+  <link rel="canonical" href="https://www.neuropsis.org/SkullCortex_3D.html" />
+  <meta name="description" content="Local-only MRI viewer by Remy Cohan (Neuropsis): 3-plane, 3D, and 4-panel views with optional atlas labels. Nothing uploads. MD.PhD. Neuroradiology.Remy Cohan." />
+  <meta name="keywords" content="Remy Cohan, Neuropsis, NIfTI viewer, MRI viewer, neuroimaging, brain atlas, 3D render, neuroradiology" />
+  <meta name="author" content="Remy Cohan" />
+  <meta name="robots" content="index,follow" />
+
+  <style>
+    :root{
+      --bg:#050608;
+      --panel:#0b0f16cc;
+      --stroke:#1e2a3d;
+      --text:#d9e2f1;
+      --muted:#90a2bf;
+      --accent:#3b82f6;
+      --danger:#ef4444;
+      --good:#22c55e;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+    }
+    html,body{height:100%; margin:0; background:radial-gradient(1200px 800px at 10% 5%, #0c1a2e 0%, transparent 55%),
+                                 radial-gradient(1200px 800px at 90% 10%, #102b22 0%, transparent 60%),
+                                 var(--bg);
+              color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+    *{box-sizing:border-box}
+
+    header{
+      position:fixed; top:0; left:0; right:0; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 18px; z-index:50;
+      background:linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,0));
+      backdrop-filter: blur(10px);
+    }
+    .brand{display:flex; align-items:center; gap:10px; min-width: 320px;}
+    .dot{width:10px; height:10px; border-radius:999px; background:#ff3b3b; box-shadow:0 0 18px rgba(255,59,59,.35);}
+    .title{font-weight:750; letter-spacing:.2px}
+    .subtitle{color:var(--muted); font-size:12.5px; margin-top:2px}
+    .brandText{display:flex; flex-direction:column; line-height:1.05}
+    .nav{display:flex; align-items:center; gap:10px}
+    .pill{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(12,16,24,.55);
+      color:var(--text);
+      padding:8px 12px; border-radius:999px;
+      font-weight:650; font-size:13px;
+      text-decoration:none;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .statusPill{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(12,16,24,.55);
+      padding:8px 12px; border-radius:999px;
+      font-weight:700; font-size:12.5px;
+    }
+    .statusPill.err{border-color: rgba(239,68,68,.45); color:#ffd3d3;}
+    .statusPill.ok{border-color: rgba(34,197,94,.35); color:#d9ffe7;}
+
+    .wrap{
+      height:100%;
+      padding-top:78px;
+      padding-left:18px;
+      padding-right:18px;
+      padding-bottom:18px;
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap:16px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .controls{padding:16px;}
+    .controls h3{margin:2px 0 12px 0; font-size:14px; color:var(--muted); font-weight:800; letter-spacing:.2px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+    button{
+      appearance:none; border:1px solid rgba(255,255,255,.10);
+      background:rgba(12,16,24,.55);
+      color:var(--text);
+      padding:10px 12px; border-radius:12px;
+      font-weight:750; font-size:13px;
+      cursor:pointer;
+      transition:transform .05s ease, border-color .12s ease, background .12s ease;
+    }
+    button:hover{border-color: rgba(255,255,255,.18)}
+    button:active{transform: translateY(1px)}
+    button.primary{border-color: rgba(59,130,246,.35)}
+    button.primary:hover{border-color: rgba(59,130,246,.55)}
+    button.danger{border-color: rgba(239,68,68,.35)}
+    button.danger:hover{border-color: rgba(239,68,68,.55)}
+    button.on{outline: 2px solid rgba(59,130,246,.55); outline-offset: 0px}
+
+    .sliderRow{display:flex; align-items:center; gap:10px; margin:10px 0 8px 0}
+    input[type="range"]{width:100%}
+    .labelTiny{font-size:12px; color:var(--muted); font-weight:650}
+    .fileRow{display:flex; flex-direction:column; gap:8px; margin-top:10px}
+    input[type="file"]{
+      width:100%;
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:12px;
+      padding:10px;
+      background:rgba(0,0,0,.15);
+      color:var(--muted);
+    }
+
+    .kv{margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08)}
+    .kv .k{font-size:12px; color:var(--muted); font-weight:800; margin-bottom:6px}
+    .kv .v{
+      font-size:13px; color:var(--text);
+      background:rgba(0,0,0,.20);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:10px 12px;
+      min-height:42px;
+      display:flex; align-items:center;
+    }
+
+    .foot{margin-top:10px; font-size:12px; color:var(--muted); line-height:1.35}
+
+    .viewer{position:relative; padding:14px; overflow:hidden}
+    .canvasShell{
+      height: calc(100% - 0px);
+      width:100%;
+      display:block;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      background:#000;
+    }
+
+    /* single canvas area (for 3-plane or 3D) */
+    #singleWrap{height: 100%;}
+    #singleCanvas{width:100%; height:100%; display:block;}
+
+    /* 4-panel grid */
+    #gridWrap{
+      height:100%;
+      display:none;
+      gap:10px;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+    .panel{
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      background:#000;
+      min-height:0;
+    }
+    .panel canvas{width:100%; height:100%; display:block;}
+  </style>
+
+  <!-- I'm using my local UMD build (NOT the bloody ESM) -->
+  <script src="/assets/vendor/niivue/niivue.umd.js"></script>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    <div class="dot"></div>
+    <div class="brandText">
+      <div class="title">MNI Atlas + Mesh Viewer</div>
+      <div class="subtitle">Remy Cohan • Neuropsis • 3D Skull/Cortex</div>
+    </div>
+  </div>
+  <div class="nav">
+    <a class="pill" href="/" rel="home">Go Home!</a>
+    <a class="pill" href="javascript:history.back()">Back</a>
+    <div id="statusPill" class="statusPill ok">Ready</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card controls">
+    <h3>Controls</h3>
+
+    <div class="row">
+      <button id="btnAtlas" class="primary">Add atlas labels</button>
+      <button id="btnReset" class="danger">Reset demo</button>
+    </div>
+
+    <div class="row">
+      <button id="btn3plane" class="on">3-plane</button>
+      <button id="btn3d">3D</button>
+      <button id="btn4panel">4-panel</button>
+    </div>
+
+    <div class="sliderRow">
+      <div class="labelTiny">Atlas opacity</div>
+    </div>
+    <input id="atlasOpacity" type="range" min="0" max="1" step="0.01" value="0.55" />
+
+    <div class="fileRow">
+      <div class="labelTiny">Load your own NIfTI (.nii / .nii.gz)</div>
+      <input id="fileInput" type="file" accept=".nii,.nii.gz,application/gzip" />
+      <div class="row">
+        <button id="btnLoadUser">Clear + load my NIfTI</button>
+        <button id="btnSkull" class="primary">MNI-Cortex 3D</button>
+      </div>
+    </div>
+
+    <div class="kv">
+      <div class="k">Label</div>
+      <div id="labelBox" class="v">—</div>
+    </div>
+
+    <div class="foot">
+      Runs entirely in your browser. Nothing uploads to a server (No HIPPA violation!).<br/>
+      Tip: drag and drop also works.
+    </div>
+  </div>
+
+  <div class="card viewer">
+    <div class="canvasShell">
+      <div id="singleWrap">
+        <canvas id="singleCanvas"></canvas>
+      </div>
+
+      <div id="gridWrap">
+        <div class="panel"><canvas id="axCanvas"></canvas></div>
+        <div class="panel"><canvas id="corCanvas"></canvas></div>
+        <div class="panel"><canvas id="sagCanvas"></canvas></div>
+        <div class="panel"><canvas id="renCanvas"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- my paths ----------
+  const DEMO_MESH_URL  = "/assets/neurop/mni152_2009.mz3";
+  const ATLAS_NII_URL  = "/assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz";
+  const ATLAS_LUT_URL  = "/assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt";
+
+  // ---------- grab this pesky Niivue class (works with both UMD globals) ----------
+  const NiivueClass =
+    (window.niivue && window.niivue.Niivue) ||
+    (window.Niivue && window.Niivue.Niivue) ||
+    window.Niivue;
+
+  // ---------- UI ----------
+  const statusPill = document.getElementById("statusPill");
+  const labelBox   = document.getElementById("labelBox");
+  const atlasOpacity = document.getElementById("atlasOpacity");
+  const fileInput  = document.getElementById("fileInput");
+
+  const btnAtlas   = document.getElementById("btnAtlas");
+  const btnReset   = document.getElementById("btnReset");
+  const btn3plane  = document.getElementById("btn3plane");
+  const btn3d      = document.getElementById("btn3d");
+  const btn4panel  = document.getElementById("btn4panel");
+  const btnLoadUser= document.getElementById("btnLoadUser");
+  const btnSkull   = document.getElementById("btnSkull");
+
+  const singleWrap = document.getElementById("singleWrap");
+  const gridWrap   = document.getElementById("gridWrap");
+
+  function setStatusOk(msg="Ready"){ statusPill.className="statusPill ok"; statusPill.textContent=msg; }
+  function setStatusErr(msg="Error"){ statusPill.className="statusPill err"; statusPill.textContent=msg; }
+
+  function setModeButtons(mode){
+    [btn3plane, btn3d, btn4panel].forEach(b => b.classList.remove("on"));
+    if(mode==="3plane") btn3plane.classList.add("on");
+    if(mode==="3d")     btn3d.classList.add("on");
+    if(mode==="4panel") btn4panel.classList.add("on");
+  }
+
+  function showSingle(){ gridWrap.style.display="none"; singleWrap.style.display="block"; }
+  function showGrid(){ singleWrap.style.display="none"; gridWrap.style.display="grid"; }
+
+  // ---------- NiiVue instances ----------
+  let nvSingle = null;
+  let nvAx=null, nvCor=null, nvSag=null, nvRen=null;
+
+  let currentMode = "3d";
+  let atlasLoaded = false;
+  let userVolumeObjectUrl = null;
+
+  // ---------- Helpers ----------
+  function draw(nv){ try { nv.drawScene && nv.drawScene(); } catch(e) {} }
+
+  function hide3DRedAxes(nv){
+    // I do not like “red axis lines” in 3D. So, I am gonna turn it off.
+    if(nv?.opts) nv.opts.showCrosshair = false;
+    draw(nv);
+  }
+
+  function show2DCrosshair(nv){
+    if(nv?.opts) nv.opts.showCrosshair = true;
+    draw(nv);
+  }
+
+  function safeSetSliceType(nv, sliceType){
+    if(!nv) return;
+    if(typeof nv.setSliceType === "function") nv.setSliceType(sliceType);
+    else nv.sliceType = sliceType;
+    draw(nv);
+  }
+
+  function safeClear(nv){
+    if(!nv) return;
+    try { nv.removeAllMeshes && nv.removeAllMeshes(); } catch(e) {}
+    try { nv.removeAllVolumes && nv.removeAllVolumes(); } catch(e) {}
+    // fallback
+    if(Array.isArray(nv.meshes)) nv.meshes = [];
+    if(Array.isArray(nv.volumes)) nv.volumes = [];
+    draw(nv);
+  }
+
+  async function safeLoadMesh(nv, url){
+    // Prefer loadMeshes on newer builds (mine 0.66 case)
+    if(typeof nv.loadMeshes === "function"){
+      try { await nv.loadMeshes([{ url }]); draw(nv); return; } catch(e) {}
+      try { await nv.loadMeshes([url]); draw(nv); return; } catch(e) {}
+    }
+    if(typeof nv.addMeshFromUrl === "function"){ await nv.addMeshFromUrl(url); draw(nv); return; }
+    if(typeof nv.loadMesh === "function"){ await nv.loadMesh(url); draw(nv); return; }
+    throw new Error("No supported mesh loader in this NiiVue build.");
+  }
+
+  async function safeLoadVolumeUrl(nv, url){
+    if(typeof nv.loadVolumes === "function"){ await nv.loadVolumes([{ url }]); draw(nv); return; }
+    if(typeof nv.addVolumesFromUrl === "function"){ await nv.addVolumesFromUrl([{ url }]); draw(nv); return; }
+    if(typeof nv.loadFromUrl === "function"){ await nv.loadFromUrl(url); draw(nv); return; }
+    throw new Error("No supported volume loader in this NiiVue build.");
+  }
+
+  async function safeAddAtlas(nv){
+    if(typeof nv.addLabelFromUrl === "function"){
+      await nv.addLabelFromUrl(ATLAS_NII_URL, ATLAS_LUT_URL);
+      draw(nv);
+      return;
+    }
+    // fallback: load atlas as 2nd volume
+    await safeLoadVolumeUrl(nv, ATLAS_NII_URL);
+  }
+
+  function applyAtlasOpacity(nv, alpha){
+    if(!nv) return;
+    // if atlas is volume[1], set opacity there
+    if(Array.isArray(nv.volumes) && nv.volumes.length > 1){
+      try { nv.volumes[1].opacity = alpha; } catch(e) {}
+    }
+    draw(nv);
+  }
+
+  // ---------- Create viewers ----------
+  function createNv(canvas){
+    const nv = new NiivueClass({
+      backColor: [0,0,0,1],
+      isNearestInterpolation: true
+    });
+    nv.attachToCanvas(canvas);
+
+    if(nv.opts){
+      nv.opts.showCrosshair = true;                 // keep crosshair in 2D
+      nv.opts.crosshairColor = [1,0,0,1];
+    }
+    if(typeof nv.onLocationChange === "function"){
+      nv.onLocationChange = (data) => { if(data?.label) labelBox.textContent = data.label; };
+    }
+    return nv;
+  }
+
+  function destroy4Panel(){
+    [nvAx,nvCor,nvSag,nvRen].forEach(nv => { try { nv?.destroy && nv.destroy(); } catch(e){} });
+    nvAx=nvCor=nvSag=nvRen=null;
+  }
+
+  async function initSingle(){
+    if(nvSingle) return;
+    nvSingle = createNv(document.getElementById("singleCanvas"));
+  }
+
+  async function init4Panel(){
+    destroy4Panel();
+    nvAx  = createNv(document.getElementById("axCanvas"));
+    nvCor = createNv(document.getElementById("corCanvas"));
+    nvSag = createNv(document.getElementById("sagCanvas"));
+    nvRen = createNv(document.getElementById("renCanvas"));
+
+    safeSetSliceType(nvAx, 0);
+    safeSetSliceType(nvCor, 1);
+    safeSetSliceType(nvSag, 2);
+    safeSetSliceType(nvRen, 4);
+    hide3DRedAxes(nvRen);
+  }
+
+  // ---------- Actions ----------
+  async function loadDemoMeshIntoCurrentView(){
+    setStatusOk("Loading…");
+    labelBox.textContent = "—";
+    atlasLoaded = false;
+
+    try{
+      if(currentMode === "4panel"){
+        showGrid();
+        await init4Panel();
+        safeClear(nvRen);
+        await safeLoadMesh(nvRen, DEMO_MESH_URL);
+        safeSetSliceType(nvRen, 4);
+        hide3DRedAxes(nvRen);
+      } else {
+        showSingle();
+        await initSingle();
+        safeClear(nvSingle);
+        await safeLoadMesh(nvSingle, DEMO_MESH_URL);
+        safeSetSliceType(nvSingle, 3);
+        hide3DRedAxes(nvSingle);
+      }
+      setStatusOk("Ready");
+    } catch(e){
+      console.error(e);
+      setStatusErr("Mesh failed");
+    }
+  }
+
+  async function loadUserNifti(){
+    const f = fileInput.files?.[0];
+    if(!f){ setStatusErr("No file selected"); return; }
+
+    setStatusOk("Loading…");
+    labelBox.textContent = "—";
+
+    if(userVolumeObjectUrl) URL.revokeObjectURL(userVolumeObjectUrl);
+    userVolumeObjectUrl = URL.createObjectURL(f);
+
+    try{
+      if(currentMode === "4panel"){
+        showGrid();
+        await init4Panel();
+        [nvAx,nvCor,nvSag,nvRen].forEach(safeClear);
+        await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeUrl(nv, userVolumeObjectUrl)));
+        safeSetSliceType(nvAx,0); safeSetSliceType(nvCor,1); safeSetSliceType(nvSag,2);
+        safeSetSliceType(nvRen,4);
+        hide3DRedAxes(nvRen);
+        if(atlasLoaded) await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
+        [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
+      } else {
+        showSingle();
+        await initSingle();
+        safeClear(nvSingle);
+        await safeLoadVolumeUrl(nvSingle, userVolumeObjectUrl);
+        if(currentMode === "3d"){ safeSetSliceType(nvSingle,3); hide3DRedAxes(nvSingle); }
+        else { safeSetSliceType(nvSingle,2); show2DCrosshair(nvSingle); }
+        if(atlasLoaded) await safeAddAtlas(nvSingle);
+        applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
+      }
+
+      setStatusOk("Ready");
+    } catch(e){
+      console.error(e);
+      setStatusErr("NIfTI failed");
+    }
+  }
+
+  async function addAtlasEverywhere(){
+    setStatusOk("Loading…");
+    try{
+      if(currentMode === "4panel"){
+        await init4Panel();
+        await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
+        [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
+      } else {
+        await initSingle();
+        await safeAddAtlas(nvSingle);
+        applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
+      }
+      atlasLoaded = true;
+      setStatusOk("Ready");
+    } catch(e){
+      console.error(e);
+      setStatusErr("Atlas failed");
+    }
+  }
+
+  function setMode(mode){
+    currentMode = mode;
+    setModeButtons(mode);
+
+    if(mode === "4panel"){
+      showGrid();
+      init4Panel().then(async () => {
+        // if we already loaded a user file, populate panels
+        if(userVolumeObjectUrl){
+          [nvAx,nvCor,nvSag,nvRen].forEach(safeClear);
+          await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeUrl(nv, userVolumeObjectUrl)));
+          safeSetSliceType(nvAx,0); safeSetSliceType(nvCor,1); safeSetSliceType(nvSag,2);
+          safeSetSliceType(nvRen,4); hide3DRedAxes(nvRen);
+          if(atlasLoaded) await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
+          [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
+        }
+      });
+      return;
+    }
+
+    showSingle();
+    initSingle().then(() => {
+      if(mode === "3d"){ safeSetSliceType(nvSingle,3); hide3DRedAxes(nvSingle); }
+      else { safeSetSliceType(nvSingle,2); show2DCrosshair(nvSingle); }
+      if(atlasLoaded) applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
+    });
+  }
+
+  // ---------- Events ----------
+  btnSkull.addEventListener("click", loadDemoMeshIntoCurrentView); // THIS is your requested button
+  btnReset.addEventListener("click", async () => {
+    // reset = clear everything + load demo mesh again
+    if(userVolumeObjectUrl){ URL.revokeObjectURL(userVolumeObjectUrl); userVolumeObjectUrl = null; }
+    atlasLoaded = false;
+    labelBox.textContent = "—";
+    await loadDemoMeshIntoCurrentView();
+  });
+
+  btnAtlas.addEventListener("click", addAtlasEverywhere);
+  btnLoadUser.addEventListener("click", loadUserNifti);
+
+  btn3plane.addEventListener("click", () => setMode("3plane"));
+  btn3d.addEventListener("click", () => setMode("3d"));
+  btn4panel.addEventListener("click", () => setMode("4panel"));
+
+  atlasOpacity.addEventListener("input", (e) => {
+    const a = parseFloat(e.target.value);
+    if(currentMode === "4panel") [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, a));
+    else applyAtlasOpacity(nvSingle, a);
+  });
+
+  // drag/drop over viewer
+  const viewerEl = document.querySelector(".viewer");
+  viewerEl.addEventListener("dragover", e => e.preventDefault());
+  viewerEl.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer?.files?.[0];
+    if(!f) return;
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    fileInput.files = dt.files;
+    await loadUserNifti();
+  });
+
+  // ---------- Init ----------
+  if(!NiivueClass){
+    setStatusErr("NiiVue missing");
+    console.error("NiiVue class not found. Check /assets/vendor/niivue/niivue.umd.js");
+    return;
+  }
+
+  // Start: demo mesh in 3D
+  setMode("3d");
+  loadDemoMeshIntoCurrentView();
+})();
+</script>
+</body>
+</html>
