@@ -3,677 +3,214 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TMS Target Visualiser | Neuropsis</title>
+  <title>Remy Cohan | TMS Target Visualiser (NIfTI)</title>
+  <meta name="description" content="Interactive TMS targeting visualiser by Remy Cohan. Click-to-place targets on MRI, view coordinates, and explore coil orientation using an in-browser NIfTI viewer (NiiVue)." />
+  <meta name="author" content="Remy Cohan" />
+  <meta name="robots" content="index,follow" />
   <style>
-    :root{
-      --bg:#0b0f14;
-      --panel:#101826;
-      --panel2:#0e1522;
-      --text:#e7eef7;
-      --muted:#9fb0c2;
-      --line:#223247;
-      --accent:#6f42c1;
-      --accent2:#20c997;
-      --warn:#f0b429;
-      --btn:#152236;
-      --btnh:#1b2c45;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    }
+    :root { --bg:#0b0f14; --panel:#101826; --line:#223247; --text:#e7eef7; --muted:#9fb0c2; --btn:#152236; --btnh:#1b2c45; }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--sans);
-      background:var(--bg);
-      color:var(--text);
-    }
-    header{
-      padding:18px 18px 12px;
-      border-bottom:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(16,24,38,0.9), rgba(11,15,20,0.9));
-      position:sticky; top:0; z-index:5;
-    }
-    header h1{margin:0 0 6px; font-size:18px; letter-spacing:.2px}
-    header p{margin:0; color:var(--muted); font-size:13px; line-height:1.35}
-    .wrap{
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap:14px;
-      padding:14px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
-    }
-    .card h2{
-      font-size:14px; margin:0 0 10px; color:var(--text); font-weight:650;
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .small{font-size:12px; color:var(--muted); line-height:1.35}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .btn{
-      appearance:none; border:1px solid var(--line);
-      background:var(--btn); color:var(--text);
-      padding:9px 10px; border-radius:10px;
-      cursor:pointer; font-size:12px;
-      transition:.15s ease;
-      user-select:none;
-    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--text)}
+    header{padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(16,24,38,.7);position:sticky;top:0;z-index:10}
+    header .top{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .btn{border:1px solid var(--line);background:var(--btn);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12px}
     .btn:hover{background:var(--btnh)}
-    .btn.primary{border-color:rgba(111,66,193,.6); background:rgba(111,66,193,.15)}
-    .btn.green{border-color:rgba(32,201,151,.6); background:rgba(32,201,151,.12)}
-    .btn.warn{border-color:rgba(240,180,41,.55); background:rgba(240,180,41,.10)}
-    .btn:active{transform:translateY(1px)}
-    label{font-size:12px; color:var(--muted)}
+    .wrap{max-width:1200px;margin:0 auto;padding:14px;display:grid;grid-template-columns:360px 1fr;gap:14px}
+    .card{background:rgba(16,24,38,.9);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .small{font-size:12px;color:var(--muted);line-height:1.35}
+    .kv{display:grid;grid-template-columns:120px 1fr;gap:8px 10px;align-items:center;font-size:12px;margin-top:10px}
     input[type="range"]{width:100%}
-    .field{
-      margin-top:10px;
-      padding:10px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:var(--panel2);
-    }
-    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
-    .mono{font-family:var(--mono)}
-    .kv{
-      display:grid;
-      grid-template-columns: 120px 1fr;
-      gap:8px 10px;
-      align-items:center;
-      font-size:12px;
-    }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .dot{width:8px; height:8px; border-radius:99px; background:var(--accent)}
-    .stage{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:14px;
-      overflow:hidden;
-      position:relative;
-      min-height: 620px;
-    }
-    .stageTop{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px 12px;
-      border-bottom:1px solid var(--line);
-      background:rgba(0,0,0,.12);
-    }
-    .stageTop .hint{font-size:12px; color:var(--muted)}
-    .canvasArea{
-      padding:12px;
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    .panel{
-      border:1px solid var(--line);
-      background:var(--panel2);
-      border-radius:12px;
-      padding:10px;
-      position:relative;
-      min-height: 260px;
-      overflow:hidden;
-    }
-    .panel h3{
-      margin:0 0 6px;
-      font-size:12px;
-      color:var(--muted);
-      font-weight:650;
-      letter-spacing:.2px;
-    }
-    .panel svg{width:100%; height:210px; display:block}
-    .crosshair line{stroke:rgba(231,238,247,.8); stroke-width:1}
-    .target{fill:var(--accent); stroke:rgba(255,255,255,.7); stroke-width:1}
-    .coil line{stroke:rgba(32,201,151,.9); stroke-width:2}
-    .coil circle{fill:rgba(32,201,151,.15); stroke:rgba(32,201,151,.85); stroke-width:2}
-    .legend{
-      position:absolute; bottom:10px; right:10px;
-      display:flex; gap:8px; flex-wrap:wrap;
-    }
-    .legend .pill{backdrop-filter: blur(6px)}
-    .renderBox{
-      border:1px solid var(--line);
-      background: radial-gradient(1200px 500px at 50% 0%, rgba(111,66,193,.18), rgba(16,24,38,.0)),
-                  linear-gradient(180deg, rgba(14,21,34,.9), rgba(11,15,20,1));
-      border-radius:12px;
-      padding:12px;
-      min-height: 260px;
-      position:relative;
-      overflow:hidden;
-    }
-    .renderBox h3{margin:0 0 8px; font-size:12px; color:var(--muted); font-weight:650}
-    .renderBox .fake3d{
-      height:180px;
-      border-radius:12px;
-      border:1px dashed rgba(159,176,194,.35);
-      display:grid;
-      place-items:center;
-      color:rgba(159,176,194,.75);
-      font-size:12px;
-      text-align:center;
-      padding:12px;
-    }
-    .footerNote{
-      padding:10px 14px 20px;
-      max-width:1200px;
-      margin:0 auto;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.4;
-    }
-    .link{
-      color: var(--accent2);
-      text-decoration: none;
-      border-bottom: 1px dotted rgba(32,201,151,.6);
-    }
-    .link:hover{opacity:.9}
+    main{background:rgba(16,24,38,.9);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:680px}
+    #gl{width:100%;height:680px;display:block}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);background:rgba(255,255,255,.02)}
+    code{color:#b8c7ff}
   </style>
+
+  <!-- NiiVue (ESM CDN). If you hate CDNs, you can vendor this file into your repo later. -->
+  <script type="module">
+    import { Niivue, SHOW_RENDER } from "https://unpkg.com/@niivue/niivue@0.45.1/dist/niivue.es.js";
+
+    const els = {
+      status: null, outX:null,outY:null,outZ:null,outAng:null,
+      ang: null, loadNifti: null, viewMode: null, reset: null
+    };
+
+    const state = { x:0, y:0, z:0, ang:45 };
+    let nv;
+
+    function setStatus(s){ if(els.status) els.status.textContent = s; }
+
+    function updateReadout() {
+      els.outX.textContent = `${state.x.toFixed(1)} mm`;
+      els.outY.textContent = `${state.y.toFixed(1)} mm`;
+      els.outZ.textContent = `${state.z.toFixed(1)} mm`;
+      els.outAng.textContent = `${Math.round(state.ang)}°`;
+    }
+
+    function applyViewMode() {
+      const mode = els.viewMode.value;
+      if (mode === "mpr") {
+        nv.setSliceType(3);
+        nv.opts.multiplanarShowRender = SHOW_RENDER.NEVER;
+      } else if (mode === "mpr3d") {
+        nv.setSliceType(3);
+        nv.opts.multiplanarShowRender = SHOW_RENDER.ALWAYS;
+      } else {
+        nv.setSliceType(4);
+      }
+      nv.drawScene();
+    }
+
+    function setTarget(mm) {
+      state.x = mm[0]; state.y = mm[1]; state.z = mm[2];
+      updateReadout();
+
+      // Remove existing drawing layers and add a new marker + coil arrow overlay
+      nv.drawings = [];
+      nv.addText3D("TARGET", [state.x, state.y, state.z], 14, [1,1,1,1]);
+
+      // Simple “coil orientation” arrow drawn as two points in world coords
+      const ang = (state.ang * Math.PI) / 180;
+      const len = 25; // mm
+      const tip = [state.x + Math.cos(ang)*len, state.y + Math.sin(ang)*len, state.z];
+      nv.addLine([state.x, state.y, state.z], tip, [0.12, 0.79, 0.59, 1.0]); // teal-ish
+      nv.drawScene();
+    }
+
+    async function loadDefaultBrain() {
+      // Public demo NIfTI. Replace later with your own hosted demo brain if you want.
+      // This one is lightweight and stable.
+      const demo = "https://niivue.github.io/niivue-demo-images/mni152.nii.gz";
+      setStatus("Loading demo brain…");
+      await nv.loadVolumes([{ url: demo, name: "MNI152", colormap: "gray" }]);
+      setStatus("Loaded demo brain. Click anywhere to place a target.");
+      // Set an initial target near left M1-ish
+      setTarget([-38, -20, 56]);
+      applyViewMode();
+    }
+
+    async function init() {
+      // wire elements
+      els.status = document.getElementById("status");
+      els.outX = document.getElementById("outX");
+      els.outY = document.getElementById("outY");
+      els.outZ = document.getElementById("outZ");
+      els.outAng = document.getElementById("outAng");
+      els.ang = document.getElementById("ang");
+      els.loadNifti = document.getElementById("loadNifti");
+      els.viewMode = document.getElementById("viewMode");
+      els.reset = document.getElementById("reset");
+
+      nv = new Niivue({ backColor: [0,0,0,1], show3Dcrosshair: true });
+      nv.attachToCanvas(document.getElementById("gl"));
+      nv.opts.multiplanarEqualSize = true;
+
+      // Click-to-target: use crosshair position in world mm
+      nv.onLocationChange = (loc) => {
+        // loc.mm is [x,y,z] in mm (when available)
+        if (loc && loc.mm && loc.mm.length === 3) {
+          setTarget(loc.mm);
+        }
+      };
+
+      els.ang.addEventListener("input", () => {
+        state.ang = parseFloat(els.ang.value);
+        updateReadout();
+        setTarget([state.x, state.y, state.z]);
+      });
+
+      els.viewMode.addEventListener("change", applyViewMode);
+
+      els.reset.addEventListener("click", async () => {
+        els.ang.value = "45";
+        state.ang = 45;
+        await loadDefaultBrain();
+      });
+
+      els.loadNifti.addEventListener("change", async (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        setStatus(`Loading ${f.name}…`);
+        await nv.loadFromFile(f);
+        setStatus(`Loaded ${f.name}. Click anywhere to place a target.`);
+        applyViewMode();
+      });
+
+      await loadDefaultBrain();
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+  </script>
 </head>
+
 <body>
 <header>
-  <h1>🧲 TMS Target Visualiser</h1>
-  <p>
-    Educational target planning in a <span class="mono">template brain</span> (no uploads required).
-    Click any view to place a target, adjust coil angle, and see how simple geometry changes a toy “dose” estimate.
-  </p>
+  <div class="top">
+    <div>
+      <div style="font-weight:700">🧲 TMS Target Visualiser</div>
+      <div class="small">Remy Cohan • template brain + your NIfTI upload • click-to-target • MPR + 3D render</div>
+    </div>
+    <div class="row">
+      <a class="btn" href="index.html">Home</a>
+      <button class="btn" onclick="history.back()">Back</button>
+      <span class="pill" id="status">Loading…</span>
+    </div>
+  </div>
 </header>
 
 <div class="wrap">
   <aside class="card">
-    <h2>
-      Controls
-      <span class="pill"><span class="dot"></span> Local only</span>
-    </h2>
-
     <div class="small">
-      This is deliberately “concept-first”: coordinates and coil orientation are shown clearly,
-      without pretending to do SimNIBS-level physics in a browser.
+      This is an educational targeting tool: it shows coordinates and coil orientation overlays on an MRI volume.
+      It does not perform E-field modelling (use SimNIBS for that).
     </div>
 
-    <div class="field">
+    <div class="card" style="margin-top:12px">
       <div class="row" style="justify-content:space-between">
-        <label><strong>Presets</strong></label>
-        <span class="small">MNI-ish (approx)</span>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="btn primary" id="presetM1">M1 hand knob</button>
-        <button class="btn primary" id="presetV1">V1 calcarine</button>
-        <button class="btn warn" id="reset">Reset</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label><strong>Target position</strong></label>
-      <div class="kv" style="margin-top:8px">
-        <div class="small">X (L− / R+)</div>
-        <div class="mono" id="outX">0.0 mm</div>
-        <div class="small">Y (P− / A+)</div>
-        <div class="mono" id="outY">0.0 mm</div>
-        <div class="small">Z (I− / S+)</div>
-        <div class="mono" id="outZ">0.0 mm</div>
+        <label class="small"><strong>Viewer mode</strong></label>
+        <select id="viewMode" class="btn">
+          <option value="mpr">3-plane (MPR)</option>
+          <option value="mpr3d" selected>3-plane + 3D render</option>
+          <option value="3d">3D render only</option>
+        </select>
       </div>
 
-      <div style="margin-top:10px">
-        <label>Z slice (for 2D views)</label>
-        <input type="range" id="zSlider" min="-40" max="80" step="1" value="20" />
+      <div style="margin-top:12px">
+        <label class="small"><strong>Load your NIfTI</strong> (<code>.nii</code> / <code>.nii.gz</code>)</label><br/>
+        <input id="loadNifti" type="file" accept=".nii,.nii.gz" class="btn" style="margin-top:8px;width:100%" />
       </div>
-    </div>
 
-    <div class="field">
-      <label><strong>Coil orientation (concept)</strong></label>
-      <div style="margin-top:10px">
-        <label>Angle (°) relative to “posterior → anterior” axis</label>
-        <input type="range" id="angSlider" min="0" max="179" step="1" value="45" />
+      <div style="margin-top:12px">
+        <label class="small"><strong>Coil orientation</strong> (concept, degrees)</label>
+        <input id="ang" type="range" min="0" max="179" step="1" value="45" />
       </div>
-      <div class="kv" style="margin-top:10px">
-        <div class="small">Angle</div>
-        <div class="mono" id="outAng">45°</div>
-        <div class="small">Direction</div>
-        <div class="mono" id="outDir">PA-biased</div>
-      </div>
-    </div>
 
-    <div class="field">
-      <label><strong>Toy “dose” intuition</strong></label>
-      <div class="small" style="margin-top:6px">
-        A simple inverse-distance rule of thumb (not a real E-field model).
+      <div class="kv">
+        <div class="small">X (L− / R+)</div><div id="outX">—</div>
+        <div class="small">Y (P− / A+)</div><div id="outY">—</div>
+        <div class="small">Z (I− / S+)</div><div id="outZ">—</div>
+        <div class="small">Coil angle</div><div id="outAng">—</div>
       </div>
-      <div style="margin-top:10px">
-        <label>Scalp–cortex distance (mm)</label>
-        <input type="range" id="scdSlider" min="5" max="30" step="1" value="15" />
-      </div>
-      <div class="kv" style="margin-top:10px">
-        <div class="small">SCD</div>
-        <div class="mono" id="outSCD">15 mm</div>
-        <div class="small">Relative dose</div>
-        <div class="mono" id="outDose">1.00×</div>
-      </div>
-      <div class="small" style="margin-top:8px">
-        Relative dose is normalised to 15 mm and updated live.
-      </div>
-    </div>
 
-    <div class="field">
-      <label><strong>Export</strong></label>
-      <div class="row" style="margin-top:8px">
-        <button class="btn green" id="copyJson">Copy target JSON</button>
-        <button class="btn" id="copyText">Copy plain text</button>
-      </div>
-      <div class="small" style="margin-top:8px">
-        Share a target with a student/colleague without sharing imaging data.
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="reset">Reset demo</button>
       </div>
     </div>
 
     <div class="small" style="margin-top:12px">
-      Want real subject-specific planning? Use SimNIBS/Charm offline.
-      This page is meant to be fast, safe, and educational.
+      How to use:
+      <ol class="small">
+        <li>Click anywhere in the MRI to move the target.</li>
+        <li>Change coil angle to rotate the arrow overlay.</li>
+        <li>Switch to “3-plane + 3D render” for the portfolio “wow” factor.</li>
+      </ol>
     </div>
   </aside>
 
-  <section class="stage">
-    <div class="stageTop">
-      <div class="hint">Click any panel to place a target. Crosshairs show X/Y/Z.</div>
-      <div class="row">
-        <span class="pill"><span class="dot" style="background:var(--accent2)"></span> coil</span>
-        <span class="pill"><span class="dot"></span> target</span>
-      </div>
-    </div>
-
-    <div class="canvasArea">
-      <div class="panel" id="axialPanel">
-        <h3>Axial (Z fixed)</h3>
-        <svg viewBox="0 0 300 210" id="axialSvg" aria-label="axial view"></svg>
-        <div class="legend">
-          <span class="pill mono" id="axialInfo">Z=20</span>
-        </div>
-      </div>
-
-      <div class="panel" id="sagPanel">
-        <h3>Sagittal (X fixed)</h3>
-        <svg viewBox="0 0 300 210" id="sagSvg" aria-label="sagittal view"></svg>
-        <div class="legend">
-          <span class="pill mono" id="sagInfo">X=0</span>
-        </div>
-      </div>
-
-      <div class="panel" id="corPanel">
-        <h3>Coronal (Y fixed)</h3>
-        <svg viewBox="0 0 300 210" id="corSvg" aria-label="coronal view"></svg>
-        <div class="legend">
-          <span class="pill mono" id="corInfo">Y=0</span>
-        </div>
-      </div>
-
-      <div class="renderBox">
-        <h3>3D render (concept)</h3>
-        <div class="fake3d">
-          This page does not do segmentation/meshing in-browser.<br><br>
-          It shows the <strong>target</strong> and <strong>coil orientation</strong> conceptually.<br>
-          For “skull reconstruction”, use a proper pipeline offline.
-        </div>
-        <div class="legend">
-          <span class="pill mono" id="renderInfo">Target: (0,0,20)</span>
-        </div>
-      </div>
-    </div>
-  </section>
+  <main>
+    <canvas id="gl"></canvas>
+  </main>
 </div>
-
-<div class="footerNote">
-  Tip: If you want this to behave more like a real planner later, the sane upgrade path is:
-  (1) keep this UI, (2) accept only NIfTI uploads, (3) compute true geometry on a backend or in a desktop app.
-</div>
-
-<script>
-  // --- Coordinate mapping (simple, stable) ---
-  // We use an MNI-ish box with fixed bounds. It's a concept tool, not a medical device.
-  const bounds = {
-    x: [-90, 90],   // L- to R+
-    y: [-120, 90],  // P- to A+
-    z: [-60, 90]    // I- to S+
-  };
-
-  const state = {
-    x: 0,
-    y: 0,
-    z: 20,
-    ang: 45,
-    scd: 15
-  };
-
-  const els = {
-    outX: document.getElementById('outX'),
-    outY: document.getElementById('outY'),
-    outZ: document.getElementById('outZ'),
-    outAng: document.getElementById('outAng'),
-    outDir: document.getElementById('outDir'),
-    outSCD: document.getElementById('outSCD'),
-    outDose: document.getElementById('outDose'),
-    zSlider: document.getElementById('zSlider'),
-    angSlider: document.getElementById('angSlider'),
-    scdSlider: document.getElementById('scdSlider'),
-    axialSvg: document.getElementById('axialSvg'),
-    sagSvg: document.getElementById('sagSvg'),
-    corSvg: document.getElementById('corSvg'),
-    axialInfo: document.getElementById('axialInfo'),
-    sagInfo: document.getElementById('sagInfo'),
-    corInfo: document.getElementById('corInfo'),
-    renderInfo: document.getElementById('renderInfo'),
-    presetM1: document.getElementById('presetM1'),
-    presetV1: document.getElementById('presetV1'),
-    reset: document.getElementById('reset'),
-    copyJson: document.getElementById('copyJson'),
-    copyText: document.getElementById('copyText'),
-  };
-
-  function clamp(v, a, b){ return Math.min(Math.max(v, a), b); }
-
-  function pxToCoord(px, py, view){
-    // view box is 300x210
-    const nx = clamp(px / 300, 0, 1);
-    const ny = clamp(py / 210, 0, 1);
-
-    // Map depending on view:
-    // Axial: x (L/R) across, y (P/A) up
-    // Sagittal: y across, z up (x fixed)
-    // Coronal: x across, z up (y fixed)
-    if(view === 'axial'){
-      const x = bounds.x[0] + nx*(bounds.x[1]-bounds.x[0]);
-      const y = bounds.y[0] + (1-ny)*(bounds.y[1]-bounds.y[0]);
-      return {x, y};
-    }
-    if(view === 'sag'){
-      const y = bounds.y[0] + nx*(bounds.y[1]-bounds.y[0]);
-      const z = bounds.z[0] + (1-ny)*(bounds.z[1]-bounds.z[0]);
-      return {y, z};
-    }
-    if(view === 'cor'){
-      const x = bounds.x[0] + nx*(bounds.x[1]-bounds.x[0]);
-      const z = bounds.z[0] + (1-ny)*(bounds.z[1]-bounds.z[0]);
-      return {x, z};
-    }
-    return {};
-  }
-
-  function coordToPx(view){
-    // returns target position in px for each panel
-    if(view === 'axial'){
-      const nx = (state.x - bounds.x[0]) / (bounds.x[1]-bounds.x[0]);
-      const ny = 1 - (state.y - bounds.y[0]) / (bounds.y[1]-bounds.y[0]);
-      return {px: nx*300, py: ny*210};
-    }
-    if(view === 'sag'){
-      const nx = (state.y - bounds.y[0]) / (bounds.y[1]-bounds.y[0]);
-      const ny = 1 - (state.z - bounds.z[0]) / (bounds.z[1]-bounds.z[0]);
-      return {px: nx*300, py: ny*210};
-    }
-    if(view === 'cor'){
-      const nx = (state.x - bounds.x[0]) / (bounds.x[1]-bounds.x[0]);
-      const ny = 1 - (state.z - bounds.z[0]) / (bounds.z[1]-bounds.z[0]);
-      return {px: nx*300, py: ny*210};
-    }
-    return {px:150, py:105};
-  }
-
-  function dirLabel(deg){
-    // simple coarse labels
-    // 0 = PA, 90 = LM, 135 = AL-ish etc. It's concept.
-    if(deg < 25) return "PA";
-    if(deg < 65) return "PA-biased";
-    if(deg < 115) return "LM / ML";
-    if(deg < 155) return "AP-biased";
-    return "AP";
-  }
-
-  function relativeDose(scd){
-    // normalise to 15mm using 1/d rule (toy)
-    const ref = 15;
-    return (ref / scd);
-  }
-
-  function fmt(v){ return (Math.round(v*10)/10).toFixed(1); }
-
-  function updateOutputs(){
-    els.outX.textContent = `${fmt(state.x)} mm`;
-    els.outY.textContent = `${fmt(state.y)} mm`;
-    els.outZ.textContent = `${fmt(state.z)} mm`;
-    els.outAng.textContent = `${Math.round(state.ang)}°`;
-    els.outDir.textContent = dirLabel(state.ang);
-    els.outSCD.textContent = `${Math.round(state.scd)} mm`;
-    els.outDose.textContent = `${(relativeDose(state.scd)).toFixed(2)}×`;
-
-    els.axialInfo.textContent = `Z=${Math.round(state.z)}`;
-    els.sagInfo.textContent = `X=${Math.round(state.x)}`;
-    els.corInfo.textContent = `Y=${Math.round(state.y)}`;
-    els.renderInfo.textContent = `Target: (${Math.round(state.x)}, ${Math.round(state.y)}, ${Math.round(state.z)})`;
-  }
-
-  function brainOutline(svg, kind){
-    // Simple stylised outlines for each view
-    // (robust, no assets, looks clean)
-    svg.innerHTML = "";
-
-    const ns = "http://www.w3.org/2000/svg";
-    const g = document.createElementNS(ns, "g");
-
-    const bg = document.createElementNS(ns, "rect");
-    bg.setAttribute("x","0"); bg.setAttribute("y","0");
-    bg.setAttribute("width","300"); bg.setAttribute("height","210");
-    bg.setAttribute("fill","rgba(255,255,255,0.01)");
-    g.appendChild(bg);
-
-    const path = document.createElementNS(ns, "path");
-    path.setAttribute("fill","rgba(231,238,247,0.06)");
-    path.setAttribute("stroke","rgba(231,238,247,0.18)");
-    path.setAttribute("stroke-width","2");
-
-    if(kind === "axial"){
-      path.setAttribute("d",
-        "M150 20 C220 20 275 70 275 110 C275 165 222 195 150 195 C80 195 25 165 25 110 C25 70 80 20 150 20 Z"
-      );
-    } else if(kind === "sag"){
-      path.setAttribute("d",
-        "M70 35 C110 10 185 15 215 55 C245 92 246 135 225 160 C205 184 165 195 125 190 C95 187 80 172 70 152 C58 128 48 92 55 70 C58 55 60 44 70 35 Z"
-      );
-    } else { // coronal
-      path.setAttribute("d",
-        "M150 18 C210 18 255 60 255 110 C255 168 212 198 150 198 C90 198 45 168 45 110 C45 60 90 18 150 18 Z"
-      );
-    }
-
-    g.appendChild(path);
-
-    // midline or reference
-    const mid = document.createElementNS(ns, "line");
-    mid.setAttribute("x1","150"); mid.setAttribute("y1","18");
-    mid.setAttribute("x2","150"); mid.setAttribute("y2","198");
-    mid.setAttribute("stroke","rgba(159,176,194,0.18)");
-    mid.setAttribute("stroke-width","1");
-    g.appendChild(mid);
-
-    svg.appendChild(g);
-  }
-
-  function drawOverlay(svg, view){
-    const ns = "http://www.w3.org/2000/svg";
-
-    // Remove previous overlay group
-    const old = svg.querySelector(".overlay");
-    if(old) old.remove();
-
-    const overlay = document.createElementNS(ns, "g");
-    overlay.setAttribute("class","overlay");
-
-    // crosshair at target
-    const {px, py} = coordToPx(view);
-
-    const cross = document.createElementNS(ns, "g");
-    cross.setAttribute("class","crosshair");
-
-    const l1 = document.createElementNS(ns, "line");
-    l1.setAttribute("x1","0"); l1.setAttribute("y1", py);
-    l1.setAttribute("x2","300"); l1.setAttribute("y2", py);
-    cross.appendChild(l1);
-
-    const l2 = document.createElementNS(ns, "line");
-    l2.setAttribute("x1", px); l2.setAttribute("y1","0");
-    l2.setAttribute("x2", px); l2.setAttribute("y2","210");
-    cross.appendChild(l2);
-
-    overlay.appendChild(cross);
-
-    // target dot
-    const dot = document.createElementNS(ns, "circle");
-    dot.setAttribute("class","target");
-    dot.setAttribute("cx", px);
-    dot.setAttribute("cy", py);
-    dot.setAttribute("r", "6");
-    overlay.appendChild(dot);
-
-    // coil marker (simple): circle + direction arrow near target
-    const coil = document.createElementNS(ns, "g");
-    coil.setAttribute("class","coil");
-
-    const coilC = document.createElementNS(ns, "circle");
-    coilC.setAttribute("cx", px);
-    coilC.setAttribute("cy", py);
-    coilC.setAttribute("r", "18");
-    coil.appendChild(coilC);
-
-    const ang = (state.ang * Math.PI) / 180;
-    const x2 = px + Math.cos(ang) * 26;
-    const y2 = py - Math.sin(ang) * 26;
-
-    const arrow = document.createElementNS(ns, "line");
-    arrow.setAttribute("x1", px);
-    arrow.setAttribute("y1", py);
-    arrow.setAttribute("x2", x2);
-    arrow.setAttribute("y2", y2);
-    coil.appendChild(arrow);
-
-    overlay.appendChild(coil);
-
-    svg.appendChild(overlay);
-  }
-
-  function redrawAll(){
-    brainOutline(els.axialSvg, "axial");
-    brainOutline(els.sagSvg, "sag");
-    brainOutline(els.corSvg, "cor");
-
-    drawOverlay(els.axialSvg, "axial");
-    drawOverlay(els.sagSvg, "sag");
-    drawOverlay(els.corSvg, "cor");
-
-    updateOutputs();
-  }
-
-  function handleClick(svg, view, evt){
-    const rect = svg.getBoundingClientRect();
-    const px = (evt.clientX - rect.left) * (300 / rect.width);
-    const py = (evt.clientY - rect.top) * (210 / rect.height);
-
-    if(view === "axial"){
-      const {x, y} = pxToCoord(px, py, "axial");
-      state.x = x;
-      state.y = y;
-    } else if(view === "sag"){
-      const {y, z} = pxToCoord(px, py, "sag");
-      state.y = y;
-      state.z = z;
-      els.zSlider.value = Math.round(state.z);
-    } else {
-      const {x, z} = pxToCoord(px, py, "cor");
-      state.x = x;
-      state.z = z;
-      els.zSlider.value = Math.round(state.z);
-    }
-    redrawAll();
-  }
-
-  // --- wiring ---
-  els.zSlider.addEventListener('input', (e)=>{
-    state.z = parseFloat(e.target.value);
-    redrawAll();
-  });
-  els.angSlider.addEventListener('input', (e)=>{
-    state.ang = parseFloat(e.target.value);
-    redrawAll();
-  });
-  els.scdSlider.addEventListener('input', (e)=>{
-    state.scd = parseFloat(e.target.value);
-    redrawAll();
-  });
-
-  els.axialSvg.addEventListener('click', (e)=>handleClick(els.axialSvg, "axial", e));
-  els.sagSvg.addEventListener('click', (e)=>handleClick(els.sagSvg, "sag", e));
-  els.corSvg.addEventListener('click', (e)=>handleClick(els.corSvg, "cor", e));
-
-  els.presetM1.addEventListener('click', ()=>{
-    // Approx left M1 hand knob region (MNI-ish)
-    state.x = -38; state.y = -20; state.z = 56;
-    els.zSlider.value = Math.round(state.z);
-    redrawAll();
-  });
-
-  els.presetV1.addEventListener('click', ()=>{
-    // Approx left calcarine/V1 region (MNI-ish)
-    state.x = -10; state.y = -92; state.z = 4;
-    els.zSlider.value = Math.round(state.z);
-    redrawAll();
-  });
-
-  els.reset.addEventListener('click', ()=>{
-    state.x = 0; state.y = 0; state.z = 20; state.ang = 45; state.scd = 15;
-    els.zSlider.value = 20;
-    els.angSlider.value = 45;
-    els.scdSlider.value = 15;
-    redrawAll();
-  });
-
-  function copyToClipboard(text){
-    navigator.clipboard?.writeText(text).catch(()=>{
-      // fallback
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-    });
-  }
-
-  els.copyJson.addEventListener('click', ()=>{
-    const payload = {
-      target_mm: { x: +fmt(state.x), y: +fmt(state.y), z: +fmt(state.z) },
-      coil_angle_deg: Math.round(state.ang),
-      scd_mm: Math.round(state.scd),
-      note: "Educational target export (template coordinates). Not subject-specific."
-    };
-    copyToClipboard(JSON.stringify(payload, null, 2));
-  });
-
-  els.copyText.addEventListener('click', ()=>{
-    const s = `Target (mm): x=${fmt(state.x)}, y=${fmt(state.y)}, z=${fmt(state.z)} | coil=${Math.round(state.ang)}° | SCD=${Math.round(state.scd)} mm`;
-    copyToClipboard(s);
-  });
-
-  // initial draw
-  redrawAll();
-</script>
 </body>
 </html>
-
