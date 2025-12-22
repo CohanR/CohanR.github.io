@@ -1,186 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>NiiVue Pro (Folder Supported)</title>
-  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Interactive MRI Viewer | Remy Cohan</title>
+
   <style>
-    body { margin: 0; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; background: #000; color: #fff; overflow: hidden; }
-    
-    /* MENU BAR */
-    header { background: #333; height: 40px; display: flex; align-items: center; padding: 0 10px; user-select: none; }
-    
-    .dropdown { position: relative; display: inline-block; }
-    .dropbtn { background: transparent; color: white; padding: 10px 15px; font-size: 14px; border: none; cursor: pointer; }
-    .dropdown:hover .dropbtn { background-color: #555; }
-    
-    .dropdown-content {
-      display: none; position: absolute; background-color: #222; min-width: 160px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.5); z-index: 100; border: 1px solid #444; top: 40px;
+    :root {
+      --primary-color: #007bff;
+      --bg-color: #e5e5e5;
+      --sidebar-bg: #ffffff;
+      --text-color: #333;
     }
-    .dropdown-content a { color: #ccc; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; cursor: pointer; }
-    .dropdown-content a:hover { background-color: #007bff; color: white; }
-    .dropdown:hover .dropdown-content { display: block; }
-    
-    .divider { border-top: 1px solid #444; margin-top: 4px; padding-top: 4px; }
 
-    /* LAYOUT */
-    main { flex: 1; position: relative; width: 100%; height: 100%; }
-    canvas { width: 100%; height: 100%; display: block; outline: none; }
-    footer { background: #222; font-size: 12px; color: #888; padding: 5px 10px; border-top: 1px solid #444; }
-
-    /* OVERLAY */
-    #overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center;
-      z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.2s;
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow: hidden;
     }
-    #overlay.active { opacity: 1; pointer-events: auto; }
-    .msg-box { border: 2px dashed #666; padding: 40px; border-radius: 10px; background: #151515; text-align: center; }
+
+    .app-container {
+      display: flex;
+      flex-direction: row; 
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* --- Sidebar (Your Original Style) --- */
+    .sidebar {
+      width: 320px; 
+      flex-shrink: 0; 
+      background: var(--sidebar-bg);
+      padding: 2rem;
+      border-right: 1px solid #ccc;
+      overflow-y: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: #333; font-size: 1.1rem; font-weight: 700;}
+    .sidebar h3:first-of-type { margin-top: 0; }
+    .sidebar p { margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.6; color: #555; }
+    .sidebar ol { padding-left: 20px; margin-bottom: 20px; color: #555; }
+    .sidebar li { margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; }
+    
+    .home-button {
+      display: inline-block;
+      margin-bottom: 30px;
+      padding: 10px 18px;
+      background-color: var(--primary-color);
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+      align-self: flex-start;
+    }
+    .home-button:hover { background-color: #0056b3; }
+
+    .signature {
+      margin-top: auto;
+      padding-top: 20px;
+      font-size: 0.8rem;
+      color: #999;
+      border-top: 1px solid #eee;
+    }
+
+    /* --- Viewer Area --- */
+    .content {
+      flex-grow: 1;
+      position: relative;
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Canvas must fill the space */
+    #gl {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Mobile Styles */
+    .mobile-header { display: none; }
+    @media (max-width: 768px) {
+      .app-container { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; order: 2; border-right: none; border-top: 1px solid #ccc; }
+      .home-button { display: none; }
+      .content { height: 60vh; order: 1; }
+      .mobile-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #fff; border-bottom: 1px solid #ddd; }
+      .mobile-home-btn { color: var(--primary-color); text-decoration: none; font-weight: bold; }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="dropdown">
-      <button class="dropbtn">File ▼</button>
-      <div class="dropdown-content">
-        <a onclick="openFile()">📂 Open Folder...</a>
-        <a onclick="saveScreenshot()">📷 Screenshot</a>
-      </div>
-    </div>
-    <div class="dropdown">
-      <button class="dropbtn">View ▼</button>
-      <div class="dropdown-content">
-        <a onclick="setSlice('multi')">Multi-Planar (A+C+S+R)</a>
-        <a class="divider"></a>
-        <a onclick="setSlice('axial')">Axial</a>
-        <a onclick="setSlice('coronal')">Coronal</a>
-        <a onclick="setSlice('sagittal')">Sagittal</a>
-        <a onclick="setSlice('render')">3D Render</a>
-        <a class="divider"></a>
-        <a onclick="toggleCrosshair()">Toggle Crosshair</a>
-        <a onclick="toggleRadiological()">Toggle Radiological</a>
-      </div>
-    </div>
-    <div class="dropdown">
-      <button class="dropbtn">Color ▼</button>
-      <div class="dropdown-content">
-        <a onclick="setColor('gray')">Gray</a>
-        <a onclick="setColor('plasma')">Plasma</a>
-        <a onclick="setColor('viridis')">Viridis</a>
-        <a onclick="setColor('inferno')">Inferno</a>
-        <a onclick="setColor('bone')">Bone</a>
-      </div>
-    </div>
-  </header>
+  <div class="mobile-header">
+    <strong>MRI Viewer</strong>
+    <a href="index.html" class="mobile-home-btn">Exit</a>
+  </div>
 
-  <main>
-    <div id="overlay">
-      <div class="msg-box">
-        <h2>Drag DICOM Folder Here</h2>
-        <p style="font-size:12px; color:#999">Supports Folders & NIfTI</p>
-        <input type="file" id="fileInput" multiple webkitdirectory style="display:none">
-        <button onclick="document.getElementById('fileInput').click()" style="padding:10px 20px; cursor:pointer;">Browse Folder</button>
+  <div class="app-container">
+    <div class="sidebar">
+      <a href="index.html" class="home-button">← Back to Home</a>
+      
+      <h3>Instructions</h3>
+      <p>This viewer is using <strong>NiiVue</strong> to support on-the-fly 3D rendering. The "4th Pane" shows the 3D volume.</p>
+      
+      <h3>Controls:</h3>
+      <ol>
+        <li><strong>Left Click + Drag:</strong> Rotate 3D / Adjust brightness (2D)</li>
+        <li><strong>Right Click + Drag:</strong> Pan / Zoom</li>
+        <li><strong>Scroll Wheel:</strong> Change slice</li>
+      </ol>
+
+      <h3>To load your own image:</h3>
+      <p>Simply <strong>Drag and Drop</strong> your <code>.nii.gz</code> file anywhere on the black viewer area.</p>
+
+      <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+          <strong>Visual Options:</strong><br>
+          <label><input type="checkbox" id="check3D" checked onchange="toggle3D()"> Show 3D Render</label><br>
+          <label><input type="checkbox" id="checkCrosshair" checked onchange="toggleCrosshair()"> Show Crosshairs</label>
       </div>
+
+      <a href="dicom_converter.html" class="home-button" style="background-color: #17a2b8; margin-top: 25px;">🔄 DICOM to NIfTI Converter</a>
+
+      <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
     </div>
-    <canvas id="gl"></canvas>
-  </main>
 
-  <footer id="intensity">Ready.</footer>
+    <div class="content">
+      <canvas id="gl"></canvas>
+    </div>
+  </div>
 
-  <script type="module" async>
-    import { Niivue } from "https://unpkg.com/@niivue/niivue@0.42.0/dist/niivue.es.js";
+  <script src="https://unpkg.com/@niivue/niivue@0.41.0/dist/niivue.umd.js"></script>
 
-    const statusEl = document.getElementById("intensity");
-    const overlay = document.getElementById("overlay");
-    
-    // Initialize
-    const nv = new Niivue({
-      dragAndDropEnabled: false, // Manual drop handling for folder recursion
-      onLocationChange: (data) => { statusEl.innerHTML = data.string; }
+  <script>
+    // Initialize NiiVue
+    const nv = new niivue.Niivue({
+      dragAndDropEnabled: true,
+      backColor: [0, 0, 0, 1],
+      show3Dcrosshair: true,
     });
+
+    // Attach to the canvas
+    nv.attachTo('gl');
+
+    // Load Default Image (MNI152)
+    // NOTE: This will only work if hosted on a server (GitHub Pages). 
+    // If opening locally, you must Drag & Drop files due to browser security.
+    var volumeList = [
+      { url: "images/mni152.nii.gz" } 
+    ];
     
-    await nv.attachTo("gl");
-    
-    // Set Defaults
+    // Set Layout to 4-Pane (Multiplanar)
     nv.setSliceType(nv.sliceTypeMultiplanar);
-    nv.opts.multiplanarForceRender = true;
-    nv.setMeshProperty(0, {rgba255: [0, 0, 0, 255]});
     
-    overlay.classList.add('active');
+    // Attempt to load default
+    try {
+        nv.loadVolumes(volumeList);
+    } catch(e) {
+        console.log("Could not load default URL (likely CORS local file issue). Drag and Drop will still work.");
+    }
 
-    // --- UI FUNCTIONS ---
-    window.setSlice = (type) => {
-        if(type === 'multi') {
-            nv.opts.multiplanarShowRender = true;
+    // --- Interaction Functions ---
+    function toggle3D() {
+        // Toggle between 4-pane (Multiplanar) and 2D-only (Axial/Coronal/Sagittal)
+        if (document.getElementById('check3D').checked) {
             nv.setSliceType(nv.sliceTypeMultiplanar);
+        } else {
+            nv.setSliceType(nv.sliceTypeAxial); // Or whichever default you prefer
         }
-        else if(type === 'axial') nv.setSliceType(nv.sliceTypeAxial);
-        else if(type === 'coronal') nv.setSliceType(nv.sliceTypeCoronal);
-        else if(type === 'sagittal') nv.setSliceType(nv.sliceTypeSagittal);
-        else if(type === 'render') nv.setSliceType(nv.sliceTypeRender);
-    };
+    }
 
-    window.setColor = (name) => {
-        if(nv.volumes.length) { nv.volumes[0].colormap = name; nv.updateGLVolume(); }
-    };
-
-    window.saveScreenshot = () => nv.saveScene("screen.png");
-    window.toggleCrosshair = () => { nv.opts.show3Dcrosshair = !nv.opts.show3Dcrosshair; nv.drawScene(); };
-    window.toggleRadiological = () => { nv.opts.isRadiologicalConvention = !nv.opts.isRadiologicalConvention; nv.drawScene(); };
-    window.openFile = () => document.getElementById('fileInput').click();
-
-    // --- DRAG & DROP + FOLDER LOADING ---
-    document.body.addEventListener('dragover', (e) => { e.preventDefault(); overlay.classList.add('active'); });
+    function toggleCrosshair() {
+        nv.setCrosshairWidth(document.getElementById('checkCrosshair').checked ? 1 : 0);
+    }
     
-    document.body.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        const items = e.dataTransfer.items;
-        if (items && items.length > 0) {
-            statusEl.innerText = "Scanning folder...";
-            const files = await scanFiles(items);
-            if(files.length > 0) { loadFiles(files); overlay.classList.remove('active'); }
-        }
+    // Handle Window Resize
+    window.addEventListener('resize', () => {
+        nv.resizeListener();
     });
-
-    document.getElementById('fileInput').onchange = (e) => {
-        overlay.classList.remove('active');
-        loadFiles(e.target.files);
-    };
-
-    async function loadFiles(fileList) {
-        const files = Array.from(fileList).filter(f => !f.name.startsWith('.'));
-        if (files.length === 0) return;
-        
-        statusEl.innerText = `Loading ${files.length} DICOMs...`;
-        
-        try {
-            // Using loadFromFiles (Supported in 0.42.0)
-            await nv.loadFromFiles(files);
-            statusEl.innerText = "Loaded.";
-        } catch (err) {
-            statusEl.innerText = "Error: " + err.message;
-            console.error(err);
-        }
-    }
-
-    // Helper: Recursive Folder Scanner
-    async function scanFiles(items) {
-        let files = [];
-        let queue = [];
-        for (let i=0; i<items.length; i++) queue.push(items[i].webkitGetAsEntry());
-        while (queue.length > 0) {
-            let entry = queue.shift();
-            if (entry.isFile) files.push(await new Promise(r => entry.file(r)));
-            else if (entry.isDirectory) {
-                let reader = entry.createReader();
-                queue.push(...await new Promise(r => reader.readEntries(r)));
-            }
-        }
-        return files;
-    }
   </script>
 </body>
 </html>
