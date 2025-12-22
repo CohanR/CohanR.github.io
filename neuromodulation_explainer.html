@@ -237,10 +237,16 @@
 
 <script>
 (() => {
-  // ---------- Paths (repo) ----------
+  // ---------- Paths ----------
   const DEMO_MESH_URL  = "/assets/neurop/mni152_2009.mz3";
   const ATLAS_NII_URL  = "/assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz";
   const ATLAS_LUT_URL  = "/assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt";
+
+  // ---------- Grab Niivue class (works with both UMD globals) ----------
+  const NiivueClass =
+    (window.niivue && window.niivue.Niivue) ||
+    (window.Niivue && window.Niivue.Niivue) ||
+    window.Niivue;
 
   // ---------- UI ----------
   const statusPill = document.getElementById("statusPill");
@@ -269,160 +275,111 @@
     if(mode==="4panel") btn4panel.classList.add("on");
   }
 
-  function showSingle(){
-    gridWrap.style.display = "none";
-    singleWrap.style.display = "block";
-  }
-
-  function showGrid(){
-    singleWrap.style.display = "none";
-    gridWrap.style.display = "grid";
-  }
+  function showSingle(){ gridWrap.style.display="none"; singleWrap.style.display="block"; }
+  function showGrid(){ singleWrap.style.display="none"; gridWrap.style.display="grid"; }
 
   // ---------- NiiVue instances ----------
-  // single = used for 3-plane and 3D when not in 4-panel
   let nvSingle = null;
-
-  // 4-panel: four separate canvases (ax, cor, sag, render)
   let nvAx=null, nvCor=null, nvSag=null, nvRen=null;
 
-  // state
-  let currentMode = "3plane";
+  let currentMode = "3d";
   let atlasLoaded = false;
   let userVolumeObjectUrl = null;
 
-  // ---------- Helpers: API compatibility wrappers ----------
-  async function safeRemoveAllVolumes(nv){
-    if(!nv) return;
-    if(typeof nv.removeAllVolumes === "function") nv.removeAllVolumes();
-    else if(typeof nv.clearVolumes === "function") nv.clearVolumes();
-    else if(Array.isArray(nv.volumes)) nv.volumes = [];
+  // ---------- Helpers ----------
+  function draw(nv){ try { nv.drawScene && nv.drawScene(); } catch(e) {} }
+
+  function hide3DRedAxes(nv){
+    // This is what you’re seeing as “red axis lines” in 3D. Turn it off.
+    if(nv?.opts) nv.opts.showCrosshair = false;
+    draw(nv);
   }
 
-  async function safeRemoveAllMeshes(nv){
-    if(!nv) return;
-    if(typeof nv.removeAllMeshes === "function") nv.removeAllMeshes();
-    else if(typeof nv.clearMeshes === "function") nv.clearMeshes();
-    else if(Array.isArray(nv.meshes)) nv.meshes = [];
-  }
-
-  async function safeLoadMeshFromUrl(nv, url){
-    // Tries multiple APIs to survive version differences
-    if(typeof nv.loadMesh === "function") return nv.loadMesh(url);
-
-    if(typeof nv.loadMeshes === "function") {
-      // some builds accept array of urls or objects
-      try { return nv.loadMeshes([{url}]); } catch(e) {}
-      try { return nv.loadMeshes([url]); } catch(e) {}
-    }
-
-    if(typeof nv.addMeshFromUrl === "function") return nv.addMeshFromUrl(url);
-
-    if(typeof nv.loadMeshesFromUrl === "function") return nv.loadMeshesFromUrl([url]);
-
-    throw new Error("Mesh loading API not found in this NiiVue build.");
-  }
-
-  async function safeLoadVolumeFromUrl(nv, url){
-    // For remote/object URLs
-    if(typeof nv.loadVolumes === "function") {
-      return nv.loadVolumes([{ url }]);
-    }
-    if(typeof nv.addVolumesFromUrl === "function") {
-      return nv.addVolumesFromUrl([{ url }]);
-    }
-    if(typeof nv.loadFromUrl === "function") {
-      return nv.loadFromUrl(url);
-    }
-    throw new Error("Volume loading API not found in this NiiVue build.");
-  }
-
-  async function safeAddAtlasOverlay(nv){
-    // For atlas label volume + LUT
-    if(typeof nv.addLabelFromUrl === "function") {
-      return nv.addLabelFromUrl(ATLAS_NII_URL, ATLAS_LUT_URL);
-    }
-    // fallback: treat as an overlay volume if label helper not present
-    if(typeof nv.loadVolumes === "function") {
-      // load atlas as second volume, then LUT if supported
-      await nv.loadVolumes([{url: ATLAS_NII_URL}]);
-      if(typeof nv.loadLut === "function") {
-        try { await nv.loadLut(ATLAS_LUT_URL); } catch(e) {}
-      }
-      return;
-    }
-    throw new Error("Atlas overlay API not found in this NiiVue build.");
+  function show2DCrosshair(nv){
+    if(nv?.opts) nv.opts.showCrosshair = true;
+    draw(nv);
   }
 
   function safeSetSliceType(nv, sliceType){
     if(!nv) return;
     if(typeof nv.setSliceType === "function") nv.setSliceType(sliceType);
     else nv.sliceType = sliceType;
+    draw(nv);
   }
 
-  function safeSetCrosshair(nv, on){
+  function safeClear(nv){
     if(!nv) return;
-    // Works for most builds:
-    if(nv.opts) nv.opts.showCrosshair = !!on;
-    if(typeof nv.updateGLVolume === "function") nv.updateGLVolume();
-    if(typeof nv.drawScene === "function") nv.drawScene();
+    try { nv.removeAllMeshes && nv.removeAllMeshes(); } catch(e) {}
+    try { nv.removeAllVolumes && nv.removeAllVolumes(); } catch(e) {}
+    // fallback
+    if(Array.isArray(nv.meshes)) nv.meshes = [];
+    if(Array.isArray(nv.volumes)) nv.volumes = [];
+    draw(nv);
   }
 
-  function safeSet3DAxes(nv, on){
-    // Depending on build, axes are tied to crosshair or render settings.
-    // Defaulting to crosshair off in 3D gets rid of the red axis lines in your screenshots.
-    safeSetCrosshair(nv, !!on);
-  }
-
-  function applyAtlasOpacityAll(alpha){
-    const nvs = [nvSingle, nvAx, nvCor, nvSag, nvRen].filter(Boolean);
-    for(const nv of nvs){
-      if(nv.opts) nv.opts.opacity = alpha; // generic
-      // if multiple volumes are used, prefer setting overlay volume opacity
-      if(Array.isArray(nv.volumes) && nv.volumes.length > 1) {
-        // common pattern: volumes[1] is overlay
-        try { nv.volumes[1].opacity = alpha; } catch(e) {}
-      }
-      if(typeof nv.drawScene === "function") nv.drawScene();
+  async function safeLoadMesh(nv, url){
+    // Prefer loadMeshes on newer builds (your 0.66 case)
+    if(typeof nv.loadMeshes === "function"){
+      try { await nv.loadMeshes([{ url }]); draw(nv); return; } catch(e) {}
+      try { await nv.loadMeshes([url]); draw(nv); return; } catch(e) {}
     }
+    if(typeof nv.addMeshFromUrl === "function"){ await nv.addMeshFromUrl(url); draw(nv); return; }
+    if(typeof nv.loadMesh === "function"){ await nv.loadMesh(url); draw(nv); return; }
+    throw new Error("No supported mesh loader in this NiiVue build.");
   }
 
-  // ---------- Build viewers ----------
+  async function safeLoadVolumeUrl(nv, url){
+    if(typeof nv.loadVolumes === "function"){ await nv.loadVolumes([{ url }]); draw(nv); return; }
+    if(typeof nv.addVolumesFromUrl === "function"){ await nv.addVolumesFromUrl([{ url }]); draw(nv); return; }
+    if(typeof nv.loadFromUrl === "function"){ await nv.loadFromUrl(url); draw(nv); return; }
+    throw new Error("No supported volume loader in this NiiVue build.");
+  }
+
+  async function safeAddAtlas(nv){
+    if(typeof nv.addLabelFromUrl === "function"){
+      await nv.addLabelFromUrl(ATLAS_NII_URL, ATLAS_LUT_URL);
+      draw(nv);
+      return;
+    }
+    // fallback: load atlas as 2nd volume
+    await safeLoadVolumeUrl(nv, ATLAS_NII_URL);
+  }
+
+  function applyAtlasOpacity(nv, alpha){
+    if(!nv) return;
+    // if atlas is volume[1], set opacity there
+    if(Array.isArray(nv.volumes) && nv.volumes.length > 1){
+      try { nv.volumes[1].opacity = alpha; } catch(e) {}
+    }
+    draw(nv);
+  }
+
+  // ---------- Create viewers ----------
   function createNv(canvas){
-    // Conservative defaults for your aesthetic
-    const nv = new Niivue.Niivue({
+    const nv = new NiivueClass({
       backColor: [0,0,0,1],
-      show3Dcrosshair: false,
       isNearestInterpolation: true
     });
     nv.attachToCanvas(canvas);
 
-    // keep crosshair for 2D, hide for 3D later
     if(nv.opts){
-      nv.opts.showCrosshair = true;
-      nv.opts.crosshairColor = [1,0,0,1]; // your red
-      nv.opts.dragMode = (nv.opts.dragMode ?? 1);
+      nv.opts.showCrosshair = true;                 // keep crosshair in 2D
+      nv.opts.crosshairColor = [1,0,0,1];
+    }
+    if(typeof nv.onLocationChange === "function"){
+      nv.onLocationChange = (data) => { if(data?.label) labelBox.textContent = data.label; };
     }
     return nv;
   }
 
   function destroy4Panel(){
-    [nvAx, nvCor, nvSag, nvRen].forEach(nv => {
-      if(nv && typeof nv.destroy === "function") nv.destroy();
-    });
+    [nvAx,nvCor,nvSag,nvRen].forEach(nv => { try { nv?.destroy && nv.destroy(); } catch(e){} });
     nvAx=nvCor=nvSag=nvRen=null;
   }
 
-  async function initSingleIfNeeded(){
+  async function initSingle(){
     if(nvSingle) return;
     nvSingle = createNv(document.getElementById("singleCanvas"));
-
-    // click → label display if atlas present
-    if(typeof nvSingle.onLocationChange === "function"){
-      nvSingle.onLocationChange = (data) => {
-        if(data && data.label) labelBox.textContent = data.label;
-      };
-    }
   }
 
   async function init4Panel(){
@@ -432,129 +389,94 @@
     nvSag = createNv(document.getElementById("sagCanvas"));
     nvRen = createNv(document.getElementById("renCanvas"));
 
-    // slice types differ per instance
-    // Most builds: 0=axial 1=coronal 2=sagittal 3=render
     safeSetSliceType(nvAx, 0);
     safeSetSliceType(nvCor, 1);
     safeSetSliceType(nvSag, 2);
     safeSetSliceType(nvRen, 3);
-
-    // hide 3D axes/crosshair
-    safeSet3DAxes(nvRen, false);
-
-    // click label from any panel (best-effort)
-    const hookLabel = (nv) => {
-      if(nv && typeof nv.onLocationChange === "function"){
-        nv.onLocationChange = (data) => {
-          if(data && data.label) labelBox.textContent = data.label;
-        };
-      }
-    };
-    [nvAx,nvCor,nvSag,nvRen].forEach(hookLabel);
+    hide3DRedAxes(nvRen);
   }
 
-  // ---------- Core actions ----------
-  async function resetToDemoMesh(){
+  // ---------- Actions ----------
+  async function loadDemoMeshIntoCurrentView(){
     setStatusOk("Loading…");
     labelBox.textContent = "—";
     atlasLoaded = false;
 
-    // clear user volume url
-    if(userVolumeObjectUrl){
-      URL.revokeObjectURL(userVolumeObjectUrl);
-      userVolumeObjectUrl = null;
+    try{
+      if(currentMode === "4panel"){
+        showGrid();
+        await init4Panel();
+        safeClear(nvRen);
+        await safeLoadMesh(nvRen, DEMO_MESH_URL);
+        safeSetSliceType(nvRen, 3);
+        hide3DRedAxes(nvRen);
+      } else {
+        showSingle();
+        await initSingle();
+        safeClear(nvSingle);
+        await safeLoadMesh(nvSingle, DEMO_MESH_URL);
+        safeSetSliceType(nvSingle, 3);
+        hide3DRedAxes(nvSingle);
+      }
+      setStatusOk("Ready");
+    } catch(e){
+      console.error(e);
+      setStatusErr("Mesh failed");
     }
-
-    if(currentMode === "4panel"){
-      // show 4-panel and load mesh in render panel only
-      showGrid();
-      await init4Panel();
-      await Promise.all([nvAx,nvCor,nvSag].map(nv => safeRemoveAllVolumes(nv)));
-      await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeRemoveAllMeshes(nv)));
-      await safeLoadMeshFromUrl(nvRen, DEMO_MESH_URL);
-      safeSetSliceType(nvRen, 3);
-      safeSet3DAxes(nvRen, false);
-    } else {
-      // single canvas (3D)
-      showSingle();
-      await initSingleIfNeeded();
-      await safeRemoveAllVolumes(nvSingle);
-      await safeRemoveAllMeshes(nvSingle);
-      await safeLoadMeshFromUrl(nvSingle, DEMO_MESH_URL);
-      safeSetSliceType(nvSingle, 3);
-      safeSet3DAxes(nvSingle, false);
-    }
-
-    setMode("3d"); // demo starts in 3D (your requirement)
-    setStatusOk("Ready");
   }
 
   async function loadUserNifti(){
-    const f = fileInput.files && fileInput.files[0];
-    if(!f){
-      setStatusErr("No file selected");
-      return;
-    }
+    const f = fileInput.files?.[0];
+    if(!f){ setStatusErr("No file selected"); return; }
 
     setStatusOk("Loading…");
     labelBox.textContent = "—";
 
-    // Create object URL so URL-based loaders work reliably
     if(userVolumeObjectUrl) URL.revokeObjectURL(userVolumeObjectUrl);
     userVolumeObjectUrl = URL.createObjectURL(f);
 
-    // ensure viewers exist
-    if(currentMode === "4panel"){
-      showGrid();
-      await init4Panel();
-      await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeRemoveAllVolumes(nv)));
-      await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeRemoveAllMeshes(nv)));
-      await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeFromUrl(nv, userVolumeObjectUrl)));
-
-      // 4th panel render:
-      safeSetSliceType(nvRen, 3);
-      safeSet3DAxes(nvRen, false);
-      safeSetSliceType(nvAx, 0);
-      safeSetSliceType(nvCor, 1);
-      safeSetSliceType(nvSag, 2);
-
-    } else {
-      showSingle();
-      await initSingleIfNeeded();
-      await safeRemoveAllVolumes(nvSingle);
-      await safeRemoveAllMeshes(nvSingle);
-      await safeLoadVolumeFromUrl(nvSingle, userVolumeObjectUrl);
-
-      // keep whatever mode they are in; if 3D ensure axes are off
-      if(currentMode === "3d"){
-        safeSetSliceType(nvSingle, 3);
-        safeSet3DAxes(nvSingle, false);
+    try{
+      if(currentMode === "4panel"){
+        showGrid();
+        await init4Panel();
+        [nvAx,nvCor,nvSag,nvRen].forEach(safeClear);
+        await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeUrl(nv, userVolumeObjectUrl)));
+        safeSetSliceType(nvAx,0); safeSetSliceType(nvCor,1); safeSetSliceType(nvSag,2);
+        safeSetSliceType(nvRen,3);
+        hide3DRedAxes(nvRen);
+        if(atlasLoaded) await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
+        [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
       } else {
-        // single-panel 2D view (sagittal)
-        safeSetSliceType(nvSingle, 2);
-        safeSetCrosshair(nvSingle, true);
+        showSingle();
+        await initSingle();
+        safeClear(nvSingle);
+        await safeLoadVolumeUrl(nvSingle, userVolumeObjectUrl);
+        if(currentMode === "3d"){ safeSetSliceType(nvSingle,3); hide3DRedAxes(nvSingle); }
+        else { safeSetSliceType(nvSingle,2); show2DCrosshair(nvSingle); }
+        if(atlasLoaded) await safeAddAtlas(nvSingle);
+        applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
       }
+
+      setStatusOk("Ready");
+    } catch(e){
+      console.error(e);
+      setStatusErr("NIfTI failed");
     }
-
-    // If atlas already loaded, reapply opacity
-    applyAtlasOpacityAll(parseFloat(atlasOpacity.value));
-
-    setStatusOk("Ready");
   }
 
-  async function addAtlas(){
+  async function addAtlasEverywhere(){
     setStatusOk("Loading…");
     try{
       if(currentMode === "4panel"){
-        if(!nvAx) await init4Panel();
-        await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlasOverlay(nv)));
+        await init4Panel();
+        await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
+        [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
       } else {
-        await initSingleIfNeeded();
-        await safeAddAtlasOverlay(nvSingle);
+        await initSingle();
+        await safeAddAtlas(nvSingle);
+        applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
       }
-
       atlasLoaded = true;
-      applyAtlasOpacityAll(parseFloat(atlasOpacity.value));
       setStatusOk("Ready");
     } catch(e){
       console.error(e);
@@ -568,110 +490,74 @@
 
     if(mode === "4panel"){
       showGrid();
-      // If we have user volume loaded, keep it; else keep demo mesh in render.
       init4Panel().then(async () => {
-        // If user has a file loaded, reload it into all four panels.
+        // if we already loaded a user file, populate panels
         if(userVolumeObjectUrl){
-          await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeRemoveAllVolumes(nv)));
-          await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeRemoveAllMeshes(nv)));
-          await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeFromUrl(nv, userVolumeObjectUrl)));
+          [nvAx,nvCor,nvSag,nvRen].forEach(safeClear);
+          await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeLoadVolumeUrl(nv, userVolumeObjectUrl)));
           safeSetSliceType(nvAx,0); safeSetSliceType(nvCor,1); safeSetSliceType(nvSag,2);
-          safeSetSliceType(nvRen,3); safeSet3DAxes(nvRen,false);
-          if(atlasLoaded) await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlasOverlay(nv)));
-        } else {
-          await safeRemoveAllMeshes(nvRen);
-          await safeRemoveAllVolumes(nvRen);
-          await safeLoadMeshFromUrl(nvRen, DEMO_MESH_URL);
-          safeSetSliceType(nvRen,3); safeSet3DAxes(nvRen,false);
+          safeSetSliceType(nvRen,3); hide3DRedAxes(nvRen);
+          if(atlasLoaded) await Promise.all([nvAx,nvCor,nvSag,nvRen].map(nv => safeAddAtlas(nv)));
+          [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, parseFloat(atlasOpacity.value)));
         }
-        applyAtlasOpacityAll(parseFloat(atlasOpacity.value));
       });
       return;
     }
 
-    // single mode
     showSingle();
-    initSingleIfNeeded().then(async () => {
-      if(mode === "3d"){
-        safeSetSliceType(nvSingle, 3);
-        safeSet3DAxes(nvSingle, false);
-      } else {
-        // “3-plane” button per your note: single sagittal slice view
-        safeSetSliceType(nvSingle, 2);
-        safeSetCrosshair(nvSingle, true);
-      }
-      applyAtlasOpacityAll(parseFloat(atlasOpacity.value));
+    initSingle().then(() => {
+      if(mode === "3d"){ safeSetSliceType(nvSingle,3); hide3DRedAxes(nvSingle); }
+      else { safeSetSliceType(nvSingle,2); show2DCrosshair(nvSingle); }
+      if(atlasLoaded) applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
     });
   }
 
   // ---------- Events ----------
-  btnReset.addEventListener("click", () => resetToDemoMesh());
-  btnSkull.addEventListener("click", () => resetToDemoMesh()); // same behaviour: clear + load demo mesh
-  btnAtlas.addEventListener("click", () => addAtlas());
+  btnSkull.addEventListener("click", loadDemoMeshIntoCurrentView); // THIS is your requested button
+  btnReset.addEventListener("click", async () => {
+    // reset = clear everything + load demo mesh again
+    if(userVolumeObjectUrl){ URL.revokeObjectURL(userVolumeObjectUrl); userVolumeObjectUrl = null; }
+    atlasLoaded = false;
+    labelBox.textContent = "—";
+    await loadDemoMeshIntoCurrentView();
+  });
+
+  btnAtlas.addEventListener("click", addAtlasEverywhere);
+  btnLoadUser.addEventListener("click", loadUserNifti);
 
   btn3plane.addEventListener("click", () => setMode("3plane"));
   btn3d.addEventListener("click", () => setMode("3d"));
   btn4panel.addEventListener("click", () => setMode("4panel"));
 
-  btnLoadUser.addEventListener("click", () => loadUserNifti());
-
   atlasOpacity.addEventListener("input", (e) => {
-    applyAtlasOpacityAll(parseFloat(e.target.value));
+    const a = parseFloat(e.target.value);
+    if(currentMode === "4panel") [nvAx,nvCor,nvSag,nvRen].forEach(nv => applyAtlasOpacity(nv, a));
+    else applyAtlasOpacity(nvSingle, a);
   });
 
-  // Drag/drop support on the whole viewer area (single or grid)
-  function enableDrop(targetEl){
-    targetEl.addEventListener("dragover", (e) => { e.preventDefault(); });
-    targetEl.addEventListener("drop", async (e) => {
-      e.preventDefault();
-      const f = e.dataTransfer.files && e.dataTransfer.files[0];
-      if(!f) return;
-      // put dropped file into input for consistency
-      const dt = new DataTransfer();
-      dt.items.add(f);
-      fileInput.files = dt.files;
-      await loadUserNifti();
-    });
-  }
-  enableDrop(document.querySelector(".viewer"));
+  // drag/drop over viewer
+  const viewerEl = document.querySelector(".viewer");
+  viewerEl.addEventListener("dragover", e => e.preventDefault());
+  viewerEl.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer?.files?.[0];
+    if(!f) return;
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    fileInput.files = dt.files;
+    await loadUserNifti();
+  });
 
   // ---------- Init ----------
-  function niivuePresent(){
-    return (window.Niivue && window.Niivue.Niivue) || (window.Niivue && typeof window.Niivue === "function") || (window.Niivue && window.Niivue.NiiVue);
+  if(!NiivueClass){
+    setStatusErr("NiiVue missing");
+    console.error("NiiVue class not found. Check /assets/vendor/niivue/niivue.umd.js");
+    return;
   }
 
-  async function init(){
-    try{
-      if(!niivuePresent()){
-        setStatusErr("NiiVue missing");
-        console.error("NiiVue not present. Check /assets/vendor/niivue/niivue.umd.js");
-        return;
-      }
-      // Make sure Niivue is accessible as Niivue.Niivue (UMD)
-      if(!window.Niivue.Niivue){
-        // some builds export directly as Niivue
-        if(typeof window.Niivue === "function"){
-          window.Niivue = { Niivue: window.Niivue };
-        } else {
-          // last resort: fail loudly
-          setStatusErr("NiiVue missing");
-          return;
-        }
-      }
-
-      // Start in demo 3D mesh (your requirement)
-      setModeButtons("3d");
-      currentMode = "3d";
-      showSingle();
-      await initSingleIfNeeded();
-      await resetToDemoMesh();
-    } catch(e){
-      console.error(e);
-      setStatusErr("Init failed");
-    }
-  }
-
-  init();
+  // Start: demo mesh in 3D
+  setMode("3d");
+  loadDemoMeshIntoCurrentView();
 })();
 </script>
 </body>
