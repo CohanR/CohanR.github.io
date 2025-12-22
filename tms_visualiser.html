@@ -2,215 +2,318 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Remy Cohan | TMS Target Visualiser (NIfTI)</title>
-  <meta name="description" content="Interactive TMS targeting visualiser by Remy Cohan. Click-to-place targets on MRI, view coordinates, and explore coil orientation using an in-browser NIfTI viewer (NiiVue)." />
-  <meta name="author" content="Remy Cohan" />
-  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Neuropsis • Atlas Viewer (MNI + Desikan)</title>
+  <meta name="description" content="MNI viewer with Desikan atlas overlay and 3D surface. Runs locally in your browser." />
   <style>
-    :root { --bg:#0b0f14; --panel:#101826; --line:#223247; --text:#e7eef7; --muted:#9fb0c2; --btn:#152236; --btnh:#1b2c45; }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--text)}
-    header{padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(16,24,38,.7);position:sticky;top:0;z-index:10}
-    header .top{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    .btn{border:1px solid var(--line);background:var(--btn);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12px}
-    .btn:hover{background:var(--btnh)}
-    .wrap{max-width:1200px;margin:0 auto;padding:14px;display:grid;grid-template-columns:360px 1fr;gap:14px}
-    .card{background:rgba(16,24,38,.9);border:1px solid var(--line);border-radius:14px;padding:12px}
-    .small{font-size:12px;color:var(--muted);line-height:1.35}
-    .kv{display:grid;grid-template-columns:120px 1fr;gap:8px 10px;align-items:center;font-size:12px;margin-top:10px}
-    input[type="range"]{width:100%}
-    main{background:rgba(16,24,38,.9);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:680px}
-    #gl{width:100%;height:680px;display:block}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);background:rgba(255,255,255,.02)}
-    code{color:#b8c7ff}
+    :root { color-scheme: dark; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background:#070a0f; color:#e6edf7; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    .brand { display:flex; flex-direction:column; gap:2px; }
+    .brand h1 { margin:0; font-size:16px; letter-spacing:0.2px; }
+    .brand .sub { opacity:0.75; font-size:12px; }
+    .actions { display:flex; gap:10px; align-items:center; }
+    button, .btn {
+      appearance:none; border:1px solid rgba(255,255,255,0.14);
+      background: rgba(20,30,50,0.45);
+      color:#e6edf7; padding:8px 12px; border-radius:10px;
+      cursor:pointer; font-size:13px;
+      text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+    }
+    button:hover, .btn:hover { border-color: rgba(120,170,255,0.55); }
+    main { display:grid; grid-template-columns: 380px 1fr; gap:14px; padding:14px; }
+    .panel { border:1px solid rgba(255,255,255,0.08); background: rgba(10,14,22,0.7); border-radius:14px; padding:14px; }
+    .panel h2 { margin:0 0 10px; font-size:14px; opacity:0.9; }
+    label { font-size:12px; opacity:0.8; display:block; margin:10px 0 6px; }
+    input[type="range"] { width:100%; }
+    input[type="file"] { width:100%; }
+    .row { display:flex; gap:10px; align-items:center; margin:10px 0; flex-wrap:wrap; }
+    .hint { font-size:12px; opacity:0.7; line-height:1.35; margin-top:8px; }
+    .status { margin-top:10px; font-size:12px; opacity:0.85; white-space:pre-wrap; }
+    #gl { width:100%; height: calc(100vh - 86px); display:block; border-radius:14px; border:1px solid rgba(255,255,255,0.08); }
+    .kv { display:grid; grid-template-columns: 120px 1fr; gap:8px 10px; font-size:12px; opacity:0.9; margin-top:10px; }
+    .kv div:nth-child(odd) { opacity:0.7; }
   </style>
 
-  <!-- NiiVue (ESM CDN). If you hate CDNs, you can vendor this file into your repo later. -->
-  <script type="module">
-    import { Niivue, SHOW_RENDER } from "https://unpkg.com/@niivue/niivue@0.45.1/dist/niivue.es.js";
-
-    const els = {
-      status: null, outX:null,outY:null,outZ:null,outAng:null,
-      ang: null, loadNifti: null, viewMode: null, reset: null
-    };
-
-    const state = { x:0, y:0, z:0, ang:45 };
-    let nv;
-
-    function setStatus(s){ if(els.status) els.status.textContent = s; }
-
-    function updateReadout() {
-      els.outX.textContent = `${state.x.toFixed(1)} mm`;
-      els.outY.textContent = `${state.y.toFixed(1)} mm`;
-      els.outZ.textContent = `${state.z.toFixed(1)} mm`;
-      els.outAng.textContent = `${Math.round(state.ang)}°`;
-    }
-
-    function applyViewMode() {
-      const mode = els.viewMode.value;
-      if (mode === "mpr") {
-        nv.setSliceType(3);
-        nv.opts.multiplanarShowRender = SHOW_RENDER.NEVER;
-      } else if (mode === "mpr3d") {
-        nv.setSliceType(3);
-        nv.opts.multiplanarShowRender = SHOW_RENDER.ALWAYS;
-      } else {
-        nv.setSliceType(4);
-      }
-      nv.drawScene();
-    }
-
-    function setTarget(mm) {
-      state.x = mm[0]; state.y = mm[1]; state.z = mm[2];
-      updateReadout();
-
-      // Remove existing drawing layers and add a new marker + coil arrow overlay
-      nv.drawings = [];
-      nv.addText3D("TARGET", [state.x, state.y, state.z], 14, [1,1,1,1]);
-
-      // Simple “coil orientation” arrow drawn as two points in world coords
-      const ang = (state.ang * Math.PI) / 180;
-      const len = 25; // mm
-      const tip = [state.x + Math.cos(ang)*len, state.y + Math.sin(ang)*len, state.z];
-      nv.addLine([state.x, state.y, state.z], tip, [0.12, 0.79, 0.59, 1.0]); // teal-ish
-      nv.drawScene();
-    }
-
-    async function loadDefaultBrain() {
-      // Public demo NIfTI. Replace later with your own hosted demo brain if you want.
-      // This one is lightweight and stable.
-      const demo = "https://niivue.github.io/niivue-demo-images/mni152.nii.gz";
-      setStatus("Loading demo brain…");
-      await nv.loadVolumes([{ url: demo, name: "MNI152", colormap: "gray" }]);
-      setStatus("Loaded demo brain. Click anywhere to place a target.");
-      // Set an initial target near left M1-ish
-      setTarget([-38, -20, 56]);
-      applyViewMode();
-    }
-
-    async function init() {
-      // wire elements
-      els.status = document.getElementById("status");
-      els.outX = document.getElementById("outX");
-      els.outY = document.getElementById("outY");
-      els.outZ = document.getElementById("outZ");
-      els.outAng = document.getElementById("outAng");
-      els.ang = document.getElementById("ang");
-      els.loadNifti = document.getElementById("loadNifti");
-      els.viewMode = document.getElementById("viewMode");
-      els.reset = document.getElementById("reset");
-
-      nv = new Niivue({ backColor: [0,0,0,1], show3Dcrosshair: true });
-      nv.attachToCanvas(document.getElementById("gl"));
-      nv.opts.multiplanarEqualSize = true;
-
-      // Click-to-target: use crosshair position in world mm
-      nv.onLocationChange = (loc) => {
-        // loc.mm is [x,y,z] in mm (when available)
-        if (loc && loc.mm && loc.mm.length === 3) {
-          setTarget(loc.mm);
-        }
-      };
-
-      els.ang.addEventListener("input", () => {
-        state.ang = parseFloat(els.ang.value);
-        updateReadout();
-        setTarget([state.x, state.y, state.z]);
-      });
-
-      els.viewMode.addEventListener("change", applyViewMode);
-
-      els.reset.addEventListener("click", async () => {
-        els.ang.value = "45";
-        state.ang = 45;
-        await loadDefaultBrain();
-      });
-
-      els.loadNifti.addEventListener("change", async (e) => {
-        const f = e.target.files?.[0];
-        if (!f) return;
-        setStatus(`Loading ${f.name}…`);
-        await nv.loadFromFile(f);
-        setStatus(`Loaded ${f.name}. Click anywhere to place a target.`);
-        applyViewMode();
-      });
-
-      await loadDefaultBrain();
-    }
-
-    window.addEventListener("DOMContentLoaded", init);
-  </script>
+  <!-- LOCAL NiiVue (no CDN) -->
+  <script src="assets/vendor/niivue/niivue.min.js"></script>
 </head>
 
 <body>
 <header>
-  <div class="top">
-    <div>
-      <div style="font-weight:700">🧲 TMS Target Visualiser</div>
-      <div class="small">Remy Cohan • template brain + your NIfTI upload • click-to-target • MPR + 3D render</div>
-    </div>
-    <div class="row">
-      <a class="btn" href="index.html">Home</a>
-      <button class="btn" onclick="history.back()">Back</button>
-      <span class="pill" id="status">Loading…</span>
-    </div>
+  <div class="brand">
+    <h1>Atlas Viewer (MNI + Desikan + 3D)</h1>
+    <div class="sub">Local-only viewer • 3-plane + 3D render • mesh + atlas overlay</div>
+  </div>
+  <div class="actions">
+    <a class="btn" href="/">Home</a>
+    <button type="button" onclick="history.back()">Back</button>
   </div>
 </header>
 
-<div class="wrap">
-  <aside class="card">
-    <div class="small">
-      This is an educational targeting tool: it shows coordinates and coil orientation overlays on an MRI volume.
-      It does not perform E-field modelling (use SimNIBS for that).
+<main>
+  <section class="panel">
+    <h2>Controls</h2>
+
+    <div class="row">
+      <button id="btnLoadDefaults" type="button">Load template + atlas + mesh</button>
+      <button id="btnClear" type="button">Clear</button>
     </div>
 
-    <div class="card" style="margin-top:12px">
-      <div class="row" style="justify-content:space-between">
-        <label class="small"><strong>Viewer mode</strong></label>
-        <select id="viewMode" class="btn">
-          <option value="mpr">3-plane (MPR)</option>
-          <option value="mpr3d" selected>3-plane + 3D render</option>
-          <option value="3d">3D render only</option>
-        </select>
-      </div>
-
-      <div style="margin-top:12px">
-        <label class="small"><strong>Load your NIfTI</strong> (<code>.nii</code> / <code>.nii.gz</code>)</label><br/>
-        <input id="loadNifti" type="file" accept=".nii,.nii.gz" class="btn" style="margin-top:8px;width:100%" />
-      </div>
-
-      <div style="margin-top:12px">
-        <label class="small"><strong>Coil orientation</strong> (concept, degrees)</label>
-        <input id="ang" type="range" min="0" max="179" step="1" value="45" />
-      </div>
-
-      <div class="kv">
-        <div class="small">X (L− / R+)</div><div id="outX">—</div>
-        <div class="small">Y (P− / A+)</div><div id="outY">—</div>
-        <div class="small">Z (I− / S+)</div><div id="outZ">—</div>
-        <div class="small">Coil angle</div><div id="outAng">—</div>
-      </div>
-
-      <div class="row" style="margin-top:12px">
-        <button class="btn" id="reset">Reset demo</button>
-      </div>
+    <div class="row">
+      <button id="mode2D" type="button">3-plane</button>
+      <button id="mode3D" type="button">3D render</button>
+      <button id="modeBoth" type="button">3-plane + 3D</button>
     </div>
 
-    <div class="small" style="margin-top:12px">
-      How to use:
-      <ol class="small">
-        <li>Click anywhere in the MRI to move the target.</li>
-        <li>Change coil angle to rotate the arrow overlay.</li>
-        <li>Switch to “3-plane + 3D render” for the portfolio “wow” factor.</li>
-      </ol>
-    </div>
-  </aside>
+    <label for="atlasOpacity">Atlas opacity</label>
+    <input id="atlasOpacity" type="range" min="0" max="1" step="0.01" value="0.35" />
 
-  <main>
+    <label for="userNifti">Optional: load your own NIfTI (underlay)</label>
+    <input id="userNifti" type="file" accept=".nii,.nii.gz,application/gzip" />
+
+    <div class="kv">
+      <div>Status</div><div id="statusLine">Ready.</div>
+      <div>Atlas label</div><div id="labelLine">—</div>
+    </div>
+
+    <p class="hint">
+      The Desikan file you uploaded is a *label volume*. It’s an overlay.
+      For a clean anatomical underlay, also add an MNI T1 (e.g., MNI152_T1_1mm_brain.nii.gz) later.
+      This page will still run without it, but it’ll look less “MRI-like”.
+    </p>
+
+    <div id="status" class="status"></div>
+  </section>
+
+  <section>
     <canvas id="gl"></canvas>
-  </main>
-</div>
+  </section>
+</main>
+
+<script>
+  // --- hard paths (match your repo) ---
+  const PATHS = {
+    // Optional underlay (if you add it later, this auto-uses it)
+    t1Candidates: [
+      "assets/neurop/MNI152_T1_1mm_brain.nii.gz",
+      "assets/neurop/MNI152_T1_1mm.nii.gz",
+      "images/mni152.nii.gz",
+      "images/mni152.nii"
+    ],
+    atlas: "assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz",
+    atlasLabelsTxt: "assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt",
+    mesh: "assets/neurop/mni152_2009.mz3"
+  };
+
+  const statusLine = document.getElementById("statusLine");
+  const labelLine  = document.getElementById("labelLine");
+  const statusBox  = document.getElementById("status");
+
+  function setStatus(oneLine, detail="") {
+    statusLine.textContent = oneLine;
+    statusBox.textContent = detail;
+  }
+
+  // sanity check: Niivue is global
+  if (typeof Niivue === "undefined") {
+    setStatus("ERROR: NiiVue not loaded",
+      "Check the script path:\nassets/vendor/niivue/niivue.min.js\n\nOpen it directly in the browser to confirm it serves (not 404).");
+    throw new Error("Niivue not loaded");
+  }
+
+  const nv = new Niivue({
+    backColor: [0,0,0,1],
+    isColorbar: false,
+    show3Dcrosshair: true
+  });
+
+  nv.attachTo("gl");
+  nv.setSliceType(nv.sliceTypeMultiplanarRender);
+
+  // --- label map parsing ---
+  // Your txt is typically: integer<whitespace>LabelName
+  const labelMap = new Map();
+  async function loadLabelMap() {
+    try {
+      const r = await fetch(PATHS.atlasLabelsTxt, { cache: "no-store" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const txt = await r.text();
+      txt.split(/\r?\n/).forEach(line => {
+        const s = line.trim();
+        if (!s) return;
+        const m = s.match(/^(\d+)\s+(.*)$/);
+        if (!m) return;
+        labelMap.set(parseInt(m[1], 10), m[2].trim());
+      });
+      setStatus("Label map loaded", `Loaded ${labelMap.size} atlas labels from:\n${PATHS.atlasLabelsTxt}`);
+    } catch (e) {
+      setStatus("Label map load failed", `Could not fetch:\n${PATHS.atlasLabelsTxt}\n\n${e.message || e}`);
+    }
+  }
+
+  // --- loading helpers ---
+  async function tryLoadUnderlay() {
+    for (const p of PATHS.t1Candidates) {
+      try {
+        await nv.loadVolumes([{ url: p, name: "MNI_T1", opacity: 1.0 }]);
+        return p;
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  async function loadAtlasOverlay(opacity=0.35) {
+    // If underlay wasn't loaded, atlas becomes the first volume (still works, just uglier)
+    await nv.addVolumeFromUrl({
+      url: PATHS.atlas,
+      name: "Desikan_Atlas",
+      opacity: opacity,
+      // label volumes look best with a discrete-ish LUT; NiiVue supports several built-ins
+      colormap: "random",
+      isNearestInterpolation: true
+    });
+  }
+
+  async function loadMesh() {
+    try {
+      await nv.loadMeshes([{ url: PATHS.mesh, name: "mni152_2009" }]);
+    } catch (e) {
+      // mesh is optional; don't hard fail
+      setStatus("Mesh load failed", `Could not load mesh:\n${PATHS.mesh}\n\n${e.message || e}`);
+    }
+  }
+
+  async function loadDefaults() {
+    labelLine.textContent = "—";
+    setStatus("Loading…", "");
+
+    // wipe clean
+    try {
+      nv.closeAllVolumes();
+      nv.closeAllMeshes();
+      nv.updateGLVolume();
+    } catch {}
+
+    const underlayPath = await tryLoadUnderlay();
+    if (underlayPath) {
+      setStatus("Underlay loaded", `Loaded underlay:\n${underlayPath}`);
+    } else {
+      setStatus("No underlay found", "No MNI T1 underlay found in the candidate paths.\nContinuing with atlas-only (still functional).");
+    }
+
+    try {
+      await loadAtlasOverlay(parseFloat(document.getElementById("atlasOpacity").value));
+      await loadMesh();
+      nv.updateGLVolume();
+      setStatus("Loaded", `Atlas:\n${PATHS.atlas}\nMesh:\n${PATHS.mesh}\n\nIf the screen is blank: open DevTools → Console and tell me the first error line.`);
+    } catch (e) {
+      setStatus("ERROR loading volumes", e.message || String(e));
+      console.error(e);
+    }
+  }
+
+  function clearAll() {
+    try {
+      nv.closeAllVolumes();
+      nv.closeAllMeshes();
+      nv.updateGLVolume();
+      labelLine.textContent = "—";
+      setStatus("Cleared", "");
+    } catch (e) {
+      setStatus("Clear failed", e.message || String(e));
+    }
+  }
+
+  // --- basic atlas “label at crosshair” ---
+  // NiiVue API differs by build/version; this is a best-effort implementation:
+  function updateLabelReadoutBestEffort() {
+    try {
+      // find atlas volume by name
+      const idx = (nv.volumes || []).findIndex(v => (v?.name || "").includes("Desikan_Atlas"));
+      if (idx < 0) return;
+
+      // Some builds expose values at crosshair via nv.getVolumeValue(idx) or similar.
+      // We'll attempt a few common patterns without crashing.
+      let val = null;
+
+      if (typeof nv.getVolumeValue === "function") {
+        val = nv.getVolumeValue(idx);
+      } else if (typeof nv.getValue === "function") {
+        val = nv.getValue(idx);
+      } else if (nv.volumes[idx]?.getValueAtCrosshair) {
+        val = nv.volumes[idx].getValueAtCrosshair();
+      }
+
+      if (val == null) return;
+
+      const labelInt = Math.round(Number(val));
+      const name = labelMap.get(labelInt) || `Label ${labelInt} (no name found)`;
+      labelLine.textContent = name;
+    } catch (e) {
+      // silent: label readout is “nice to have”
+    }
+  }
+
+  // --- UI wiring ---
+  document.getElementById("btnLoadDefaults").addEventListener("click", loadDefaults);
+  document.getElementById("btnClear").addEventListener("click", clearAll);
+
+  document.getElementById("mode2D").addEventListener("click", () => {
+    nv.setSliceType(nv.sliceTypeMultiplanar);
+    nv.updateGLVolume();
+    setStatus("Mode: 3-plane", "");
+  });
+
+  document.getElementById("mode3D").addEventListener("click", () => {
+    nv.setSliceType(nv.sliceTypeRender);
+    nv.updateGLVolume();
+    setStatus("Mode: 3D render", "");
+  });
+
+  document.getElementById("modeBoth").addEventListener("click", () => {
+    nv.setSliceType(nv.sliceTypeMultiplanarRender);
+    nv.updateGLVolume();
+    setStatus("Mode: 3-plane + 3D", "");
+  });
+
+  document.getElementById("atlasOpacity").addEventListener("input", (ev) => {
+    const v = parseFloat(ev.target.value);
+    const idx = (nv.volumes || []).findIndex(vol => (vol?.name || "").includes("Desikan_Atlas"));
+    if (idx >= 0) {
+      nv.volumes[idx].opacity = v;
+      nv.updateGLVolume();
+    }
+  });
+
+  document.getElementById("userNifti").addEventListener("change", async (ev) => {
+    const f = ev.target.files?.[0];
+    if (!f) return;
+
+    setStatus("Loading your NIfTI…", f.name);
+    try {
+      // clear existing underlay volumes but keep atlas if already loaded
+      // easiest: full clear then reload atlas; keeps behaviour consistent
+      nv.closeAllVolumes();
+      nv.closeAllMeshes();
+      await nv.loadFromFile(f); // becomes underlay
+      await loadAtlasOverlay(parseFloat(document.getElementById("atlasOpacity").value));
+      await loadMesh();
+      nv.updateGLVolume();
+      setStatus("Loaded your NIfTI + atlas + mesh", "");
+    } catch (e) {
+      setStatus("ERROR loading your NIfTI", e.message || String(e));
+      console.error(e);
+    }
+  });
+
+  // Listen for interaction to update label readout (best effort)
+  // Different builds expose different events; this is conservative.
+  document.getElementById("gl").addEventListener("mouseup", updateLabelReadoutBestEffort);
+  document.getElementById("gl").addEventListener("wheel", () => setTimeout(updateLabelReadoutBestEffort, 50));
+
+  // start: load label map + defaults
+  loadLabelMap().then(() => loadDefaults());
+</script>
 </body>
 </html>
