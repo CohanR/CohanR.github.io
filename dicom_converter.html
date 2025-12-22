@@ -6,189 +6,164 @@
   <title>Interactive MRI Viewer | Remy Cohan</title>
 
   <style>
-    :root {
-      --primary-color: #007bff;
-      --bg-color: #e5e5e5;
-      --sidebar-bg: #ffffff;
-      --text-color: #333;
-    }
-
     body, html {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      overflow: hidden;
+      font-family: sans-serif;
+      background-color: #222;
+      color: #fff;
+      overflow: hidden; /* No scrollbars */
     }
 
+    /* Layout */
     .app-container {
       display: flex;
-      flex-direction: row; 
       height: 100vh;
       width: 100vw;
     }
 
-    /* --- Sidebar (Your Original Style) --- */
+    /* Sidebar */
     .sidebar {
-      width: 320px; 
-      flex-shrink: 0; 
-      background: var(--sidebar-bg);
-      padding: 2rem;
-      border-right: 1px solid #ccc;
-      overflow-y: auto;
-      z-index: 10;
+      width: 320px;
+      background: #ffffff;
+      color: #333;
+      padding: 20px;
       display: flex;
       flex-direction: column;
+      border-right: 1px solid #444;
+      z-index: 100; /* Ensure sidebar is above */
     }
 
-    .sidebar h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; color: #333; font-size: 1.1rem; font-weight: 700;}
-    .sidebar h3:first-of-type { margin-top: 0; }
-    .sidebar p { margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.6; color: #555; }
-    .sidebar ol { padding-left: 20px; margin-bottom: 20px; color: #555; }
-    .sidebar li { margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; }
-    
-    .home-button {
-      display: inline-block;
-      margin-bottom: 30px;
-      padding: 10px 18px;
-      background-color: var(--primary-color);
-      color: white;
-      text-decoration: none;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: background 0.2s;
-      align-self: flex-start;
-    }
-    .home-button:hover { background-color: #0056b3; }
-
-    .signature {
-      margin-top: auto;
-      padding-top: 20px;
-      font-size: 0.8rem;
-      color: #999;
-      border-top: 1px solid #eee;
-    }
-
-    /* --- Viewer Area --- */
+    /* Viewer Area */
     .content {
       flex-grow: 1;
       position: relative;
       background-color: #000;
-      display: flex;
-      flex-direction: column;
     }
 
-    /* Canvas must fill the space */
-    #gl {
+    /* The Canvas where the brain goes */
+    canvas#gl {
       width: 100%;
       height: 100%;
       display: block;
     }
 
-    /* Mobile Styles */
-    .mobile-header { display: none; }
-    @media (max-width: 768px) {
-      .app-container { flex-direction: column; }
-      .sidebar { width: 100%; height: auto; order: 2; border-right: none; border-top: 1px solid #ccc; }
-      .home-button { display: none; }
-      .content { height: 60vh; order: 1; }
-      .mobile-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #fff; border-bottom: 1px solid #ddd; }
-      .mobile-home-btn { color: var(--primary-color); text-decoration: none; font-weight: bold; }
+    /* Status Indicator */
+    #status {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
     }
+    .status-bad { background: #ffcccc; color: #cc0000; }
+    .status-good { background: #ccffcc; color: #006600; }
+
+    h3 { margin-top: 0; }
   </style>
 </head>
 <body>
 
-  <div class="mobile-header">
-    <strong>MRI Viewer</strong>
-    <a href="index.html" class="mobile-home-btn">Exit</a>
-  </div>
+<div class="app-container">
+  <div class="sidebar">
+    <div id="status" class="status-bad">LOADING NIIVUE...</div>
 
-  <div class="app-container">
-    <div class="sidebar">
-      <a href="index.html" class="home-button">← Back to Home</a>
-      
-      <h3>Instructions</h3>
-      <p>This viewer is using <strong>NiiVue</strong> to support on-the-fly 3D rendering. The "4th Pane" shows the 3D volume.</p>
-      
-      <h3>Controls:</h3>
-      <ol>
-        <li><strong>Left Click + Drag:</strong> Rotate 3D / Adjust brightness (2D)</li>
-        <li><strong>Right Click + Drag:</strong> Pan / Zoom</li>
-        <li><strong>Scroll Wheel:</strong> Change slice</li>
-      </ol>
+    <h3>MRI Viewer</h3>
+    <p><strong>Instructions:</strong></p>
+    <ol>
+      <li>Wait for the status above to turn GREEN.</li>
+      <li>Drag and drop your <code>.nii.gz</code> file onto the <strong>BLACK AREA</strong> on the right.</li>
+    </ol>
+    <p><em>If the screen goes white/blank when you drop, refresh and ensure you drop exactly on the black area.</em></p>
 
-      <h3>To load your own image:</h3>
-      <p>Simply <strong>Drag and Drop</strong> your <code>.nii.gz</code> file anywhere on the black viewer area.</p>
-
-      <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
-          <strong>Visual Options:</strong><br>
-          <label><input type="checkbox" id="check3D" checked onchange="toggle3D()"> Show 3D Render</label><br>
-          <label><input type="checkbox" id="checkCrosshair" checked onchange="toggleCrosshair()"> Show Crosshairs</label>
-      </div>
-
-      <a href="dicom_converter.html" class="home-button" style="background-color: #17a2b8; margin-top: 25px;">🔄 DICOM to NIfTI Converter</a>
-
-      <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
+    <div style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+      <label><input type="checkbox" id="check3D" checked onchange="updateView()"> Enable 3D Render</label>
     </div>
 
-    <div class="content">
-      <canvas id="gl"></canvas>
-    </div>
+    <p style="margin-top:auto; font-size:0.8rem; color:#888;">Powered by NiiVue</p>
   </div>
 
-  <script src="https://unpkg.com/@niivue/niivue@0.41.0/dist/niivue.umd.js"></script>
+  <div class="content">
+    <canvas id="gl"></canvas>
+  </div>
+</div>
 
-  <script>
-    // Initialize NiiVue
-    const nv = new niivue.Niivue({
-      dragAndDropEnabled: true,
-      backColor: [0, 0, 0, 1],
-      show3Dcrosshair: true,
-    });
+<script src="https://unpkg.com/@niivue/niivue@0.41.0/dist/niivue.umd.js"></script>
 
-    // Attach to the canvas
-    nv.attachTo('gl');
+<script>
+  const statusDiv = document.getElementById('status');
+  var nv; // Global variable for the viewer
 
-    // Load Default Image (MNI152)
-    // NOTE: This will only work if hosted on a server (GitHub Pages). 
-    // If opening locally, you must Drag & Drop files due to browser security.
-    var volumeList = [
-      { url: "images/mni152.nii.gz" } 
-    ];
-    
-    // Set Layout to 4-Pane (Multiplanar)
-    nv.setSliceType(nv.sliceTypeMultiplanar);
-    
-    // Attempt to load default
+  // --- SAFEGUARD 1: Check if Library Loaded ---
+  if (typeof niivue === 'undefined') {
+    statusDiv.innerHTML = "❌ ERROR: NiiVue failed to load.<br>Check internet connection.";
+  } else {
+    initViewer();
+  }
+
+  function initViewer() {
     try {
-        nv.loadVolumes(volumeList);
-    } catch(e) {
-        console.log("Could not load default URL (likely CORS local file issue). Drag and Drop will still work.");
-    }
+      // Initialize NiiVue
+      nv = new niivue.Niivue({
+        dragAndDropEnabled: false, // We will handle drag/drop manually to prevent bugs
+        backColor: [0, 0, 0, 1],
+        show3Dcrosshair: true,
+      });
 
-    // --- Interaction Functions ---
-    function toggle3D() {
-        // Toggle between 4-pane (Multiplanar) and 2D-only (Axial/Coronal/Sagittal)
-        if (document.getElementById('check3D').checked) {
-            nv.setSliceType(nv.sliceTypeMultiplanar);
-        } else {
-            nv.setSliceType(nv.sliceTypeAxial); // Or whichever default you prefer
-        }
-    }
+      nv.attachTo('gl');
+      
+      // Set default view to 4-pane
+      nv.setSliceType(nv.sliceTypeMultiplanar);
 
-    function toggleCrosshair() {
-        nv.setCrosshairWidth(document.getElementById('checkCrosshair').checked ? 1 : 0);
+      // Try to load default image (optional, might fail locally)
+      // nv.loadVolumes([{ url: "images/mni152.nii.gz" }]);
+
+      statusDiv.className = "status-good";
+      statusDiv.innerHTML = "✅ SYSTEM READY<br>Drop file on Black Area";
+
+    } catch (e) {
+      statusDiv.className = "status-bad";
+      statusDiv.innerHTML = "❌ Error initializing: " + e.message;
     }
-    
-    // Handle Window Resize
-    window.addEventListener('resize', () => {
-        nv.resizeListener();
-    });
-  </script>
+  }
+
+  // --- SAFEGUARD 2: Global Drag/Drop Handler ---
+  // This stops the "Blank Chrome Window" issue by killing the browser's default reaction
+  
+  window.addEventListener("dragover", function(e) {
+    e.preventDefault(); // Stop browser from previewing the file
+    e.stopPropagation();
+  }, false);
+
+  window.addEventListener("drop", function(e) {
+    e.preventDefault(); // Stop browser from downloading the file
+    e.stopPropagation();
+
+    // Get the file
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      
+      // Pass it to NiiVue manually
+      // We wrap it in an array because that's what loadFromFile expects
+      if (nv) {
+        nv.loadVolumes([{ file: file }]);
+        statusDiv.innerHTML = "✅ Loading file: " + file.name;
+      }
+    }
+  }, false);
+
+  // View Toggle
+  function updateView() {
+    if(!nv) return;
+    if (document.getElementById('check3D').checked) {
+      nv.setSliceType(nv.sliceTypeMultiplanar);
+    } else {
+      nv.setSliceType(nv.sliceTypeAxial);
+    }
+  }
+</script>
+
 </body>
 </html>
