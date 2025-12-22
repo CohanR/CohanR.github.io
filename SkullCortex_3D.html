@@ -182,6 +182,16 @@
 <div class="wrap">
   <div class="card controls">
     <h3>Controls</h3>
+    <p style="
+  margin: 4px 0 14px 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.4;
+">
+  Starts with a 3D cortical model.  
+  Upload a NIfTI to render your own anatomy.  
+  Nothing is uploaded — everything runs locally in your browser.
+</p>
 
     <div class="row">
       <button id="btnAtlas" class="primary">Add atlas labels</button>
@@ -189,7 +199,7 @@
     </div>
 
     <div class="row">
-      <button id="btn3plane" class="on">3-plane</button>
+      <button id="btn3plane" class="on">Your 3D Head!</button>
       <button id="btn3d">3D</button>
       <button id="btn4panel">4-panel</button>
     </div>
@@ -506,9 +516,16 @@
 
     showSingle();
     initSingle().then(() => {
-      if(mode === "3d"){ safeSetSliceType(nvSingle,3); hide3DRedAxes(nvSingle); }
-      else { safeSetSliceType(nvSingle,2); show2DCrosshair(nvSingle); }
-      if(atlasLoaded) applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
+      // make BOTH "3-plane" and "3D" show the 3D render in the single view
+      if (mode === "3d" || mode === "3plane") {
+        safeSetSliceType(nvSingle, 4);   // 4 = 3D render (your build)
+        hide3DRedAxes(nvSingle);
+      } else {
+        safeSetSliceType(nvSingle, 2);   // (keep as fallback if you ever add other modes)
+        show2DCrosshair(nvSingle);
+      }
+    
+      if (atlasLoaded) applyAtlasOpacity(nvSingle, parseFloat(atlasOpacity.value));
     });
   }
 
