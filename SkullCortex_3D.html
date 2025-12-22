@@ -531,12 +531,10 @@
   }
 
   // ---------- Events ----------
-  btnSkull.addEventListener("click", loadDemoMeshIntoCurrentView); // THIS is your requested button
-  btnReset.addEventListener("click", async () => {
-    // reset = clear everything + load demo mesh again
-    if(userVolumeObjectUrl){ URL.revokeObjectURL(userVolumeObjectUrl); userVolumeObjectUrl = null; }
-    atlasLoaded = false;
-    labelBox.textContent = "—";
+  btnSkull.addEventListener("click", async () => {
+    currentMode = "3d";          // FORCE single view
+    setModeButtons("3d");
+    showSingle();
     await loadDemoMeshIntoCurrentView();
   });
 
