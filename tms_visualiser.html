@@ -2,580 +2,505 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Remy Cohan | MNI Atlas Viewer (Desikan + 3D) | Neuropsis</title>
-  <meta name="description" content="Local-only neuroimaging atlas viewer by Remy Cohan (Neuropsis). MNI template with Desikan atlas overlay and optional 3D mesh. Nothing uploads." />
-  <meta name="keywords" content="Remy Cohan, Neuropsis, NIfTI viewer, MNI, Desikan, atlas, neuroimaging, TMS, neuromodulation" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>MNI Atlas Viewer (3D + labels) | Remy Cohan • Neuropsis</title>
+  <meta name="description" content="Local-only MNI atlas viewer with 3-plane views and optional 3D mesh. Runs entirely in your shown browser window. No uploads." />
   <meta name="author" content="Remy Cohan" />
   <link rel="canonical" href="https://www.neuropsis.org/tms_visualiser.html" />
 
-  <meta property="og:title" content="Remy Cohan | MNI Atlas Viewer (Desikan + 3D)" />
-  <meta property="og:description" content="Local-only: MNI template + Desikan atlas overlay + optional 3D mesh. Nothing uploads." />
+  <meta property="og:title" content="MNI Atlas Viewer (3D + labels) | Remy Cohan • Neuropsis" />
+  <meta property="og:description" content="Local-only viewer with 3-plane views and optional 3D mesh. No uploads." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.neuropsis.org/tms_visualiser.html" />
 
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="MNI Atlas Viewer (3D + labels) | Remy Cohan • Neuropsis" />
+  <meta name="twitter:description" content="Local-only viewer with 3-plane views and optional 3D mesh. No uploads." />
+
   <style>
     :root{
-      --bg:#05070a;
-      --panel:#0b1017;
-      --panel2:#0a0f16;
-      --line:#101827;
-      --text:#e7eefc;
-      --muted:#9fb0cb;
-      --accent:#7aa2ff;
-      --danger:#ff6b6b;
-      --shadow:0 12px 40px rgba(0,0,0,.45);
-      --radius:18px;
+      --bg: #050607;
+      --panel: rgba(12,14,18,0.65);
+      --panel2: rgba(8,10,14,0.55);
+      --border: rgba(255,255,255,0.08);
+      --text: rgba(255,255,255,0.86);
+      --muted: rgba(255,255,255,0.55);
+      --accent: #ff2d2d;
+      --btn: rgba(255,255,255,0.06);
+      --btn2: rgba(255,255,255,0.10);
+      --shadow: 0 18px 60px rgba(0,0,0,0.55);
+      --radius: 18px;
     }
-    *{box-sizing:border-box}
+    html,body{height:100%;}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 20% 0%, #0a1330 0%, rgba(10,19,48,0) 60%),
-                  radial-gradient(900px 600px at 85% 10%, #0a2a24 0%, rgba(10,42,36,0) 55%),
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(120,0,255,0.10), transparent 55%),
+                  radial-gradient(900px 500px at 90% 30%, rgba(0,255,200,0.08), transparent 55%),
                   var(--bg);
-      color:var(--text);
+      color: var(--text);
+      font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      overflow:hidden;
     }
     .topbar{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
-      padding:18px 22px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      background: linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,0));
-      position:sticky;
-      top:0;
-      backdrop-filter: blur(10px);
-      z-index: 50;
+      gap:16px;
+      padding:18px 20px 10px 20px;
     }
     .brand{
       display:flex;
       flex-direction:column;
-      gap:2px;
+      gap:6px;
     }
-    .brand h1{
-      margin:0;
-      font-size:18px;
-      letter-spacing:.2px;
+    .title{
       display:flex;
       align-items:center;
       gap:10px;
+      font-size:20px;
+      font-weight:700;
+      letter-spacing:0.2px;
     }
     .dot{
-      width:10px;height:10px;border-radius:50%;
-      background: #ff3b3b;
-      box-shadow: 0 0 0 4px rgba(255,59,59,.12);
+      width:10px;height:10px;border-radius:999px;background:var(--accent);
+      box-shadow: 0 0 18px rgba(255,45,45,0.35);
       flex:0 0 auto;
     }
-    .brand .sub{
-      color:var(--muted);
-      font-size:12.5px;
-    }
-    .navbtns{display:flex; gap:10px; align-items:center;}
-    .btn{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(16,24,39,.65);
-      color:var(--text);
-      padding:9px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-weight:600;
+    .subtitle{
+      color: var(--muted);
       font-size:13px;
-      transition:.15s ease;
+      letter-spacing:0.2px;
     }
-    .btn:hover{transform: translateY(-1px); border-color: rgba(122,162,255,.35)}
-    .btn.ghost{background:transparent}
-    .statuspill{
-      margin-left:10px;
-      padding:7px 10px;
+    .nav{
+      display:flex;
+      gap:10px;
+      padding-top:2px;
+    }
+    .nav a, .nav button{
+      appearance:none;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      color: var(--text);
+      padding:8px 12px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.25);
-      font-size:12.5px;
-      color:var(--muted);
+      text-decoration:none;
+      font-size:13px;
+      cursor:pointer;
+      transition: transform 0.08s ease, background 0.12s ease;
     }
+    .nav a:hover, .nav button:hover{ background: rgba(255,255,255,0.08); }
+    .nav a:active, .nav button:active{ transform: translateY(1px); }
 
-    .wrap{
+    .layout{
       display:grid;
       grid-template-columns: 360px 1fr;
-      gap:18px;
-      padding:18px;
-      max-width: 1500px;
-      margin:0 auto;
+      gap:16px;
+      padding: 10px 20px 18px 20px;
+      height: calc(100% - 70px);
+      box-sizing:border-box;
     }
     .panel{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.08);
+      background: var(--panel);
+      border:1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow:hidden;
     }
-    .controls{
-      padding:16px;
-    }
-    .controls h2{
-      margin:0 0 10px;
+    .panelInner{ padding:16px; }
+    .panel h3{
+      margin:0 0 10px 0;
       font-size:14px;
-      color:var(--muted);
-      font-weight:700;
-      letter-spacing:.2px;
+      letter-spacing:0.25px;
+      color: rgba(255,255,255,0.78);
     }
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-    .spacer{height:14px}
-    label{font-size:12.5px; color:var(--muted)}
-    input[type="range"]{width:100%}
+
+    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; }
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background: var(--btn);
+      color: var(--text);
+      padding:9px 12px;
+      border-radius:12px;
+      font-size:13px;
+      cursor:pointer;
+      transition: background 0.12s ease, transform 0.08s ease;
+    }
+    .btn:hover{ background: var(--btn2); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      border-color: rgba(255,45,45,0.35);
+      background: rgba(255,45,45,0.12);
+    }
+
+    .control{
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,0.06);
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color: var(--muted);
+      margin-bottom:8px;
+    }
+    input[type="range"]{ width:100%; }
     input[type="file"]{
       width:100%;
-      color:var(--muted);
+      color: var(--muted);
+      font-size:13px;
     }
-    .kv{
-      font-size:12.5px;
-      color:var(--muted);
-      line-height:1.45;
+    .status{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      background: var(--panel2);
+      border:1px solid rgba(255,255,255,0.06);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      color: rgba(255,255,255,0.78);
+      line-height:1.35;
     }
-    .kv b{color:var(--text)}
-    .kv .bad{color:var(--danger); font-weight:700}
-    .kv .ok{color:#4be38a; font-weight:700}
-    .small{font-size:12px; color:var(--muted)}
-    .viewer{
-      padding:10px;
-      display:flex;
-      flex-direction:column;
-      min-height: 720px;
-    }
-    #glwrap{
+    .status .bad{ color: rgba(255,80,80,0.95); }
+    .status .good{ color: rgba(120,255,180,0.95); }
+
+    .viewerWrap{
       position:relative;
-      flex:1;
-      border-radius: calc(var(--radius) - 6px);
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,0.28);
+    }
+    canvas#gl{
+      width:100%;
+      height:100%;
+      display:block;
       background: #000;
     }
-    canvas{display:block; width:100%; height:100%}
-    .overlayBottom{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      padding:10px 12px 12px;
-      color:var(--muted);
-      font-size:12.5px;
+    .overlayHint{
+      position:absolute;
+      left:18px;
+      bottom:14px;
+      color: rgba(255,255,255,0.50);
+      font-size:12px;
+      pointer-events:none;
     }
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .centerLoading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(255,255,255,0.22);
+      font-size:72px;
+      font-weight:300;
+      letter-spacing:1px;
+      pointer-events:none;
+    }
   </style>
 
-  <!-- IMPORTANT: absolute path so it works from any page -->
-  <script src="/assets/vendor/niivue/niivue.umd.js"></script>
+  <!-- IMPORTANT: plain <script src> (NOT type="module") for UMD -->
+  <script src="/assets/vendor/niivue/niivue.umd.min.js"></script>
 </head>
 
 <body>
-  <header class="topbar">
+  <div class="topbar">
     <div class="brand">
-      <h1><span class="dot"></span>MNI Atlas Viewer (Desikan + 3D)</h1>
-      <div class="sub">Remy Cohan • Neuropsis • local-only • 3-plane + optional mesh</div>
+      <div class="title"><span class="dot"></span> MNI Atlas Viewer (3D + labels)</div>
+      <div class="subtitle">Remy Cohan • Neuropsis • local-only • 3-plane + optional 3D</div>
     </div>
-    <div class="navbtns">
-      <button class="btn" id="homeBtn">Home</button>
-      <button class="btn ghost" id="backBtn">Back</button>
-      <span class="statuspill" id="pill">Idle</span>
+    <div class="nav">
+      <a href="/" aria-label="Home">Home</a>
+      <button type="button" onclick="history.back()">Back</button>
     </div>
-  </header>
+  </div>
 
-  <main class="wrap">
-    <section class="panel controls">
-      <h2>Controls</h2>
+  <div class="layout">
+    <div class="panel">
+      <div class="panelInner">
+        <h3>Controls</h3>
 
-      <div class="row">
-        <button class="btn" id="loadAllBtn">Load template + atlas + mesh</button>
-        <button class="btn ghost" id="clearBtn">Clear</button>
-      </div>
+        <div class="btnRow">
+          <button id="btnLoad" class="btn primary" type="button">Load atlas + 3D</button>
+          <button id="btnClear" class="btn" type="button">Clear</button>
+        </div>
 
-      <div class="spacer"></div>
+        <div class="control">
+          <div class="btnRow" style="margin-bottom:10px;">
+            <button id="btn3" class="btn" type="button">3-plane</button>
+            <button id="btnR" class="btn" type="button">3D</button>
+            <button id="btn3R" class="btn" type="button">3-plane + 3D</button>
+          </div>
 
-      <div class="row">
-        <button class="btn ghost" id="mode2dBtn">3-plane</button>
-        <button class="btn ghost" id="mode3dBtn">3D render</button>
-        <button class="btn" id="modeBothBtn">3-plane + 3D</button>
-      </div>
+          <label for="op">Atlas opacity</label>
+          <input id="op" type="range" min="0" max="1" step="0.01" value="0.35" />
+        </div>
 
-      <div class="spacer"></div>
+        <div class="control">
+          <label>Optional: load your own NIfTI underlay (.nii / .nii.gz)</label>
+          <input id="userNii" type="file" accept=".nii,.nii.gz,application/gzip" />
+        </div>
 
-      <label for="opacity">Atlas opacity</label>
-      <input id="opacity" type="range" min="0" max="1" step="0.01" value="0.45" />
-
-      <div class="spacer"></div>
-
-      <label>Optional: load your own NIfTI (underlay)</label>
-      <input id="userNifti" type="file" accept=".nii,.nii.gz" />
-
-      <div class="spacer"></div>
-
-      <div class="kv">
-        <div><b>Status</b></div>
-        <div id="statusLine" class="mono">—</div>
-        <div class="spacer"></div>
-        <div><b>Atlas label</b></div>
-        <div id="labelLine" class="mono">—</div>
-        <div class="spacer"></div>
-        <div class="small">
-          This runs entirely in your browser. Nothing uploads.
-          <br><br>
-          Files used (local in repo):
-          <br><span class="mono">/assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz</span>
-          <br><span class="mono">/assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt</span>
-          <br><span class="mono">/assets/neurop/mni152_2009.mz3</span>
+        <div class="status" id="status">
+          <div>Ready.</div>
+          <div style="margin-top:6px;color:rgba(255,255,255,0.55);">
+            Nothing uploads. Everything stays in your browser.
+          </div>
+          <div style="margin-top:10px;">
+            <span style="color:rgba(255,255,255,0.55);">Label:</span>
+            <span id="label">—</span>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="panel viewer">
-      <div id="glwrap">
-        <canvas id="gl"></canvas>
-      </div>
-      <div class="overlayBottom">
-        <div id="coord" class="mono">x y z: —</div>
-        <div class="mono">Scroll: zoom • Drag: pan • Right-drag: window/level (depends on mode)</div>
-      </div>
-    </section>
-  </main>
+    <div class="panel viewerWrap">
+      <canvas id="gl"></canvas>
+      <div class="centerLoading" id="loading">loading …</div>
+      <div class="overlayHint">Scroll: zoom • Drag: pan • Right-drag: window/level (mode-dependent)</div>
+    </div>
+  </div>
 
   <script>
-    // -----------------------------
-    // Robustly get the constructor from the UMD bundle
-    // -----------------------------
-    function getNiivueConstructor() {
-      // Common UMD patterns:
-      // 1) window.Niivue.Niivue
-      // 2) window.Niivue (itself is constructor)
-      // 3) window.niivue.Niivue
-      if (window.Niivue && typeof window.Niivue.Niivue === 'function') return window.Niivue.Niivue;
-      if (typeof window.Niivue === 'function') return window.Niivue;
-      if (window.niivue && typeof window.niivue.Niivue === 'function') return window.niivue.Niivue;
-      return null;
-    }
+    (function () {
+      const statusEl = document.getElementById('status');
+      const labelEl = document.getElementById('label');
+      const loadingEl = document.getElementById('loading');
 
-    const ui = {
-      pill: document.getElementById('pill'),
-      status: document.getElementById('statusLine'),
-      label: document.getElementById('labelLine'),
-      coord: document.getElementById('coord'),
-      opacity: document.getElementById('opacity'),
-      userNifti: document.getElementById('userNifti'),
-      loadAllBtn: document.getElementById('loadAllBtn'),
-      clearBtn: document.getElementById('clearBtn'),
-      mode2dBtn: document.getElementById('mode2dBtn'),
-      mode3dBtn: document.getElementById('mode3dBtn'),
-      modeBothBtn: document.getElementById('modeBothBtn'),
-      homeBtn: document.getElementById('homeBtn'),
-      backBtn: document.getElementById('backBtn'),
-    };
+      function setStatus(html) { statusEl.innerHTML = html; }
+      function bad(msg){ return `<div class="bad">${msg}</div>`; }
+      function good(msg){ return `<div class="good">${msg}</div>`; }
 
-    function setPill(text) { ui.pill.textContent = text; }
-    function setStatus(text, isError=false) {
-      ui.status.innerHTML = isError ? `<span class="bad">${text}</span>` : text;
-    }
+      // Robustly resolve the Niivue class from UMD globals.
+      const NiivueClass =
+        (window.Niivue && (window.Niivue.Niivue || window.Niivue)) ||
+        (window.niivue && (window.niivue.Niivue || window.niivue)) ||
+        null;
 
-    // -----------------------------
-    // Atlas label mapping
-    // -----------------------------
-    const atlasTxtUrl = '/assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt';
-    const atlasMap = new Map(); // int -> label
-
-    async function loadAtlasLabels() {
-      const res = await fetch(atlasTxtUrl, { cache: 'no-store' });
-      if (!res.ok) throw new Error('Could not fetch atlas txt (check path).');
-      const txt = await res.text();
-
-      // The file formats vary. We handle:
-      // - "id label"
-      // - "id<TAB>label"
-      // - CSV-ish
-      // We extract leading integer + rest-of-line as label.
-      const lines = txt.split(/\r?\n/);
-      for (const line of lines) {
-        const s = line.trim();
-        if (!s) continue;
-        // Find first integer in line:
-        const m = s.match(/^(\d+)[\s,;:\t]+(.+)$/);
-        if (!m) continue;
-        const id = parseInt(m[1], 10);
-        const label = m[2].trim();
-        if (!Number.isNaN(id) && label) atlasMap.set(id, label);
-      }
-      return atlasMap.size;
-    }
-
-    // -----------------------------
-    // NiiVue init
-    // -----------------------------
-    let nv = null;
-    let atlasVolIndex = null; // where overlay sits (we track it)
-    let underlayVolIndex = null;
-
-    function initNvOrExplain() {
-      const NiivueCtor = getNiivueConstructor();
-      if (!NiivueCtor) {
-        setStatus('ERROR: NiiVue not loaded. Fix the script tag to /assets/vendor/niivue/niivue.umd.js', true);
-        setPill('Library missing');
-        return false;
+      if (!NiivueClass) {
+        loadingEl.style.display = 'none';
+        setStatus(
+          bad('ERROR: NiiVue not loaded.') +
+          `<div style="margin-top:10px;color:rgba(255,255,255,0.65);">
+            Fix: make sure this file exists and loads (no 404):
+            <div style="margin-top:6px;font-family:ui-monospace,monospace;">/assets/vendor/niivue/niivue.umd.min.js</div>
+          </div>`
+        );
+        return;
       }
 
-      nv = new NiivueCtor({
-        // Keep it simple and stable:
-        isResizeCanvas: true,
-        // many builds accept options; if not, they’re ignored
-        logLevel: 'error'
+      // Paths (absolute so they work no matter where this html lives)
+      const base = location.origin;
+      const PATHS = {
+        underlay: base + '/assets/neurop/MNI152_T1_1mm_brain.nii.gz',
+        atlas:    base + '/assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz',
+        lut:      base + '/assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt',
+        mesh:     base + '/assets/neurop/mni152_2009.mz3'
+      };
+
+      // Parse simple "index label" LUT text file into a map.
+      async function loadLUT(url){
+        try{
+          const txt = await fetch(url, {cache:'no-store'}).then(r => r.text());
+          const map = new Map();
+          txt.split(/\r?\n/).forEach(line => {
+            const m = line.trim().match(/^(\d+)\s+(.+)$/);
+            if (m) map.set(parseInt(m[1],10), m[2].trim());
+          });
+          return map;
+        } catch(e){
+          return new Map();
+        }
+      }
+
+      const nv = new NiivueClass({
+        backColor: [0,0,0,1],
+        show3Dcrosshair: true,
+        dragAndDropEnabled: false,
       });
 
       nv.attachToCanvas(document.getElementById('gl'));
 
-      // Default view: 3-plane + 3D if supported
-      try { nv.setSliceType?.(0); } catch(e) {}
-      setStatus('NiiVue loaded.');
-      setPill('Ready');
-      return true;
-    }
-
-    // -----------------------------
-    // Load template + atlas + mesh
-    // -----------------------------
-    const atlasNiiUrl = '/assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz';
-    const meshUrl    = '/assets/neurop/mni152_2009.mz3';
-
-    async function loadAll() {
-      if (!nv && !initNvOrExplain()) return;
-
-      setPill('Loading…');
-      setStatus('Loading atlas + mesh…');
-
-      // load labels (once)
-      try {
-        if (atlasMap.size === 0) {
-          const n = await loadAtlasLabels();
-          if (n === 0) console.warn('Atlas txt parsed but no labels found. Format might be different.');
-        }
-      } catch (e) {
-        console.warn(e);
-        // don’t hard-fail on labels
-      }
-
-      // Clear first
-      try { nv.closeAll?.(); } catch(e) {}
-      atlasVolIndex = null;
-      underlayVolIndex = null;
-
-      // IMPORTANT: You currently only have an atlas label volume.
-      // It will render black-ish unless we give it a colormap.
-      // If you later add an underlay MNI T1, add it here as the first volume.
-      const volumes = [
-        {
-          url: atlasNiiUrl,
-          name: 'Desikan (labels)',
-          opacity: parseFloat(ui.opacity.value),
-          colormap: 'glasbey',
-          // some builds use isLabel: true
-          isLabel: true
-        }
-      ];
-
-      try {
-        await nv.loadVolumes(volumes);
-        atlasVolIndex = 0;
-
-        // Optional mesh
-        try {
-          await nv.loadMeshes?.([{ url: meshUrl, name: 'MNI mesh', opacity: 0.22 }]);
-        } catch (e) {
-          // Not all builds have meshes enabled; don’t kill the page.
-          console.warn('Mesh load skipped:', e);
-        }
-
-        // Make it look decent
-        try { nv.setRadiologicalConvention?.(true); } catch(e) {}
-        try { nv.setSliceMM?.(0,0,0); } catch(e) {}
-        try { nv.updateGLVolume?.(); } catch(e) {}
-
-        setStatus('Loaded atlas (overlay) and attempted mesh.');
-        setPill('Loaded');
-
-        wireLocationListener();
-      } catch (e) {
-        console.error(e);
-        setStatus('ERROR loading NIfTI/mesh. Open DevTools Console for the real error.', true);
-        setPill('Error');
-      }
-    }
-
-    // -----------------------------
-    // Location / label reporting
-    // -----------------------------
-    function wireLocationListener() {
-      if (!nv) return;
-
-      // Different builds expose this differently.
-      // We try a few patterns.
-      const handler = (loc) => {
-        // loc often includes mm coordinates and voxel/value info
-        // We keep it defensive.
-        const mm = loc?.mm || loc?.mmXYZ || loc?.xyzMM || null;
-        const ax = (mm && mm.length>=3) ? mm : null;
-        if (ax) ui.coord.textContent = `x y z: ${ax[0].toFixed(1)} ${ax[1].toFixed(1)} ${ax[2].toFixed(1)}`;
-
-        // Get atlas value at location.
-        // Many builds give "values" or "vox" or "val".
-        let val = null;
-        if (typeof loc?.value === 'number') val = loc.value;
-        if (Array.isArray(loc?.values) && typeof loc.values[atlasVolIndex ?? 0] === 'number') val = loc.values[atlasVolIndex ?? 0];
-        if (typeof loc?.voxValue === 'number') val = loc.voxValue;
-
-        // If we can query directly from nv:
-        if (val == null) {
-          try {
-            // some builds: nv.getValueUnderMouse() returns object
-            const v = nv.getValueUnderMouse?.();
-            if (typeof v === 'number') val = v;
-          } catch(e) {}
-        }
-
-        const id = (val == null) ? null : Math.round(val);
-        if (id == null || id === 0) {
-          ui.label.textContent = '—';
-          return;
-        }
-        const label = atlasMap.get(id) || `Label ${id}`;
-        ui.label.textContent = `${label}  (id ${id})`;
+      // Slice modes: use numeric fallbacks if constants are missing.
+      const SLICE = {
+        MULTI: (nv.sliceTypeMultiplanar ?? 2),
+        RENDER: (nv.sliceTypeRender ?? 4),
+        MULTI_RENDER: (nv.sliceTypeMultiplanarRender ?? 5),
       };
 
-      // Try to register:
-      try {
-        // common: nv.onLocationChange = fn
-        nv.onLocationChange = handler;
-        return;
-      } catch(e) {}
-
-      try {
-        // some: nv.opts.onLocationChange
-        if (nv.opts) nv.opts.onLocationChange = handler;
-      } catch(e) {}
-    }
-
-    // -----------------------------
-    // Opacity change
-    // -----------------------------
-    function setAtlasOpacity(v) {
-      if (!nv || atlasVolIndex == null) return;
-      const opacity = parseFloat(v);
-      try {
-        // Some builds:
-        nv.setOpacity?.(atlasVolIndex, opacity);
-      } catch (e) {}
-      try {
-        // Others:
-        const vol = nv.volumes?.[atlasVolIndex];
-        if (vol) vol.opacity = opacity;
-        nv.updateGLVolume?.();
-      } catch (e) {}
-    }
-
-    // -----------------------------
-    // Optional: user underlay NIfTI
-    // -----------------------------
-    async function loadUserUnderlay(file) {
-      if (!nv && !initNvOrExplain()) return;
-
-      setPill('Loading…');
-      setStatus('Loading your NIfTI underlay…');
-
-      try {
-        const buf = await file.arrayBuffer();
-
-        // Some builds: nv.addVolumeFromFile(file) exists; others allow loadVolumes w/ File
-        if (nv.addVolumeFromFile) {
-          await nv.addVolumeFromFile(file);
-          underlayVolIndex = 0; // not always true, but fine for display
-        } else if (nv.loadVolumes) {
-          // Create a blob URL
-          const blobUrl = URL.createObjectURL(new Blob([buf]));
-          await nv.loadVolumes([{ url: blobUrl, name: file.name, opacity: 1.0, colormap: 'gray' }]);
-          underlayVolIndex = 0;
-        } else {
-          throw new Error('This NiiVue build does not support file loading in this mode.');
-        }
-
-        // Now add atlas overlay on top if not present
-        if (atlasVolIndex == null) {
-          try {
-            await nv.addVolumeFromUrl?.({ url: atlasNiiUrl, name:'Desikan (labels)', opacity: parseFloat(ui.opacity.value), colormap:'glasbey', isLabel:true });
-            atlasVolIndex = (nv.volumes?.length ?? 1) - 1;
-          } catch (e) {
-            // fallback: reload both
-          }
-        }
-
-        setStatus('Underlay loaded.');
-        setPill('Loaded');
-        wireLocationListener();
-      } catch (e) {
-        console.error(e);
-        setStatus('ERROR loading your NIfTI. Check console for details.', true);
-        setPill('Error');
+      function setMode(mode){
+        try{
+          nv.setSliceType(mode);
+        }catch(e){}
       }
-    }
 
-    // -----------------------------
-    // Modes
-    // -----------------------------
-    function setMode(mode) {
-      if (!nv) return;
-      // NiiVue slice types differ across versions; we try a few calls.
-      try {
-        if (mode === '2d') nv.setSliceType?.(0);         // 3-plane
-        if (mode === '3d') nv.setSliceType?.(4);         // 3D render (often 4)
-        if (mode === 'both') nv.setSliceType?.(2);       // multi-planar + 3D (varies)
-      } catch(e) {}
-      setPill(mode === '2d' ? '3-plane' : mode === '3d' ? '3D' : '3-plane + 3D');
-    }
+      // Atlas opacity slider
+      document.getElementById('op').addEventListener('input', (e) => {
+        const v = parseFloat(e.target.value);
+        if (nv.volumes && nv.volumes.length > 1) {
+          nv.volumes[1].opacity = v;
+          nv.updateGLVolume();
+        }
+      });
 
-    // -----------------------------
-    // Wire UI
-    // -----------------------------
-    ui.homeBtn.addEventListener('click', () => { window.location.href = '/'; });
-    ui.backBtn.addEventListener('click', () => { history.back(); });
+      document.getElementById('btn3').onclick = () => setMode(SLICE.MULTI);
+      document.getElementById('btnR').onclick = () => setMode(SLICE.RENDER);
+      document.getElementById('btn3R').onclick = () => setMode(SLICE.MULTI_RENDER);
 
-    ui.loadAllBtn.addEventListener('click', loadAll);
-    ui.clearBtn.addEventListener('click', () => {
-      if (!nv) return;
-      try { nv.closeAll?.(); } catch(e) {}
-      atlasVolIndex = null;
-      underlayVolIndex = null;
-      ui.coord.textContent = 'x y z: —';
-      ui.label.textContent = '—';
-      setStatus('Cleared.');
-      setPill('Ready');
-    });
+      document.getElementById('btnClear').onclick = () => {
+        try { nv.removeAllVolumes(); } catch(e){}
+        try { nv.removeAllMeshes(); } catch(e){}
+        labelEl.textContent = '—';
+        loadingEl.style.display = '';
+        setStatus(`<div>Ready.</div><div style="margin-top:6px;color:rgba(255,255,255,0.55);">Nothing uploads. Everything stays in your browser.</div><div style="margin-top:10px;"><span style="color:rgba(255,255,255,0.55);">Label:</span> <span id="label">—</span></div>`);
+        // restore labelEl reference after overwrite
+        setTimeout(() => {
+          const fresh = document.getElementById('label');
+          if (fresh) labelEl.textContent = fresh.textContent;
+        }, 0);
+      };
 
-    ui.opacity.addEventListener('input', (e) => setAtlasOpacity(e.target.value));
+      let lutMap = new Map();
 
-    ui.userNifti.addEventListener('change', (e) => {
-      const f = e.target.files?.[0];
-      if (f) loadUserUnderlay(f);
-    });
+      // Use NiiVue’s location callback if available (varies by version).
+      // We keep it defensive so it won’t crash if the API differs.
+      function wireLabelReadout(){
+        const setLabelFromValue = (val) => {
+          const i = Math.round(val);
+          if (!Number.isFinite(i) || i <= 0) { labelEl.textContent = '—'; return; }
+          labelEl.textContent = lutMap.get(i) || String(i);
+        };
 
-    ui.mode2dBtn.addEventListener('click', () => setMode('2d'));
-    ui.mode3dBtn.addEventListener('click', () => setMode('3d'));
-    ui.modeBothBtn.addEventListener('click', () => setMode('both'));
+        // Attempt known callback names across versions:
+        nv.onLocationChange = (data) => {
+          try{
+            // Some builds provide data.values (array per volume)
+            if (data && Array.isArray(data.values) && data.values.length > 1) {
+              setLabelFromValue(data.values[1]);
+            }
+          }catch(e){}
+        };
 
-    // -----------------------------
-    // Boot
-    // -----------------------------
-    (function boot(){
-      const ok = initNvOrExplain();
-      if (!ok) return;
+        // Also update on mouse up as a fallback
+        const c = document.getElementById('gl');
+        c.addEventListener('mouseup', () => {
+          try{
+            // Try reading voxel value from volume[1] using crosshair location if available
+            const v = nv.volumes?.[1];
+            if (!v) return;
+            // Best-effort: use provided API if present
+            if (typeof nv.getVolumeValue === 'function') {
+              const val = nv.getVolumeValue(1);
+              setLabelFromValue(val);
+            }
+          }catch(e){}
+        });
+      }
 
-      // Default mode for “wow”: 3-plane + 3D if it works
-      setMode('both');
+      async function loadAll(){
+        loadingEl.style.display = '';
+        setStatus(`<div>Loading…</div>`);
+        labelEl.textContent = '—';
 
-      // Don’t auto-load heavy stuff unless you want it.
-      setStatus('Ready. Click “Load template + atlas + mesh”.');
-      setPill('Ready');
+        // Load LUT (label names)
+        lutMap = await loadLUT(PATHS.lut);
+
+        // Load volumes
+        // Underlay is optional but strongly recommended.
+        const vols = [];
+        try{
+          // Try to load underlay first. If missing (404), continue with atlas only.
+          const r = await fetch(PATHS.underlay, { method: 'HEAD', cache:'no-store' });
+          if (r.ok) {
+            vols.push({ url: PATHS.underlay, colormap: 'gray', opacity: 1.0, isLabel: false });
+          }
+        } catch(e){}
+
+        vols.push({ url: PATHS.atlas, colormap: 'actc', opacity: parseFloat(document.getElementById('op').value), isLabel: true });
+
+        try{
+          await nv.loadVolumes(vols);
+        } catch(e){
+          loadingEl.style.display = 'none';
+          setStatus(
+            bad('ERROR loading NIfTI volumes.') +
+            `<div style="margin-top:8px;color:rgba(255,255,255,0.65);">
+              Open DevTools Console for the real error. Most often this is a path/404 or GitHub Pages caching.
+            </div>`
+          );
+          throw e;
+        }
+
+        // Load mesh (optional)
+        try{
+          await nv.loadMeshes([{ url: PATHS.mesh }]);
+        } catch(e){
+          // Mesh failures shouldn’t kill the page.
+        }
+
+        // Default view
+        setMode(SLICE.MULTI_RENDER);
+
+        loadingEl.style.display = 'none';
+        setStatus(
+          good('Ready.') +
+          `<div style="margin-top:6px;color:rgba(255,255,255,0.55);">Nothing uploads. Everything stays in your browser.</div>
+           <div style="margin-top:10px;"><span style="color:rgba(255,255,255,0.55);">Label:</span> <span id="label">—</span></div>`
+        );
+
+        // restore labelEl reference after overwrite
+        setTimeout(() => {
+          const fresh = document.getElementById('label');
+          if (fresh) labelEl.textContent = fresh.textContent;
+        }, 0);
+
+        wireLabelReadout();
+      }
+
+      document.getElementById('btnLoad').onclick = async () => {
+        try { await loadAll(); } catch(e) {}
+      };
+
+      // User underlay upload
+      document.getElementById('userNii').addEventListener('change', async (ev) => {
+        const f = ev.target.files && ev.target.files[0];
+        if (!f) return;
+
+        try{
+          // Clear existing underlay only (keep atlas if present)
+          if (nv.volumes?.length) {
+            // Remove all and reload atlas+uploaded underlay cleanly
+            try { nv.removeAllVolumes(); } catch(e){}
+          }
+          loadingEl.style.display = '';
+          setStatus(`<div>Loading your underlay…</div>`);
+
+          // Load uploaded underlay
+          await nv.loadVolumes([
+            { file: f, colormap: 'gray', opacity: 1.0, isLabel: false },
+            { url: PATHS.atlas, colormap: 'actc', opacity: parseFloat(document.getElementById('op').value), isLabel: true }
+          ]);
+
+          // Mesh optional
+          try { await nv.loadMeshes([{ url: PATHS.mesh }]); } catch(e){}
+
+          setMode(SLICE.MULTI_RENDER);
+          loadingEl.style.display = 'none';
+          setStatus(good('Ready.') + `<div style="margin-top:6px;color:rgba(255,255,255,0.55);">Nothing uploads. Everything stays in your browser.</div><div style="margin-top:10px;"><span style="color:rgba(255,255,255,0.55);">Label:</span> <span id="label">—</span></div>`);
+          setTimeout(() => {
+            const fresh = document.getElementById('label');
+            if (fresh) labelEl.textContent = fresh.textContent;
+          }, 0);
+          wireLabelReadout();
+
+        } catch(e){
+          loadingEl.style.display = 'none';
+          setStatus(bad('ERROR loading your NIfTI. Open DevTools Console for the real error.'));
+        }
+      });
+
+      // Don’t auto-load on page load — you wanted a button.
+      loadingEl.style.display = 'none';
+      setStatus(`<div>Ready.</div><div style="margin-top:6px;color:rgba(255,255,255,0.55);">Nothing uploads. Everything stays in your browser.</div><div style="margin-top:10px;"><span style="color:rgba(255,255,255,0.55);">Label:</span> <span id="label">—</span></div>`);
     })();
   </script>
 </body>
