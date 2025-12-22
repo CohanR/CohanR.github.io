@@ -3,47 +3,126 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Neuropsis • Atlas Viewer (MNI + Desikan)</title>
-  <meta name="description" content="MNI viewer with Desikan atlas overlay and 3D surface. Runs locally in your browser." />
+
+  <title>Remy Cohan • Neuropsis • MNI Atlas Viewer (Desikan + 3D)</title>
+  <meta name="description" content="Remy Cohan (Neuropsis) — interactive MNI152 viewer with Desikan atlas overlay and 3D surface rendering. Runs locally in your browser; no uploads." />
+  <meta name="author" content="Remy Cohan" />
+  <meta name="keywords" content="Remy Cohan, Neuropsis, NiiVue, MNI152, Desikan, atlas, NIfTI, neuroimaging, TMS, neuromodulation" />
+
+  <!-- Social preview -->
+  <meta property="og:title" content="Remy Cohan • Neuropsis • MNI Atlas Viewer (Desikan + 3D)" />
+  <meta property="og:description" content="Local-only MNI152 viewer with Desikan atlas overlay + 3D surface. No uploads." />
+  <meta property="og:type" content="website" />
+
   <style>
     :root { color-scheme: dark; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background:#070a0f; color:#e6edf7; }
-    header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    * { box-sizing: border-box; }
+    body {
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:#070a0f;
+      color:#e6edf7;
+    }
+    header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
     .brand { display:flex; flex-direction:column; gap:2px; }
     .brand h1 { margin:0; font-size:16px; letter-spacing:0.2px; }
     .brand .sub { opacity:0.75; font-size:12px; }
     .actions { display:flex; gap:10px; align-items:center; }
+
     button, .btn {
-      appearance:none; border:1px solid rgba(255,255,255,0.14);
+      appearance:none;
+      border:1px solid rgba(255,255,255,0.14);
       background: rgba(20,30,50,0.45);
-      color:#e6edf7; padding:8px 12px; border-radius:10px;
-      cursor:pointer; font-size:13px;
-      text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+      color:#e6edf7;
+      padding:8px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:13px;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      user-select:none;
     }
     button:hover, .btn:hover { border-color: rgba(120,170,255,0.55); }
-    main { display:grid; grid-template-columns: 380px 1fr; gap:14px; padding:14px; }
-    .panel { border:1px solid rgba(255,255,255,0.08); background: rgba(10,14,22,0.7); border-radius:14px; padding:14px; }
+    button:disabled { opacity:0.5; cursor:not-allowed; }
+
+    main {
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:14px;
+      padding:14px;
+    }
+    .panel {
+      border:1px solid rgba(255,255,255,0.08);
+      background: rgba(10,14,22,0.7);
+      border-radius:14px;
+      padding:14px;
+      height: calc(100vh - 86px);
+      overflow:auto;
+    }
     .panel h2 { margin:0 0 10px; font-size:14px; opacity:0.9; }
     label { font-size:12px; opacity:0.8; display:block; margin:10px 0 6px; }
     input[type="range"] { width:100%; }
     input[type="file"] { width:100%; }
     .row { display:flex; gap:10px; align-items:center; margin:10px 0; flex-wrap:wrap; }
-    .hint { font-size:12px; opacity:0.7; line-height:1.35; margin-top:8px; }
-    .status { margin-top:10px; font-size:12px; opacity:0.85; white-space:pre-wrap; }
-    #gl { width:100%; height: calc(100vh - 86px); display:block; border-radius:14px; border:1px solid rgba(255,255,255,0.08); }
-    .kv { display:grid; grid-template-columns: 120px 1fr; gap:8px 10px; font-size:12px; opacity:0.9; margin-top:10px; }
+    .hint { font-size:12px; opacity:0.7; line-height:1.35; margin-top:10px; }
+    .kv { display:grid; grid-template-columns: 120px 1fr; gap:8px 10px; font-size:12px; opacity:0.92; margin-top:10px; }
     .kv div:nth-child(odd) { opacity:0.7; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .viewerWrap {
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      overflow:hidden;
+      height: calc(100vh - 86px);
+      background:#000;
+    }
+    #gl {
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .pill {
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(20,30,50,0.35);
+      font-size:12px;
+      opacity:0.9;
+    }
+
+    .errorBox {
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,120,120,0.25);
+      background: rgba(90,20,20,0.25);
+      font-size:12px;
+      line-height:1.4;
+      white-space:pre-wrap;
+    }
   </style>
 
-  <!-- LOCAL NiiVue (no CDN) -->
-  <script src="assets/vendor/niivue/niivue.min.js"></script>
+  <!-- IMPORTANT: use the UMD build so `Niivue` exists as a global -->
+  <script src="./assets/vendor/niivue/niivue.umd.js"></script>
 </head>
 
 <body>
 <header>
   <div class="brand">
-    <h1>Atlas Viewer (MNI + Desikan + 3D)</h1>
-    <div class="sub">Local-only viewer • 3-plane + 3D render • mesh + atlas overlay</div>
+    <h1>MNI Atlas Viewer (Desikan + 3D)</h1>
+    <div class="sub">Remy Cohan • Neuropsis • local-only • no uploads</div>
   </div>
   <div class="actions">
     <a class="btn" href="/">Home</a>
@@ -73,56 +152,88 @@
     <input id="userNifti" type="file" accept=".nii,.nii.gz,application/gzip" />
 
     <div class="kv">
-      <div>Status</div><div id="statusLine">Ready.</div>
+      <div>Status</div><div id="statusLine" class="pill">Ready.</div>
       <div>Atlas label</div><div id="labelLine">—</div>
+      <div>Loaded</div><div id="loadedLine" class="mono">—</div>
     </div>
 
     <p class="hint">
-      The Desikan file you uploaded is a *label volume*. It’s an overlay.
-      For a clean anatomical underlay, also add an MNI T1 (e.g., MNI152_T1_1mm_brain.nii.gz) later.
-      This page will still run without it, but it’ll look less “MRI-like”.
+      This viewer runs entirely in your browser. Nothing uploads.
+      The Desikan file is a label volume (overlay). For a clean anatomical underlay, this page auto-tries
+      <span class="mono">images/mni152.nii.gz</span> or <span class="mono">images/mni152.nii</span> if present.
     </p>
 
-    <div id="status" class="status"></div>
+    <div id="fatalError" class="errorBox" style="display:none;"></div>
   </section>
 
-  <section>
+  <section class="viewerWrap">
     <canvas id="gl"></canvas>
   </section>
 </main>
 
 <script>
-  // --- hard paths (match your repo) ---
-  const PATHS = {
-    // Optional underlay (if you add it later, this auto-uses it)
-    t1Candidates: [
-      "assets/neurop/MNI152_T1_1mm_brain.nii.gz",
-      "assets/neurop/MNI152_T1_1mm.nii.gz",
-      "images/mni152.nii.gz",
-      "images/mni152.nii"
-    ],
-    atlas: "assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz",
-    atlasLabelsTxt: "assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt",
-    mesh: "assets/neurop/mni152_2009.mz3"
-  };
-
+(() => {
   const statusLine = document.getElementById("statusLine");
   const labelLine  = document.getElementById("labelLine");
-  const statusBox  = document.getElementById("status");
+  const loadedLine = document.getElementById("loadedLine");
+  const fatalBox   = document.getElementById("fatalError");
 
-  function setStatus(oneLine, detail="") {
-    statusLine.textContent = oneLine;
-    statusBox.textContent = detail;
+  function setStatus(msg) { statusLine.textContent = msg; }
+  function setFatal(msg) {
+    fatalBox.style.display = "block";
+    fatalBox.textContent = msg;
   }
 
-  // sanity check: Niivue is global
-  if (typeof Niivue === "undefined") {
-    setStatus("ERROR: NiiVue not loaded",
-      "Check the script path:\nassets/vendor/niivue/niivue.min.js\n\nOpen it directly in the browser to confirm it serves (not 404).");
-    throw new Error("Niivue not loaded");
+  // If this fails, it's *always* because the wrong file was loaded (ESM as classic script),
+  // or the path is wrong.
+  if (typeof window.Niivue === "undefined") {
+    setStatus("ERROR: NiiVue not loaded");
+    setFatal(
+`NiiVue didn't load.
+
+Fix:
+1) Confirm this URL loads (not 404):
+   ${new URL("./assets/vendor/niivue/niivue.umd.js", document.baseURI).toString()}
+
+2) Make sure you are using the UMD build (niivue.umd.js) in the <script src="..."> tag.
+   The "min" file is often ESM and will NOT create window.Niivue.`
+    );
+    return;
   }
 
-  const nv = new Niivue({
+  // Robust URL helper (works even if you later move the HTML into a subfolder)
+  const U = (rel) => new URL(rel, document.baseURI).toString();
+
+  // Your repo assets
+  const PATHS = {
+    underlayCandidates: [
+      "./images/mni152.nii.gz",
+      "./images/mni152.nii",
+      "./assets/neurop/MNI152_T1_1mm.nii.gz",
+      "./assets/neurop/MNI152_T1_1mm_brain.nii.gz"
+    ],
+    atlas: "./assets/neurop/MNI152_T1_1mm_desikan_adjusted.nii.gz",
+    atlasLabels: "./assets/neurop/MNI152_T1_1mm_desikan_adjusted.txt",
+    mesh: "./assets/neurop/mni152_2009.mz3"
+  };
+
+  // Parse Desikan label file: "int  label"
+  const labelMap = new Map();
+  async function loadLabelMap() {
+    const r = await fetch(U(PATHS.atlasLabels), { cache: "no-store" });
+    if (!r.ok) throw new Error(`Label file fetch failed (HTTP ${r.status})`);
+    const txt = await r.text();
+    txt.split(/\r?\n/).forEach(line => {
+      const s = line.trim();
+      if (!s) return;
+      const m = s.match(/^(\d+)\s+(.*)$/);
+      if (!m) return;
+      labelMap.set(parseInt(m[1], 10), m[2].trim());
+    });
+  }
+
+  // NiiVue init
+  const nv = new window.Niivue({
     backColor: [0,0,0,1],
     isColorbar: false,
     show3Dcrosshair: true
@@ -131,189 +242,195 @@
   nv.attachTo("gl");
   nv.setSliceType(nv.sliceTypeMultiplanarRender);
 
-  // --- label map parsing ---
-  // Your txt is typically: integer<whitespace>LabelName
-  const labelMap = new Map();
-  async function loadLabelMap() {
-    try {
-      const r = await fetch(PATHS.atlasLabelsTxt, { cache: "no-store" });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const txt = await r.text();
-      txt.split(/\r?\n/).forEach(line => {
-        const s = line.trim();
-        if (!s) return;
-        const m = s.match(/^(\d+)\s+(.*)$/);
-        if (!m) return;
-        labelMap.set(parseInt(m[1], 10), m[2].trim());
-      });
-      setStatus("Label map loaded", `Loaded ${labelMap.size} atlas labels from:\n${PATHS.atlasLabelsTxt}`);
-    } catch (e) {
-      setStatus("Label map load failed", `Could not fetch:\n${PATHS.atlasLabelsTxt}\n\n${e.message || e}`);
-    }
+  function safeCloseAll() {
+    try { nv.closeAllMeshes(); } catch {}
+    try { nv.closeAllVolumes(); } catch {}
+    try { nv.updateGLVolume(); } catch {}
+    labelLine.textContent = "—";
+    loadedLine.textContent = "—";
   }
 
-  // --- loading helpers ---
-  async function tryLoadUnderlay() {
-    for (const p of PATHS.t1Candidates) {
+  async function loadUnderlayBestEffort() {
+    for (const rel of PATHS.underlayCandidates) {
       try {
-        await nv.loadVolumes([{ url: p, name: "MNI_T1", opacity: 1.0 }]);
-        return p;
+        await nv.loadVolumes([{ url: U(rel), name: "Underlay", opacity: 1.0 }]);
+        return rel;
       } catch (e) {}
     }
     return null;
   }
 
-  async function loadAtlasOverlay(opacity=0.35) {
-    // If underlay wasn't loaded, atlas becomes the first volume (still works, just uglier)
+  async function loadAtlasOverlay(opacity) {
+    // add overlay as a second volume (if no underlay, it'll still load as the only volume)
+    // Using nearest neighbour for labels.
     await nv.addVolumeFromUrl({
-      url: PATHS.atlas,
-      name: "Desikan_Atlas",
+      url: U(PATHS.atlas),
+      name: "Desikan",
       opacity: opacity,
-      // label volumes look best with a discrete-ish LUT; NiiVue supports several built-ins
       colormap: "random",
       isNearestInterpolation: true
     });
   }
 
-  async function loadMesh() {
+  async function loadMeshBestEffort() {
     try {
-      await nv.loadMeshes([{ url: PATHS.mesh, name: "mni152_2009" }]);
+      await nv.loadMeshes([{ url: U(PATHS.mesh), name: "mni152_2009" }]);
+      return true;
     } catch (e) {
-      // mesh is optional; don't hard fail
-      setStatus("Mesh load failed", `Could not load mesh:\n${PATHS.mesh}\n\n${e.message || e}`);
+      return false;
+    }
+  }
+
+  // Best-effort label readout across versions:
+  // NiiVue versions differ; many expose an onLocationChange callback with intensity info.
+  function wireLabelReadout() {
+    // Pattern A: nv.onLocationChange = (loc) => ...
+    try {
+      nv.onLocationChange = (loc) => {
+        // Try common shapes:
+        // - loc.values (array) with per-volume intensity
+        // - loc.string contains a formatted intensity readout
+        // We'll attempt to extract the atlas value.
+        let atlasVal = null;
+
+        if (loc && Array.isArray(loc.values)) {
+          // Assume atlas is the last loaded volume (usually true: underlay first, atlas second)
+          // If only atlas is loaded, it's [0].
+          atlasVal = loc.values[loc.values.length - 1];
+        } else if (loc && typeof loc.string === "string") {
+          // Fallback: attempt to grab last numeric token
+          const nums = loc.string.match(/-?\d+(\.\d+)?/g);
+          if (nums && nums.length) atlasVal = nums[nums.length - 1];
+        }
+
+        if (atlasVal == null) return;
+        const id = Math.round(Number(atlasVal));
+        if (!Number.isFinite(id)) return;
+
+        const name = labelMap.get(id);
+        labelLine.textContent = name ? name : (id === 0 ? "Background (0)" : `Label ${id}`);
+      };
+    } catch (e) {
+      // If it fails, ignore — viewer still works.
     }
   }
 
   async function loadDefaults() {
-    labelLine.textContent = "—";
-    setStatus("Loading…", "");
+    setStatus("Loading…");
+    safeCloseAll();
 
-    // wipe clean
+    let loaded = [];
+
+    // label map first (so label readout works immediately)
     try {
-      nv.closeAllVolumes();
-      nv.closeAllMeshes();
-      nv.updateGLVolume();
-    } catch {}
-
-    const underlayPath = await tryLoadUnderlay();
-    if (underlayPath) {
-      setStatus("Underlay loaded", `Loaded underlay:\n${underlayPath}`);
-    } else {
-      setStatus("No underlay found", "No MNI T1 underlay found in the candidate paths.\nContinuing with atlas-only (still functional).");
-    }
-
-    try {
-      await loadAtlasOverlay(parseFloat(document.getElementById("atlasOpacity").value));
-      await loadMesh();
-      nv.updateGLVolume();
-      setStatus("Loaded", `Atlas:\n${PATHS.atlas}\nMesh:\n${PATHS.mesh}\n\nIf the screen is blank: open DevTools → Console and tell me the first error line.`);
+      await loadLabelMap();
     } catch (e) {
-      setStatus("ERROR loading volumes", e.message || String(e));
-      console.error(e);
+      // not fatal
     }
+
+    // underlay (optional)
+    const underlayRel = await loadUnderlayBestEffort();
+    if (underlayRel) loaded.push(`Underlay: ${underlayRel}`);
+    else loaded.push("Underlay: not found (ok)");
+
+    // atlas overlay (required for your use case)
+    const op = parseFloat(document.getElementById("atlasOpacity").value);
+    await loadAtlasOverlay(op);
+    loaded.push(`Atlas: ${PATHS.atlas}`);
+
+    // mesh (optional)
+    const meshOk = await loadMeshBestEffort();
+    loaded.push(meshOk ? `Mesh: ${PATHS.mesh}` : `Mesh: failed (check ${PATHS.mesh})`);
+
+    try { nv.updateGLVolume(); } catch {}
+
+    loadedLine.textContent = loaded.join(" • ");
+    wireLabelReadout();
+    setStatus("Loaded");
   }
 
-  function clearAll() {
-    try {
-      nv.closeAllVolumes();
-      nv.closeAllMeshes();
-      nv.updateGLVolume();
-      labelLine.textContent = "—";
-      setStatus("Cleared", "");
-    } catch (e) {
-      setStatus("Clear failed", e.message || String(e));
-    }
+  async function loadUserNifti(file) {
+    setStatus("Loading NIfTI…");
+    safeCloseAll();
+
+    // Load user file as underlay
+    await nv.loadFromFile(file);
+
+    // Then add atlas + mesh
+    try { await loadLabelMap(); } catch {}
+    const op = parseFloat(document.getElementById("atlasOpacity").value);
+    await loadAtlasOverlay(op);
+    const meshOk = await loadMeshBestEffort();
+
+    try { nv.updateGLVolume(); } catch {}
+    wireLabelReadout();
+
+    loadedLine.textContent =
+      `Underlay: ${file.name} • Atlas: ${PATHS.atlas} • Mesh: ${meshOk ? PATHS.mesh : "failed"}`;
+
+    setStatus("Loaded");
   }
 
-  // --- basic atlas “label at crosshair” ---
-  // NiiVue API differs by build/version; this is a best-effort implementation:
-  function updateLabelReadoutBestEffort() {
-    try {
-      // find atlas volume by name
-      const idx = (nv.volumes || []).findIndex(v => (v?.name || "").includes("Desikan_Atlas"));
-      if (idx < 0) return;
+  // UI wiring
+  document.getElementById("btnLoadDefaults").addEventListener("click", () => {
+    loadDefaults().catch(err => {
+      console.error(err);
+      setStatus("ERROR");
+      setFatal(String(err?.message || err));
+    });
+  });
 
-      // Some builds expose values at crosshair via nv.getVolumeValue(idx) or similar.
-      // We'll attempt a few common patterns without crashing.
-      let val = null;
-
-      if (typeof nv.getVolumeValue === "function") {
-        val = nv.getVolumeValue(idx);
-      } else if (typeof nv.getValue === "function") {
-        val = nv.getValue(idx);
-      } else if (nv.volumes[idx]?.getValueAtCrosshair) {
-        val = nv.volumes[idx].getValueAtCrosshair();
-      }
-
-      if (val == null) return;
-
-      const labelInt = Math.round(Number(val));
-      const name = labelMap.get(labelInt) || `Label ${labelInt} (no name found)`;
-      labelLine.textContent = name;
-    } catch (e) {
-      // silent: label readout is “nice to have”
-    }
-  }
-
-  // --- UI wiring ---
-  document.getElementById("btnLoadDefaults").addEventListener("click", loadDefaults);
-  document.getElementById("btnClear").addEventListener("click", clearAll);
+  document.getElementById("btnClear").addEventListener("click", () => {
+    safeCloseAll();
+    setStatus("Cleared");
+  });
 
   document.getElementById("mode2D").addEventListener("click", () => {
     nv.setSliceType(nv.sliceTypeMultiplanar);
-    nv.updateGLVolume();
-    setStatus("Mode: 3-plane", "");
+    try { nv.updateGLVolume(); } catch {}
+    setStatus("Mode: 3-plane");
   });
 
   document.getElementById("mode3D").addEventListener("click", () => {
     nv.setSliceType(nv.sliceTypeRender);
-    nv.updateGLVolume();
-    setStatus("Mode: 3D render", "");
+    try { nv.updateGLVolume(); } catch {}
+    setStatus("Mode: 3D render");
   });
 
   document.getElementById("modeBoth").addEventListener("click", () => {
     nv.setSliceType(nv.sliceTypeMultiplanarRender);
-    nv.updateGLVolume();
-    setStatus("Mode: 3-plane + 3D", "");
+    try { nv.updateGLVolume(); } catch {}
+    setStatus("Mode: 3-plane + 3D");
   });
 
   document.getElementById("atlasOpacity").addEventListener("input", (ev) => {
     const v = parseFloat(ev.target.value);
-    const idx = (nv.volumes || []).findIndex(vol => (vol?.name || "").includes("Desikan_Atlas"));
+    const vols = nv.volumes || [];
+    // Try to find the Desikan overlay volume
+    const idx = vols.findIndex(vol => (vol?.name || "").toLowerCase().includes("desikan"));
     if (idx >= 0) {
-      nv.volumes[idx].opacity = v;
-      nv.updateGLVolume();
+      vols[idx].opacity = v;
+      try { nv.updateGLVolume(); } catch {}
     }
   });
 
-  document.getElementById("userNifti").addEventListener("change", async (ev) => {
-    const f = ev.target.files?.[0];
+  document.getElementById("userNifti").addEventListener("change", (ev) => {
+    const f = ev.target.files && ev.target.files[0];
     if (!f) return;
-
-    setStatus("Loading your NIfTI…", f.name);
-    try {
-      // clear existing underlay volumes but keep atlas if already loaded
-      // easiest: full clear then reload atlas; keeps behaviour consistent
-      nv.closeAllVolumes();
-      nv.closeAllMeshes();
-      await nv.loadFromFile(f); // becomes underlay
-      await loadAtlasOverlay(parseFloat(document.getElementById("atlasOpacity").value));
-      await loadMesh();
-      nv.updateGLVolume();
-      setStatus("Loaded your NIfTI + atlas + mesh", "");
-    } catch (e) {
-      setStatus("ERROR loading your NIfTI", e.message || String(e));
-      console.error(e);
-    }
+    loadUserNifti(f).catch(err => {
+      console.error(err);
+      setStatus("ERROR");
+      setFatal(String(err?.message || err));
+    });
   });
 
-  // Listen for interaction to update label readout (best effort)
-  // Different builds expose different events; this is conservative.
-  document.getElementById("gl").addEventListener("mouseup", updateLabelReadoutBestEffort);
-  document.getElementById("gl").addEventListener("wheel", () => setTimeout(updateLabelReadoutBestEffort, 50));
-
-  // start: load label map + defaults
-  loadLabelMap().then(() => loadDefaults());
+  // Auto-load defaults on page load
+  loadDefaults().catch(err => {
+    console.error(err);
+    setStatus("ERROR");
+    setFatal(String(err?.message || err));
+  });
+})();
 </script>
 </body>
 </html>
