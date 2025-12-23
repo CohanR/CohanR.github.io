@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* --- MAIN SITE STYLES --- */
+        /* --- My style, that's right! --- */
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
@@ -19,9 +19,9 @@
             background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
         }
 
-        /* DO NOT TOUCH: header/logo settings (same on all pages) */
+        /* touche pas s'il te plaît!!!! */
         header.logo-header {
-            height: 150px; /* fixed, elegant, no jumping */
+            height: 150px; /* fixed, elegant, no jumping, just like me */
             background-image: url("images/Logo_small.png");
             background-size: cover;        /* fills width cleanly */
             background-position: center 47%;   /* logo stays centred */
@@ -52,27 +52,24 @@
             color: #d0d0d0;
         }
 
-        /* Hamburger button sits INSIDE nav, left side, never blocks banner */
+        /* Burger king, combo 1, with bacon: Hamburger button sits INSIDE nav, left side, never blocks banner */
         .quicklinks-btn {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-            width: 44px;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(255,255,255,0.06);
-            color: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            line-height: 1;
-            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+          position: fixed;
+          left: 14px;
+          top: 168px; /* sits below the 150px header; I can adjust if I ever change header height */
+          z-index: 50;
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.18);
+          background: rgba(0,0,0,0.72);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          display: grid;
+          place-items: center;
+          cursor: pointer;
+          box-shadow: 0 8px 18px rgba(0,0,0,0.25);
         }
-
         .quicklinks-btn:hover {
             background: rgba(255,255,255,0.10);
             border-color: rgba(255,255,255,0.28);
