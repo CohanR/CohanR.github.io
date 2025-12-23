@@ -2,169 +2,400 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Canonical Tag -->
-    <link rel="canonical" href="https://neuropsis.org/plots.html">
-    <meta name="description" content="Remy Cohan's statistics and plotting scripts in Python & R showcasing research findings.">
-    <title>Statistics and Plotting Scripts in Python & R | Remy Cohan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            line-height: 1.7;
-            color: #333;
-            background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        header.logo-header {
-            height: 150px; /* fixed, elegant, no jumping */
-            
-            background-image: url("images/Logo_small.png");
-            background-size: cover;        /* fills width cleanly */
-            background-position: center 47%;   /* logo stays centred */
-            background-repeat: no-repeat;
-        
-            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.18);
-        }
+  <!-- Canonical Tag -->
+  <link rel="canonical" href="https://neuropsis.org/plots.html">
 
+  <meta name="description" content="Remy Cohan's statistics and plotting scripts in Python & R showcasing research findings.">
+  <title>Statistics and Plotting Scripts in Python & R | Remy Cohan</title>
 
-        nav {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 10px 0;
-            background-color: #000;
-            box-shadow: none;
-        }
-        
-        nav a {
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 20px;
-            font-weight: 500;
-        }
-        
-        nav a:hover {
-            color: #d0d0d0;
-        }
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 250px;
-            background-color: #34495e;
-            padding: 20px 0;
-            box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-        }
+  <style>
+    :root{
+      --nav-bg: #000;
+      --text: #222;
+      --muted: #555;
+      --panel: #ffffff;
+      --page: linear-gradient(135deg, #f7f9fc, #dfe6e9);
+      --shadow: 0px 3px 15px rgba(0, 0, 0, 0.10);
+      --shadow-strong: 0px 10px 30px rgba(0, 0, 0, 0.25);
+      --radius: 12px;
+    }
 
-        .sidebar h3,
-        .sidebar a {
-            color: white;
-            margin-left: 20px;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 20px;
-            transition: color 0.3s;
-        }
+    * { box-sizing: border-box; }
 
-        .sidebar a:hover {
-            color: #bdc3c7;
-        }
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--page);
+    }
 
-        main {
-            margin-left: 270px;
-            padding: 40px;
-            background-color: #ffffff;
-            box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
+    /* DO NOT TOUCH: header/logo settings (as requested) */
+    header.logo-header {
+      height: 150px; /* fixed, elegant, no jumping */
+      
+      background-image: url("images/Logo_small.png");
+      background-size: cover;        /* fills width cleanly */
+      background-position: center 47%;   /* logo stays centred */
+      background-repeat: no-repeat;
+  
+      box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.18);
+    }
 
-        h1 {
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
+    /* Top nav */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 10px 0;
+      background-color: var(--nav-bg);
+      box-shadow: none;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
 
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            nav {
-                flex-direction: column;
-                align-items: center;
-            }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 14px;
+      font-weight: 500;
+      border-radius: 8px;
+    }
 
-            nav a {
-                margin-bottom: 10px;
-            }
+    nav a:hover {
+      color: #d0d0d0;
+    }
 
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
+    /* Hamburger button (Quick Links) */
+    .quicklinks-btn {
+      position: fixed;
+      left: 14px;
+      top: 168px; /* sits below the 150px header; adjust if you ever change header height */
+      z-index: 50;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
 
-            main {
-                margin-left: 0;
-            }
-        }
-    </style>
+    .quicklinks-btn:hover {
+      background: rgba(0,0,0,0.82);
+    }
+
+    .hamburger {
+      width: 18px;
+      height: 14px;
+      position: relative;
+    }
+    .hamburger span {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      opacity: 0.95;
+    }
+    .hamburger span:nth-child(1) { top: 0; }
+    .hamburger span:nth-child(2) { top: 6px; }
+    .hamburger span:nth-child(3) { top: 12px; }
+
+    /* Drawer + overlay */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 60;
+      display: none;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 300px;
+      max-width: 86vw;
+      background: #0f2433;
+      color: #fff;
+      z-index: 70;
+      transform: translateX(-105%);
+      transition: transform 220ms ease;
+      box-shadow: var(--shadow-strong);
+      padding: 18px 18px 22px 18px;
+      overflow-y: auto;
+    }
+
+    .drawer .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 2px 14px 2px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 14px;
+    }
+
+    .drawer h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .drawer .close-btn {
+      appearance: none;
+      border: none;
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .drawer .close-btn:hover {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .drawer a {
+      color: #fff;
+      text-decoration: none;
+      display: block;
+      padding: 12px 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.06);
+      transition: background 160ms ease, transform 160ms ease;
+    }
+
+    .drawer a:hover {
+      background: rgba(255,255,255,0.10);
+      transform: translateX(2px);
+    }
+
+    body.drawer-open .drawer {
+      transform: translateX(0);
+    }
+
+    body.drawer-open .drawer-overlay {
+      display: block;
+    }
+
+    /* Main content */
+    main {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 42px;
+      background-color: var(--panel);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+
+    h1 {
+      font-weight: 600;
+      margin: 0 0 14px 0;
+      letter-spacing: -0.2px;
+    }
+
+    p {
+      margin-top: 0;
+      color: var(--muted);
+    }
+
+    section {
+      margin-top: 34px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    section h2 {
+      margin: 0 0 14px 0;
+      font-size: 20px;
+      letter-spacing: -0.1px;
+      color: #111;
+    }
+
+    .img-block {
+      margin: 18px 0;
+    }
+
+    .img-block img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    .repo-link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #0b0b0b;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .repo-link:hover {
+      opacity: 0.88;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 768px) {
+      nav {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 10px;
+      }
+
+      nav a {
+        padding: 10px 10px;
+      }
+
+      .quicklinks-btn {
+        top: 162px;
+        left: 12px;
+      }
+
+      main {
+        margin: 18px 12px;
+        padding: 26px 18px;
+        border-radius: 12px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="logo-header"></header>
+  <!-- Header -->
+  <header class="logo-header"></header>
 
-    <!-- Navigation -->
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="Projects.html">Current Projects</a>
-        <a href="nifti_viewer.html">Interactive MRI Viewer</a>
-        <a href="simulations_ml.html">Simulation and ML</a>
-        <a href="neuro_analysis.html">Neuroimaging Analysis Scripts</a>
-        <a href="posters.html">Conference Posters</a>
-    </nav>
+  <!-- Quick Links button (hamburger) -->
+  <button class="quicklinks-btn" id="quicklinksBtn" aria-label="Open quick links" aria-controls="quicklinksDrawer" aria-expanded="false">
+    <div class="hamburger" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+  </button>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <h3>Quick Links</h3>
-        <a href="https://github.com/CohanR/MRSpectroscopy_GABA_Epilepsy">MRS, GABA and Epilepsy Analysis</a>
-       <a href="https://github.com/CohanR/fMRI_Granger_Causality_Remy" target="_blank">Granger Causality fMRI</a>
-        <a href="https://github.com/CohanR/Oral_AntiCoagulation_MCA_Infarct">Structural Equation Modeling in Stroke</a>
-    </aside>
+  <!-- Drawer overlay -->
+  <div class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></div>
 
-    <!-- Main Content -->
-    <main>
-        <h1>Statistics and Plotting Scripts in Python & R</h1>
-        <p>Below are a few of my  projects and their corresponding codes:</p>
+  <!-- Quick Links drawer -->
+  <aside class="drawer" id="quicklinksDrawer" aria-label="Quick Links">
+    <div class="drawer-header">
+      <h3>Quick Links</h3>
+      <button class="close-btn" id="drawerCloseBtn" aria-label="Close quick links">×</button>
+    </div>
 
-        <section>
-            <h2>MR Spectroscopy Analysis of GABA and Glutamate Levels in Relation to Anti Epileptic Drugs</h2>
+    <a href="https://github.com/CohanR/MRSpectroscopy_GABA_Epilepsy" target="_blank" rel="noopener noreferrer">
+      MRS, GABA and Epilepsy Analysis
+    </a>
 
-            <img src="images/descriptive_boxplots.png" alt="Descriptive Stats and Boxplots" style="max-width:100%; height:auto;">
+    <a href="https://github.com/CohanR/fMRI_Granger_Causality_Remy" target="_blank" rel="noopener noreferrer">
+      Granger Causality fMRI
+    </a>
 
-            <!-- Inserting a second image -->
-            <img src="images/correlations.png" alt="Correlation" style="max-width:100%; height:auto;">
+    <a href="https://github.com/CohanR/Oral_AntiCoagulation_MCA_Infarct" target="_blank" rel="noopener noreferrer">
+      Structural Equation Modeling in Stroke
+    </a>
+  </aside>
 
-            <p>Checkout the MRS, GABA and Epilepsy Data Analysis on GitHub:</p>
-            <a href="https://github.com/CohanR/MRSpectroscopy_GABA_Epilepsy" target="_blank">View the GitHub Repository</a>
-        </section>
+  <!-- Navigation -->
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="Projects.html">Current Projects</a>
+    <a href="nifti_viewer.html">Interactive MRI Viewer</a>
+    <a href="simulations_ml.html">Simulation and ML</a>
+    <a href="neuro_analysis.html">Neuroimaging Analysis Scripts</a>
+    <a href="posters.html">Conference Posters</a>
+  </nav>
 
-         <section>
-            <h2>Granger Causality: fMRI Data Region of Interest (ROI-ROI) analysis</h2>
+  <!-- Main Content -->
+  <main>
+    <h1>Statistics and Plotting Scripts in Python & R</h1>
+    <p>Below are a few of my projects and their corresponding codes:</p>
 
-            <img src="images/granger_netwrok.png" alt="Descriptive Stats and Boxplots" style="max-width:100%; height:auto;">
+    <section>
+      <h2>MR Spectroscopy Analysis of GABA and Glutamate Levels in Relation to Anti Epileptic Drugs</h2>
 
-            <!-- Inserting a second image -->
-            <img src="images/granger_correlation_RC.png" alt="Correlation" style="max-width:100%; height:auto;">
+      <div class="img-block">
+        <img src="images/descriptive_boxplots.png" alt="Descriptive Stats and Boxplots">
+      </div>
 
-            <p>Checkout the Granger Causality and Region of Interest Analysis of fMRI data:</p>
-            <a href="https://github.com/CohanR/fMRI_Granger_Causality_Remy" target="_blank">View the GitHub Repository</a>
-        </section>
-    </main>
+      <div class="img-block">
+        <img src="images/correlations.png" alt="Correlation">
+      </div>
+
+      <p>Checkout the MRS, GABA and Epilepsy Data Analysis on GitHub:</p>
+      <a class="repo-link" href="https://github.com/CohanR/MRSpectroscopy_GABA_Epilepsy" target="_blank" rel="noopener noreferrer">
+        View the GitHub Repository
+      </a>
+    </section>
+
+    <section>
+      <h2>Granger Causality: fMRI Data Region of Interest (ROI-ROI) analysis</h2>
+
+      <div class="img-block">
+        <img src="images/granger_netwrok.png" alt="Granger network">
+      </div>
+
+      <div class="img-block">
+        <img src="images/granger_correlation_RC.png" alt="Granger correlation">
+      </div>
+
+      <p>Checkout the Granger Causality and Region of Interest Analysis of fMRI data:</p>
+      <a class="repo-link" href="https://github.com/CohanR/fMRI_Granger_Causality_Remy" target="_blank" rel="noopener noreferrer">
+        View the GitHub Repository
+      </a>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const btn = document.getElementById('quicklinksBtn');
+      const overlay = document.getElementById('drawerOverlay');
+      const closeBtn = document.getElementById('drawerCloseBtn');
+
+      function openDrawer() {
+        document.body.classList.add('drawer-open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+
+      function closeDrawer() {
+        document.body.classList.remove('drawer-open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+
+      btn.addEventListener('click', () => {
+        if (document.body.classList.contains('drawer-open')) closeDrawer();
+        else openDrawer();
+      });
+
+      overlay.addEventListener('click', closeDrawer);
+      closeBtn.addEventListener('click', closeDrawer);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDrawer();
+      });
+    })();
+  </script>
 
 </body>
 
