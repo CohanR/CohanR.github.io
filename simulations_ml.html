@@ -919,11 +919,13 @@
 
             // Truth table (boxed + highlighted row)
             const table = mpTruthTable(mp.w1, mp.w2, mp.b, mp.th);
-
-            const tx = 16;
-            const ty = 16;
             const cardW = 170;
             const cardH = 120;
+            
+            // put the truth table in the bottom-right so it never covers inputs/wires
+            const tx = W - cardW - 16;
+            const ty = H - cardH - 16;
+
 
             // Draw card
             mpCtx.fillStyle = '#fff';
