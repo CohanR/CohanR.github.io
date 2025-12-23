@@ -56,18 +56,16 @@
         }
 
         header.logo-header {
-            height: 150px;                     /* keep height exactly as requested */
-            background-image: url("images/Back_Black.png");
-            background-size: ;            /* leather stretches naturally */
-            background-position: center;
+            height: 150px; /* fixed, elegant, no jumping */
+            
+            background-image: url("images/Logo_small.png");
+            background-size: cover;        /* fills width cleanly */
+            background-position: center;   /* logo stays centred */
             background-repeat: no-repeat;
         
-            display: flex;                     /* centre logo */
-            align-items: center;
-            justify-content: center;
-        
-            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.12);
+            box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.18);
         }
+
 
 
         
@@ -199,9 +197,8 @@
 <body>
     <!-- Header -->
 
-<header class="logo-header">
-    <img src="images/Neuropsis_RC.png" alt="Neuropsis logo">
-</header>
+<header class="logo-header"></header>
+
 
 
 
