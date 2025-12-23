@@ -7,6 +7,7 @@
     <meta name="description" content="Overview of my work in neural data simulation and machine learning.">
     <title>Simulation and Machine Learning | Remy Cohan</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
         /* --- MAIN SITE STYLES --- */
         body {
@@ -18,19 +19,19 @@
             background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
         }
 
+        /* DO NOT TOUCH: header/logo settings (same on all pages) */
         header.logo-header {
             height: 150px; /* fixed, elegant, no jumping */
-            
             background-image: url("images/Logo_small.png");
             background-size: cover;        /* fills width cleanly */
             background-position: center 47%;   /* logo stays centred */
             background-repeat: no-repeat;
-        
             box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.18);
         }
 
-
+        /* NAV */
         nav {
+            position: relative;
             display: flex;
             justify-content: center;
             gap: 20px;
@@ -38,16 +39,58 @@
             background-color: #000;
             box-shadow: none;
         }
-        
+
         nav a {
             color: #fff;
             text-decoration: none;
-            padding: 10px 20px;
+            padding: 10px 16px;
             font-weight: 500;
+            white-space: nowrap;
         }
-        
+
         nav a:hover {
             color: #d0d0d0;
+        }
+
+        /* Hamburger button sits INSIDE nav, left side, never blocks banner */
+        .quicklinks-btn {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            width: 44px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            transition: background 0.2s, border-color 0.2s, transform 0.2s;
+        }
+
+        .quicklinks-btn:hover {
+            background: rgba(255,255,255,0.10);
+            border-color: rgba(255,255,255,0.28);
+        }
+
+        .quicklinks-btn:active {
+            transform: translateY(-50%) scale(0.98);
+        }
+
+        /* --- QUICK LINKS SIDEBAR (click-to-open) --- */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 1000;
         }
 
         .sidebar {
@@ -55,48 +98,79 @@
             top: 0;
             left: 0;
             height: 100%;
-            width: 0;
-            overflow: hidden;
-            background-color: #34495e;
-            padding: 20px 0;
-            box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
-            transition: width 0.5s ease;
+            width: 280px;
+            background-color: #0b0f14; /* premium dark */
+            box-shadow: 10px 0px 30px rgba(0, 0, 0, 0.35);
+            transform: translateX(-105%);
+            transition: transform 0.25s ease;
             z-index: 1001;
+            padding: 18px 18px 14px 18px;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
 
-        .sidebar:hover,
-        .sidebar:focus {
-            width: 250px;
+        .sidebar.open {
+            transform: translateX(0);
         }
 
-        .sidebar h3,
+        .sidebar-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .sidebar h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 1.05em;
+            letter-spacing: 0.2px;
+        }
+
+        .sidebar-close {
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 8px 10px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .sidebar-close:hover {
+            background: rgba(255,255,255,0.10);
+            border-color: rgba(255,255,255,0.28);
+        }
+
         .sidebar a {
-            color: white;
-            margin-left: 20px;
+            color: #e8e8e8;
             text-decoration: none;
             display: block;
-            margin-bottom: 20px;
-            transition: color 0.3s;
+            padding: 10px 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: background 0.2s, border-color 0.2s, transform 0.12s;
+            font-size: 0.95em;
         }
 
         .sidebar a:hover {
-            color: #bdc3c7;
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.14);
+            transform: translateX(2px);
         }
 
-        .sidebar-tab {
-            position: fixed;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: #34495e;
-            color: white;
-            padding: 10px;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-            cursor: pointer;
-            z-index: 1000;
-            transition: background-color 0.3s;
-        }
+        /* Keep your existing structure; sidebar-tab no longer needed visually */
+        .sidebar-tab { display: none; }
 
         main {
             margin-left: 0;
@@ -146,7 +220,7 @@
             position: relative;
             flex: 1 1 500px;
         }
-        
+
         canvas {
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -164,14 +238,14 @@
         }
 
         .control-group { margin-bottom: 15px; }
-        .control-group h3 { 
-            margin: 0 0 10px 0; 
-            font-size: 1em; 
-            border-bottom: 2px solid #eee; 
-            padding-bottom: 5px; 
+        .control-group h3 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
             color: #555;
         }
-        
+
         .slider-container {
             display: flex;
             align-items: center;
@@ -193,24 +267,37 @@
             transition: all 0.2s;
         }
         .preset-btn:hover { background: #f0f0f0; border-color: #bbb; }
-        
+
         /* Specific header colors */
         .na-header { color: #27ae60 !important; border-bottom-color: #27ae60 !important; }
         .k-header { color: #2980b9 !important; border-bottom-color: #2980b9 !important; }
         .input-header { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
 
+        @media (max-width: 900px) {
+            nav {
+                gap: 10px;
+                padding: 10px 8px;
+                flex-wrap: wrap;
+            }
+            nav a { padding: 8px 10px; }
+        }
+
         @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: static; }
             main { padding: 20px; margin: 10px; }
             .canvas-wrapper, .controls { flex: 1 1 100%; }
             .explanation-grid { grid-template-columns: 1fr; }
+            .quicklinks-btn { left: 10px; }
         }
     </style>
 </head>
+
 <body>
     <header class="logo-header"></header>
 
     <nav>
+        <!-- hamburger for Quick Links -->
+        <button class="quicklinks-btn" type="button" onclick="toggleSidebar()" aria-label="Open quick links" aria-controls="quicklinksSidebar" aria-expanded="false">☰</button>
+
         <a href="index.html">Home</a>
         <a href="Projects.html">Current Projects</a>
         <a href="nifti_viewer.html">Interactive MRI Viewer</a>
@@ -219,9 +306,16 @@
         <a href="posters.html">Conference Posters</a>
     </nav>
 
-    <div class="sidebar-tab" onclick="toggleSidebar()">☰</div>
-    <aside class="sidebar">
-        <h3>Quick Links</h3>
+    <!-- overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()" aria-hidden="true"></div>
+
+    <!-- sidebar -->
+    <aside class="sidebar" id="quicklinksSidebar" aria-label="Quick Links">
+        <div class="sidebar-header">
+            <h3>Quick Links</h3>
+            <button class="sidebar-close" type="button" onclick="closeSidebar()" aria-label="Close quick links">Close</button>
+        </div>
+
         <a href="https://github.com/CohanR/Hodgkin-Huxley_Simulation">Hodgkin Huxley Simulation</a>
         <a href="https://github.com/CohanR/Action_Potential_Simulation">Action Potential Simulation</a>
         <a href="https://github.com/CohanR/TMS_ElectricField_Group_Simulation">TMS Electric Field Simulation</a>
@@ -234,7 +328,7 @@
 
         <section>
             <h2>Interactive Hodgkin-Huxley Lab</h2>
-            
+
             <div class="explanation-grid">
                 <div class="exp-col">
                     <h4>The Basics</h4>
@@ -259,7 +353,7 @@
                 <div class="canvas-wrapper">
                     <canvas id="simCanvas" width="600" height="350"></canvas>
                 </div>
-        
+
                 <div class="controls">
                     <div class="control-group">
                         <h3>Quick Presets</h3>
@@ -276,7 +370,7 @@
                             <span class="slider-value" id="val_i_ext">10.0 µA</span>
                         </div>
                     </div>
-        
+
                     <div class="control-group">
                         <h3 class="na-header">Sodium (Na+)</h3>
                         <div class="slider-container">
@@ -290,7 +384,7 @@
                             <span class="slider-value" id="val_e_na">50 mV</span>
                         </div>
                     </div>
-        
+
                     <div class="control-group">
                         <h3 class="k-header">Potassium (K+)</h3>
                         <div class="slider-container">
@@ -304,11 +398,11 @@
                             <span class="slider-value" id="val_e_k">-77 mV</span>
                         </div>
                     </div>
-                    
+
                     <button onclick="resetDefaults()" style="width:100%; padding:10px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em; margin-top:10px; font-weight:600;">Reset Simulation</button>
                 </div>
             </div>
-            
+
             <p>Get the Python source code here:</p>
             <a href="https://github.com/CohanR/Hodgkin-Huxley_Simulation" target="_blank">View Hodgkin Huxley Simulation Code on GitHub</a>
         </section>
@@ -338,10 +432,36 @@
     </main>
 
     <script>
+        /* --- Quick Links toggle (click only) --- */
         function toggleSidebar() {
-            var sidebar = document.querySelector('.sidebar');
-            sidebar.style.width = sidebar.style.width === '250px' ? '0' : '250px';
+            const sidebar = document.getElementById('quicklinksSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const btn = document.querySelector('.quicklinks-btn');
+
+            const isOpen = sidebar.classList.contains('open');
+            if (isOpen) {
+                closeSidebar();
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('open');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            }
         }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('quicklinksSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const btn = document.querySelector('.quicklinks-btn');
+
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSidebar();
+        });
 
         // --- SIMULATION LOGIC ---
         const params = {
