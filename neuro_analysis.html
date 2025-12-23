@@ -56,20 +56,27 @@
         }
 
         header.logo-header {
-            height: 110px;  /* keep the same height as before */
-            background-image: url("images/Neuropsis_RC.png");
-            background-size: cover;          /* fills the whole banner with leather */
-            background-position: center;     /* keeps logo centred */
+            height: 110px;                     /* keep height exactly as requested */
+            background-image: url("images/Back_Black.png");
+            background-size: cover;            /* leather stretches naturally */
+            background-position: center;
             background-repeat: no-repeat;
+        
+            display: flex;                     /* centre logo */
+            align-items: center;
+            justify-content: center;
+        
             box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.12);
         }
 
+
         
         header.logo-header img {
-            max-height: 70px;              /* this is important otherwise tall header, urgh */
-            width: auto;
+            max-height: 70px;                  /* prevents tall header */
+            width: auto;                       /* preserves proportions */
             display: block;
         }
+
 
 
         nav {
