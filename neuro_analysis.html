@@ -55,15 +55,21 @@
             background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
         }
 
-        header {
+        header.logo-header {
             background: #2E86C1;
-            color: white;
-            text-align: center;
-            padding: 2rem 0;
-            font-size: 2.5rem;
-            font-weight: 600;
+            height: 110px;                 /* matches my  height, sighh! */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
         }
+        
+        header.logo-header img {
+            max-height: 70px;              /* this is important otherwise tall header, urgh */
+            width: auto;
+            display: block;
+        }
+
 
         nav {
             display: flex;
@@ -184,7 +190,10 @@
 </head>
 <body>
     <!-- Header -->
-    <header>Remy Cohan</header>
+    <header class="logo-header">
+    <img src="images/Neuropsis_RC.png" alt="Neuropsis logo">
+</header>
+
 
     <!-- Navigation -->
     <nav>
