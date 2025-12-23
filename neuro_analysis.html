@@ -46,6 +46,12 @@
     </script>
 
     <style>
+        :root{
+            --header-h: 150px;     /* matches your header height */
+            --nav-h: 48px;         /* approx nav height; ok if off by a few px */
+            --drawer-w: 300px;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
@@ -55,151 +61,191 @@
             background: linear-gradient(135deg, #f7f9fc, #dfe6e9);
         }
 
+        /* DO NOT TOUCH: your shared header/logo settings */
         header.logo-header {
             height: 150px; /* fixed, elegant, no jumping */
-            
             background-image: url("images/Logo_small.png");
-            background-size: cover;        /* fills width cleanly */
+            background-size: cover;            /* fills width cleanly */
             background-position: center 47%;   /* logo stays centred */
             background-repeat: no-repeat;
-        
             box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.18);
         }
 
-
-
-        
         header.logo-header img {
-            max-height: 210px;                  /* prevents tall header */
-            width: auto;                       /* preserves proportions */
+            max-height: 210px;
+            width: auto;
             display: block;
         }
 
-
-
+        /* NAV */
         nav {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 20px;
             padding: 10px 0;
-            background-color: #000;
+            background-color: #000; /* correct: single # */
             box-shadow: none;
+            position: relative;
+            z-index: 10;
         }
-        
+
         nav a {
             color: #fff;
             text-decoration: none;
-            padding: 10px 20px;
+            padding: 10px 14px;
             font-weight: 500;
+            white-space: nowrap;
         }
-        
+
         nav a:hover {
             color: #d0d0d0;
         }
 
+        /* QUICK LINKS BUTTON (hamburger) */
+        .quicklinks-btn {
+            position: fixed;
+            left: 14px;
+            top: calc(var(--header-h) + 12px); /* sits just below header */
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            border: 0;
+            border-radius: 10px;
+            cursor: pointer;
+            background: rgba(0,0,0,0.72);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            box-shadow: 0px 6px 18px rgba(0,0,0,0.22);
+            backdrop-filter: blur(6px);
+        }
 
-        .sidebar {
+        .quicklinks-btn:hover { background: rgba(0,0,0,0.82); }
+
+        /* OFF-CANVAS DRAWER */
+        .drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 200ms ease;
+            z-index: 20;
+        }
+
+        .drawer {
             position: fixed;
             top: 0;
             left: 0;
             height: 100%;
-            width: 0;
-            overflow: hidden;
-            background-color: #34495e;
-            padding: 20px 0;
-            box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
-            transition: width 0.5s ease;
+            width: var(--drawer-w);
+            background: #0f1720; /* deep blue-black */
+            transform: translateX(calc(-1 * var(--drawer-w)));
+            transition: transform 220ms ease;
+            z-index: 25;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.35);
+            padding-top: calc(var(--header-h) + var(--nav-h));
         }
 
-        .sidebar:hover,
-        .sidebar:focus {
-            width: 250px;
+        .drawer-inner {
+            padding: 22px 20px;
         }
 
-        .sidebar h3,
-        .sidebar a {
-            color: white;
-            margin-left: 20px;
+        .drawer h3 {
+            color: #fff;
+            margin: 0 0 14px 0;
+            font-size: 1.05rem;
+            letter-spacing: 0.2px;
+        }
+
+        .drawer a {
+            color: #fff;
             text-decoration: none;
             display: block;
-            margin-bottom: 20px;
-            transition: color 0.3s;
+            padding: 10px 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.04);
         }
 
-        .sidebar a:hover {
-            color: #bdc3c7;
+        .drawer a:hover {
+            background: rgba(255,255,255,0.09);
         }
 
-        .sidebar-tab {
-            position: fixed;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: #34495e;
-            color: white;
-            padding: 10px;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
+        .drawer-close {
+            position: absolute;
+            top: calc(var(--header-h) + 10px);
+            left: calc(var(--drawer-w) - 54px);
+            width: 40px;
+            height: 40px;
+            border: 0;
+            border-radius: 10px;
             cursor: pointer;
-            z-index: 1000;
-            transition: background-color 0.3s;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            font-size: 18px;
         }
 
+        /* OPEN STATE */
+        body.drawer-open .drawer {
+            transform: translateX(0);
+        }
+
+        body.drawer-open .drawer-backdrop {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* MAIN CONTENT */
         main {
-            margin-left: 0;
+            margin: 28px auto 60px auto;
             padding: 40px;
+            max-width: 1100px;
             background-color: #ffffff;
             box-shadow: 0px 3px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            border-radius: 14px;
         }
 
-        @media (max-width: 768px) {
+        h1, h2 {
+            color: #111;
+        }
+
+        /* MOBILE */
+        @media (max-width: 900px) {
             nav {
-                flex-direction: column;
-                align-items: center;
-                padding: 0;
-            }
-
-            nav a {
-                margin: 10px;
-            }
-
-            .sidebar {
-                position: static;
-                width: 100%;
-                height: auto;
-                box-shadow: none;
-                display: flex;
-                justify-content: center;
                 flex-wrap: wrap;
-                margin-bottom: 20px;
+                gap: 10px;
+                padding: 10px 12px;
             }
-
-            .sidebar h3 {
-                width: 100%;
-                text-align: center;
-                margin: 15px 0;
+            nav a {
+                padding: 8px 10px;
             }
-
+            .quicklinks-btn {
+                top: calc(var(--header-h) + 10px);
+                left: 10px;
+            }
             main {
-                margin-left: 0;
-                padding: 20px;
+                padding: 22px;
+                margin: 18px 12px 48px 12px;
             }
-
-            header {
-                font-size: 2rem;
-                padding: 1rem 0;
+            .drawer {
+                width: 86vw;
+                transform: translateX(-86vw);
+            }
+            body.drawer-open .drawer {
+                transform: translateX(0);
+            }
+            .drawer-close {
+                left: calc(86vw - 54px);
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Header -->
-
-<header class="logo-header"></header>
-
-
-
+    <header class="logo-header"></header>
 
     <!-- Navigation -->
     <nav>
@@ -211,17 +257,23 @@
         <a href="posters.html">Conference Posters</a>
     </nav>
 
-    <!-- Sidebar Trigger -->
-    <div class="sidebar-tab" onclick="toggleSidebar()">☰</div>
+    <!-- Quick Links Button -->
+    <button class="quicklinks-btn" type="button" aria-label="Open quick links" onclick="openDrawer()">☰</button>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <h3>Quick Links</h3>
-        <a href="https://github.com/CohanR/EEG_SourceLoc">EEG Source Localisation</a>
-        <a href="https://github.com/CohanR/14_channel_EEG_Data">EEG Data Processing with MNE</a>
-        <a href="https://github.com/CohanR/Enigma_Voxel_based_morphometry">MRI Voxel-Based Morphometry</a>
-        <a href="https://github.com/CohanR/BrainVolume_Calculation">Brain Volume Analysis</a>
-        <a href="https://github.com/CohanR/HeadMesh_MRI">Creating Head Mesh from T1 MRI</a>
+    <!-- Drawer Backdrop -->
+    <div class="drawer-backdrop" onclick="closeDrawer()"></div>
+
+    <!-- Drawer -->
+    <aside class="drawer" aria-label="Quick links drawer">
+        <button class="drawer-close" type="button" aria-label="Close quick links" onclick="closeDrawer()">✕</button>
+        <div class="drawer-inner">
+            <h3>Quick Links</h3>
+            <a href="https://github.com/CohanR/EEG_SourceLoc">EEG Source Localisation</a>
+            <a href="https://github.com/CohanR/14_channel_EEG_Data">EEG Data Processing with MNE</a>
+            <a href="https://github.com/CohanR/Enigma_Voxel_based_morphometry">MRI Voxel-Based Morphometry</a>
+            <a href="https://github.com/CohanR/BrainVolume_Calculation">Brain Volume Analysis</a>
+            <a href="https://github.com/CohanR/HeadMesh_MRI">Creating Head Mesh from T1 MRI</a>
+        </div>
     </aside>
 
     <!-- Main Content -->
@@ -229,31 +281,33 @@
         <section>
             <h2>EEG Source Localisation</h2>
             <div style="text-align:center;">
-                <img src="images/EEG_SourceLoc_Remy_Cohan.gif" alt="EEG Source Localisation Example" loading="lazy" style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:8px;">
+                <img src="images/EEG_SourceLoc_Remy_Cohan.gif" alt="EEG Source Localisation Example" loading="lazy"
+                     style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:8px;">
             </div>
             <p style="text-align:justify; font-size:1rem;">
-                EEG Source Localisation pipeline and the workflow for preprocessing, epoching, co-registration, and source reconstruction using EEG data. 
+                EEG Source Localisation pipeline and the workflow for preprocessing, epoching, co-registration, and source reconstruction using EEG data.
             </p>
             <p style="text-align:center;">
-                <a href="https://github.com/CohanR/EEG_SourceLoc" target="_blank" style="color:#2E86C1; text-decoration:none; font-weight:600;">
+                <a href="https://github.com/CohanR/EEG_SourceLoc" target="_blank"
+                   style="color:#2E86C1; text-decoration:none; font-weight:600;">
                     View the GitHub Repository
                 </a>
             </p>
+        </section>
 
-            <section>
-                <h2>Voxel-Based Morphometry with Enigma Toolbox</h2>
-                <img src="images/ENigma_VBM_L_hippocampus_Remy.png" alt="ENIGMA STROKE VBM" loading="lazy" style="max-width:100%; height:auto;">
-                <p>Checkout the Voxel-Based Morphometry with Enigma Toolbox Code on GitHub:</p>
-                <a href="https://github.com/CohanR/Enigma_Voxel_based_morphometry" target="_blank">View the GitHub Repository</a>
-            </section>
+        <section>
+            <h2>Voxel-Based Morphometry with Enigma Toolbox</h2>
+            <img src="images/ENigma_VBM_L_hippocampus_Remy.png" alt="ENIGMA STROKE VBM" loading="lazy" style="max-width:100%; height:auto;">
+            <p>Checkout the Voxel-Based Morphometry with Enigma Toolbox Code on GitHub:</p>
+            <a href="https://github.com/CohanR/Enigma_Voxel_based_morphometry" target="_blank">View the GitHub Repository</a>
+        </section>
 
-            <section>
-                <h2>Brain Volume Analysis and Visualisation</h2>
-                <img src="images/BrainVol_grey_matter_vis_RC.png" alt="Brain Volume Analysis" loading="lazy" style="max-width:100%; height:auto;">
-                <img src="images/BrainVol_result_output.png" alt="Brain Volume Analysis output" loading="lazy" style="max-width:100%; height:auto;">
-                <p>Checkout the Brain Volume analysis on T1w images on GitHub:</p>
-                <a href="https://github.com/CohanR/BrainVolume_Calculation" target="_blank">View the GitHub Repository</a>
-            </section>
+        <section>
+            <h2>Brain Volume Analysis and Visualisation</h2>
+            <img src="images/BrainVol_grey_matter_vis_RC.png" alt="Brain Volume Analysis" loading="lazy" style="max-width:100%; height:auto;">
+            <img src="images/BrainVol_result_output.png" alt="Brain Volume Analysis output" loading="lazy" style="max-width:100%; height:auto;">
+            <p>Checkout the Brain Volume analysis on T1w images on GitHub:</p>
+            <a href="https://github.com/CohanR/BrainVolume_Calculation" target="_blank">View the GitHub Repository</a>
         </section>
 
         <h1>Neuroimaging Data Processing & Analysis Scripts</h1>
@@ -268,10 +322,16 @@
     </main>
 
     <script>
-        function toggleSidebar() {
-            var sidebar = document.querySelector('.sidebar');
-            sidebar.style.width = sidebar.style.width === '250px' ? '0' : '250px';
+        function openDrawer() {
+            document.body.classList.add('drawer-open');
         }
+        function closeDrawer() {
+            document.body.classList.remove('drawer-open');
+        }
+        // ESC to close
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeDrawer();
+        });
     </script>
 </body>
 </html>
