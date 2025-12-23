@@ -4,81 +4,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <meta name="description" content="Rémy Cohan - Neuroscience Researcher; Neuroplasticity and Neuromodulation in health and disease; EEG, fMRI, TMS.">
-    
-    <!-- Canonical Tag -->
+
     <link rel="canonical" href="https://neuropsis.org/">
 
-    <!-- Open Graph for Social Preview -->
+    <!-- Open Graph -->
     <meta property="og:title" content="Remy Cohan | Neuroscience Research">
     <meta property="og:description" content="Neuroscience Researcher focused on neuroplasticity, neuromodulation, and neuroimaging (EEG, fMRI, TMS).">
     <meta property="og:image" content="https://neuropsis.org/images/RC_profile.png">
     <meta property="og:url" content="https://neuropsis.org/">
     <meta property="og:type" content="website">
 
-    <!-- Twitter Card -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Remy Cohan | Neuroscience Research">
     <meta name="twitter:description" content="Neuroplasticity, neuromodulation, and neuroimaging research by Rémy Cohan.">
     <meta name="twitter:image" content="https://neuropsis.org/images/RC_profile.png">
 
     <title>Remy Cohan | Neuroscience Research</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
-            padding: 0;
-            line-height: 1.8;
-            color: #333;
+            color: #2f2f2f;
             background: #eef2f7;
+            line-height: 1.65;
         }
 
         header {
             background: url('images/neuron.gif') no-repeat center center;
             background-size: cover;
-            color: white;
             text-align: center;
-            padding: 5rem 0;
-            font-family: 'Raleway', sans-serif;
-            font-size: 3rem;
+            padding: 5rem 1rem;
             position: relative;
+            font-family: 'Raleway', sans-serif;
         }
 
         header::before {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
             z-index: 0;
+        }
+
+        header h1 {
+            position: relative;
+            z-index: 1;
+            color: white;
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 0.05em;
         }
 
         nav {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            padding: 15px 0;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 18px 0;
             background-color: #3a4750;
         }
 
         nav a {
             color: white;
             text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: background-color 0.25s ease;
+            min-width: 120px;
             text-align: center;
-            white-space: pre-wrap;
-            word-break: break-word;
-            min-width: 120px; /* Ensure each tab has a minimum width */
         }
 
         nav a:hover {
@@ -86,40 +88,53 @@
         }
 
         main {
-            padding: 40px 20px;
-            background: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
             max-width: 900px;
-            margin: 40px auto;
-            border-radius: 10px;
+            margin: 50px auto;
+            background: #ffffff;
+            padding: 50px 45px;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
         }
 
         h2 {
             font-family: 'Raleway', sans-serif;
+            font-weight: 700;
             border-bottom: 2px solid #3a4750;
             padding-bottom: 10px;
-            margin-top: 40px;
-            font-weight: 700;
+            margin-top: 50px;
         }
 
-        .img-wrapper {
+        .intro {
             display: flex;
-            justify-content: center;
-            margin: 40px 0;
+            align-items: center;
+            gap: 40px;
         }
 
         .profile-pic {
-            max-width: 320px;
+            width: 280px;
+            max-width: 100%;
             border-radius: 50%;
-            margin-right: 30px;
-            display: block;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        }
+
+        .intro p {
+            margin: 0;
+        }
+
+        #contact {
+            background-color: #f5f7fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 50px;
+        }
+
+        #contact p {
+            margin: 0.5em 0;
         }
 
         a.email-link {
             color: #3a4750;
             text-decoration: none;
-            transition: color 0.3s ease;
             font-weight: 500;
         }
 
@@ -127,115 +142,94 @@
             color: #5f6874;
         }
 
-        #contact {
-            background-color: #f5f7fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 40px;
+        .email-link .fas,
+        .email-link .fab {
+            margin-right: 6px;
         }
 
-        /* Had to modify this for mobile screens */
-        @media (max-width: 768px) {
-            nav {
-                flex-direction: column;
-                align-items: center;
-            }
+        .hidden-text {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+        }
 
-            .img-wrapper {
-                justify-content: center;
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.2rem;
             }
 
             main {
-                padding: 20px;
-                margin: 20px auto;
+                padding: 30px 22px;
+                margin: 25px auto;
             }
 
-            header {
-                font-size: 2rem;
-                padding: 2rem 0;
+            .intro {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
 </head>
 
-
 <body>
-    <!-- Header -->
-    <header>
-        <h1 class="seo-header">
-            Remy Cohan
-        </h1>
-        <span class="hidden-text">Dr. Remy Cohan</span>
-        <span class="hidden-text">Rémy Cohan MD, PhD</span>
-        <span class="hidden-text">Neuroradiology</span>
-    </header>
 
-    <!-- Navigation -->
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="Projects.html">Current Projects</a>
-        <a href="nifti_viewer.html">Interactive MRI Viewer</a>
-        <a href="neuro_analysis.html">Neuroimaging Analysis</a>
-        <a href="simulations_ml.html">Simulation and ML</a>
-        <a href="plots.html">Statistics and Plotting</a>
-        <a href="posters.html">Conference Posters</a>
-    </nav>
+<header>
+    <h1 class="seo-header">Remy Cohan</h1>
+    <span class="hidden-text">Dr. Remy Cohan</span>
+    <span class="hidden-text">Rémy Cohan MD, PhD</span>
+    <span class="hidden-text">Neuroradiology</span>
+</header>
 
-    <!-- Profile Pic -->
-    <div class="img-wrapper">
+<nav>
+    <a href="index.html">Home</a>
+    <a href="Projects.html">Current Projects</a>
+    <a href="nifti_viewer.html">Interactive MRI Viewer</a>
+    <a href="neuro_analysis.html">Neuroimaging Analysis</a>
+    <a href="simulations_ml.html">Simulation and ML</a>
+    <a href="plots.html">Statistics and Plotting</a>
+    <a href="posters.html">Conference Posters</a>
+</nav>
+
+<main>
+
+    <section class="intro">
         <img src="images/RC_profile.png" alt="Remy Cohan's Profile Picture" class="profile-pic">
-    </div>
 
-    <!-- Main Content -->
-    <main>
-        <section>
-            <p>
-                My research focus centres on how the brain changes and reorganises both in health and disease using different non-invasive brain
-                stimulation modalities such as transcranial magnetic stimulation and various neuroimaging techniques including
-                functional MRI, MR spectroscopy, and EEG.
-            </p>
-        </section>
+        <p>
+            My research focus centres on how the brain changes and reorganises both in health and disease using different non-invasive brain
+            stimulation modalities such as transcranial magnetic stimulation and various neuroimaging techniques including
+            functional MRI, MR spectroscopy, and EEG.
+        </p>
+    </section>
 
-        <section id="projects">
-            <h2>Projects</h2>
-            <p> Currently, I am investigating the effects of theta burst stimulation on various cortical regions and neural populations (in vivo). In addition, I use machine
-                learning and simulation to identify biomarkers of brain stimulation and evaluate biophysical factors to optimise different stimulation protocols for different cortical regions.
-            </p>
-        </section>
+    <section id="projects">
+        <h2>Projects</h2>
+        <p>
+            Currently, I am investigating the effects of theta burst stimulation on various cortical regions and neural populations (in vivo).
+            In addition, I use machine learning and simulation to identify biomarkers of brain stimulation and evaluate biophysical factors
+            to optimise different stimulation protocols for different cortical regions.
+        </p>
+    </section>
 
-        <section id="contact">
-            <h2>Contact</h2>
-            <p><a href="mailto:rcohan@yorku.ca" class="email-link"><i class="fas fa-envelope"></i> rcohan@yorku.ca</a></p>
-            <p><a href="https://www.yorku.ca/health/lab/steeves/lab-members/" class="email-link"><i class="fas fa-brain"></i> Perceptual Neuroscience Laboratory</a></p>
-            <p><a href="https://github.com/CohanR?tab=repositories" class="email-link"><i class="fab fa-github"></i> CohanR</a></p>
-            <p><a href="https://strokesciences.com/" class="email-link"><i class="fas fa-brain"></i> strokesciences.com</a></p>
-            <p><a href="https://twitter.com/remycohan" class="email-link"><i class="fab fa-twitter"></i> @remycohan</a></p>
-            <p><a href="https://orcid.org/0000-0002-1579-3846" class="email-link"><img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" alt="ORCID iD icon" style="width: 1em; margin-right: 5px;"> ORCID</a></p>
-        </section>
+    <section id="contact">
+        <h2>Contact</h2>
 
-    </main>
+        <p><a href="mailto:rcohan@yorku.ca" class="email-link"><i class="fas fa-envelope"></i> rcohan@yorku.ca</a></p>
+        <p><a href="https://www.yorku.ca/health/lab/steeves/lab-members/" class="email-link"><i class="fas fa-brain"></i> Perceptual Neuroscience Laboratory</a></p>
+        <p><a href="https://github.com/CohanR?tab=repositories" class="email-link"><i class="fab fa-github"></i> CohanR</a></p>
+        <p><a href="https://strokesciences.com/" class="email-link"><i class="fas fa-brain"></i> strokesciences.com</a></p>
+        <p><a href="https://twitter.com/remycohan" class="email-link"><i class="fab fa-twitter"></i> @remycohan</a></p>
+        <p>
+            <a href="https://orcid.org/0000-0002-1579-3846" class="email-link">
+                <img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" alt="ORCID iD icon" style="width:1em;vertical-align:middle;margin-right:6px;">
+                ORCID
+            </a>
+        </p>
+    </section>
 
-    <style>
-        .hidden-text {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-        .email-link .fab, .email-link .fas {
-            color: #3a4750;
-            margin-right: 5px;  /* Adds a little space between the icon and the text */
-        }
-
-        .email-link:hover .fab, .email-link:hover .fas {
-            color: #5f6874;
-        }
-    </style>
+</main>
 
 </body>
-
 </html>
