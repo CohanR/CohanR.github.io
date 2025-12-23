@@ -167,25 +167,87 @@
             margin-top: 50px;
         }
 
-            .contact-grid {
+        .contact-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 22px 40px;
             margin-top: 20px;
+            align-items: start;
         }
-        
+
         @media (max-width: 900px) {
             .contact-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
-        
+
         @media (max-width: 520px) {
             .contact-grid {
                 grid-template-columns: 1fr;
             }
         }
 
+        /* Force modern link styling: no blue, no underline, no visited weirdness */
+        #contact .contact-grid a.email-link,
+        #contact .contact-grid a.email-link:visited,
+        #contact .contact-grid a.email-link:hover,
+        #contact .contact-grid a.email-link:active {
+            color: #3a4750;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        #contact .contact-grid a.email-link:hover {
+            color: #5f6874;
+        }
+
+        /* Make each item behave like a neat “row”, allow wrapping when needed */
+        #contact .contact-grid a.email-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;              /* prevents grid overflow weirdness */
+            line-height: 1.25;
+        }
+
+        /* Icons: keep sleek and consistent */
+        #contact .contact-grid i.fas,
+        #contact .contact-grid i.fab {
+            color: #3a4750;
+            opacity: 0.75;
+            flex: 0 0 auto;
+        }
+
+        #contact .contact-grid a.email-link:hover i.fas,
+        #contact .contact-grid a.email-link:hover i.fab {
+            color: #5f6874;
+            opacity: 1;
+        }
+
+        /* ORCID icon: match alignment and prevent ugly wrapping */
+        #contact .contact-grid a.email-link img {
+            flex: 0 0 auto;
+        }
+
+        /* If Perceptual Neuroscience Laboratory wraps, centre it cleanly */
+        #contact .contact-grid a.email-link.lab-link {
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Try to keep long labels on one line when space allows */
+        #contact .contact-grid a.email-link span.label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Let the lab label wrap (but centred) if it must */
+        #contact .contact-grid a.email-link.lab-link span.label {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+        }
 
         /* ================= SEO HIDDEN ================= */
 
@@ -262,30 +324,30 @@
 
         <div class="contact-grid">
             <a href="mailto:rcohan@yorku.ca" class="email-link">
-                <i class="fas fa-envelope"></i> rcohan@yorku.ca
+                <i class="fas fa-envelope"></i> <span class="label">rcohan@yorku.ca</span>
             </a>
 
-            <a href="https://www.yorku.ca/health/lab/steeves/lab-members/" class="email-link">
-                <i class="fas fa-brain"></i> Perceptual Neuroscience Laboratory
+            <a href="https://www.yorku.ca/health/lab/steeves/lab-members/" class="email-link lab-link">
+                <i class="fas fa-brain"></i> <span class="label">Perceptual Neuroscience Laboratory</span>
             </a>
 
             <a href="https://github.com/CohanR?tab=repositories" class="email-link">
-                <i class="fab fa-github"></i> CohanR
+                <i class="fab fa-github"></i> <span class="label">CohanR</span>
             </a>
 
             <a href="https://strokesciences.com/" class="email-link">
-                <i class="fas fa-brain"></i> strokesciences.com
+                <i class="fas fa-brain"></i> <span class="label">strokesciences.com</span>
             </a>
 
             <a href="https://twitter.com/remycohan" class="email-link">
-                <i class="fab fa-twitter"></i> @remycohan
+                <i class="fab fa-twitter"></i> <span class="label">@remycohan</span>
             </a>
 
             <a href="https://orcid.org/0000-0002-1579-3846" class="email-link">
                 <img src="https://orcid.org/sites/default/files/images/orcid_16x16.png"
                      alt="ORCID iD icon"
                      style="width:1em;vertical-align:middle;margin-right:6px;">
-                ORCID
+                <span class="label">ORCID</span>
             </a>
         </div>
     </section>
