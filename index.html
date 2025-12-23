@@ -167,34 +167,25 @@
             margin-top: 50px;
         }
 
-        .contact-grid {
+            .contact-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 16px 30px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px 40px;
             margin-top: 20px;
         }
-
-        .contact-grid a {
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
+        
+        @media (max-width: 900px) {
+            .contact-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 520px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        a.email-link {
-            color: #3a4750;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        a.email-link:hover {
-            color: #5f6874;
-        }
-
-        .email-link .fas,
-        .email-link .fab {
-            margin-right: 6px;
-            opacity: 0.75;
-        }
 
         /* ================= SEO HIDDEN ================= */
 
