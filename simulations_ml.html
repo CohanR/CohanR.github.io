@@ -185,7 +185,7 @@
         /* --- SIMULATION STYLES --- */
         .explanation-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-telate-columns: 1fr 1fr;
             gap: 20px;
             background: #f0f7fb;
             border-left: 5px solid #2E86C1;
@@ -495,6 +495,13 @@
                             y = 0
                         </div>
                         <div style="color:#666; margin-top:6px; font-size:0.95em;" id="mp_math"></div>
+
+                        <!-- ADDED: Plain-English explanation so the math isn't random numbers -->
+                        <div style="color:#666; margin-top:8px; font-size:0.95em; line-height:1.4;">
+                            <div><strong>x1, x2</strong> are inputs (0 = off, 1 = on).</div>
+                            <div><strong>w1, w2</strong> are weights (positive excites, negative inhibits).</div>
+                            <div><strong>s</strong> = w1·x1 + w2·x2 + bias, and the neuron fires if <strong>s ≥ θ</strong>.</div>
+                        </div>
                     </div>
 
                     <button onclick="mpReset()" style="width:100%; padding:10px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em; margin-top:10px; font-weight:600;">
@@ -793,25 +800,35 @@
             mpUpdateFromUI();
         }
 
+        /* ADDED: HiDPI resize so the canvas is crisp (no blur / dirty lines) */
+        function mpResizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = mpEls.canvas.getBoundingClientRect();
+
+            mpEls.canvas.width = Math.round(rect.width * dpr);
+            mpEls.canvas.height = Math.round(rect.height * dpr);
+
+            // draw in CSS pixels
+            mpCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
         function mpRender() {
             if (!mpHasDOM) return;
 
-            // match the same responsive behaviour you used above
-            if (mpEls.canvas.width !== mpEls.canvas.offsetWidth) {
-                mpEls.canvas.width = mpEls.canvas.offsetWidth;
-                mpEls.canvas.height = mpEls.canvas.offsetHeight;
-            }
+            mpResizeCanvas();
 
-            const W = mpEls.canvas.width;
-            const H = mpEls.canvas.height;
+            const rect = mpEls.canvas.getBoundingClientRect();
+            const W = rect.width;
+            const H = rect.height;
 
             mpCtx.clearRect(0, 0, W, H);
 
             const { s, y } = mpStep(mp.x1, mp.x2, mp.w1, mp.w2, mp.b, mp.th);
 
             mpEls.readout.textContent = `y = ${y}`;
+            const net = s - mp.th;
             mpEls.math.textContent =
-                `s = w1·x1 + w2·x2 + b = ${mp.w1.toFixed(1)}·${mp.x1} + ${mp.w2.toFixed(1)}·${mp.x2} + ${mp.b.toFixed(1)} = ${s.toFixed(2)};  fire if s ≥ θ = ${mp.th.toFixed(1)}`;
+                `s = w1·x1 + w2·x2 + b = ${mp.w1.toFixed(1)}·${mp.x1} + ${mp.w2.toFixed(1)}·${mp.x2} + ${mp.b.toFixed(1)} = ${s.toFixed(2)};  net = s − θ = ${net.toFixed(2)};  fire if net ≥ 0`;
 
             // Layout
             const xIn = 90;
@@ -823,9 +840,13 @@
             const xOut = W - 70;
             const yOut = yN;
 
+            // Cleaner line joins/caps
+            mpCtx.lineCap = 'round';
+            mpCtx.lineJoin = 'round';
+
             // Wires
             mpCtx.lineWidth = 3;
-            mpCtx.strokeStyle = '#222';
+            mpCtx.strokeStyle = '#111';
             mpCtx.beginPath();
             mpCtx.moveTo(xIn, y1); mpCtx.lineTo(xN - rN, yN - 18);
             mpCtx.moveTo(xIn, y2); mpCtx.lineTo(xN - rN, yN + 18);
@@ -834,14 +855,14 @@
             // Input nodes
             function drawInput(x, y, label, val) {
                 mpCtx.fillStyle = '#fff';
-                mpCtx.strokeStyle = '#222';
+                mpCtx.strokeStyle = '#111';
                 mpCtx.lineWidth = 2;
                 mpCtx.beginPath();
                 mpCtx.arc(x, y, 18, 0, Math.PI * 2);
                 mpCtx.fill();
                 mpCtx.stroke();
 
-                mpCtx.fillStyle = '#222';
+                mpCtx.fillStyle = '#111';
                 mpCtx.font = 'bold 14px Poppins, sans-serif';
                 mpCtx.fillText(label, x - 12, y - 26);
 
@@ -854,41 +875,41 @@
 
             // Neuron body
             mpCtx.fillStyle = '#fff';
-            mpCtx.strokeStyle = '#222';
+            mpCtx.strokeStyle = '#111';
             mpCtx.lineWidth = 3;
             mpCtx.beginPath();
             mpCtx.arc(xN, yN, rN, 0, Math.PI * 2);
             mpCtx.fill();
             mpCtx.stroke();
 
-            // Neuron label
-            mpCtx.fillStyle = '#222';
+            // Neuron label (FIXED: not Σ + θ)
+            mpCtx.fillStyle = '#111';
             mpCtx.font = 'bold 14px Poppins, sans-serif';
-            mpCtx.fillText('Σ + θ', xN - 18, yN + 5);
+            mpCtx.fillText('Σ ≥ θ', xN - 18, yN + 5);
 
             // Output wire + node
-            mpCtx.strokeStyle = '#222';
+            mpCtx.strokeStyle = '#111';
             mpCtx.lineWidth = 3;
             mpCtx.beginPath();
             mpCtx.moveTo(xN + rN, yN); mpCtx.lineTo(xOut - 18, yOut);
             mpCtx.stroke();
 
             mpCtx.fillStyle = '#fff';
-            mpCtx.strokeStyle = '#222';
+            mpCtx.strokeStyle = '#111';
             mpCtx.lineWidth = 2;
             mpCtx.beginPath();
             mpCtx.arc(xOut, yOut, 18, 0, Math.PI * 2);
             mpCtx.fill();
             mpCtx.stroke();
 
-            mpCtx.fillStyle = '#222';
+            mpCtx.fillStyle = '#111';
             mpCtx.font = 'bold 14px Poppins, sans-serif';
             mpCtx.fillText('y', xOut - 4, yOut - 26);
             mpCtx.fillText(String(y), xOut - 4, yOut + 5);
 
             // Halo when firing
             if (y === 1) {
-                mpCtx.globalAlpha = 0.15;
+                mpCtx.globalAlpha = 0.12;
                 mpCtx.fillStyle = '#e74c3c';
                 mpCtx.beginPath();
                 mpCtx.arc(xN, yN, rN + 14, 0, Math.PI * 2);
@@ -896,22 +917,54 @@
                 mpCtx.globalAlpha = 1.0;
             }
 
-            // Truth table
+            // Truth table (boxed + highlighted row)
             const table = mpTruthTable(mp.w1, mp.w2, mp.b, mp.th);
 
-            const tx = 18;
-            const ty = 18;
-            mpCtx.fillStyle = '#444';
-            mpCtx.font = 'bold 12px Poppins, sans-serif';
-            mpCtx.fillText('Truth table', tx, ty);
+            const tx = 16;
+            const ty = 16;
+            const cardW = 170;
+            const cardH = 120;
+
+            // Draw card
+            mpCtx.fillStyle = '#fff';
+            mpCtx.strokeStyle = '#e5e5e5';
+            mpCtx.lineWidth = 1;
+            mpCtx.beginPath();
+            if (mpCtx.roundRect) {
+                mpCtx.roundRect(tx, ty, cardW, cardH, 8);
+            } else {
+                // fallback if roundRect unsupported
+                mpCtx.rect(tx, ty, cardW, cardH);
+            }
+            mpCtx.fill();
+            mpCtx.stroke();
+
+            mpCtx.fillStyle = '#333';
+            mpCtx.font = '600 13px Poppins, sans-serif';
+            mpCtx.fillText('Truth table', tx + 12, ty + 22);
 
             mpCtx.font = '12px Poppins, sans-serif';
-            mpCtx.fillText('x1  x2   s     y', tx, ty + 18);
+            mpCtx.fillText('x1  x2    s     y', tx + 12, ty + 40);
+
+            // highlight current input row
+            const activeIndex =
+                (mp.x1 === 0 && mp.x2 === 0) ? 0 :
+                (mp.x1 === 0 && mp.x2 === 1) ? 1 :
+                (mp.x1 === 1 && mp.x2 === 0) ? 2 : 3;
+
+            const rowY0 = ty + 56;
+            const rowH = 16;
+
+            mpCtx.globalAlpha = 0.12;
+            mpCtx.fillStyle = '#2E86C1';
+            mpCtx.fillRect(tx + 8, rowY0 + activeIndex * rowH - 12, cardW - 16, 18);
+            mpCtx.globalAlpha = 1.0;
 
             table.forEach((row, i) => {
                 const sStr = row.s.toFixed(1).padStart(4, ' ');
                 const line = `${row.x1}   ${row.x2}   ${sStr}   ${row.y}`;
-                mpCtx.fillText(line, tx, ty + 36 + i * 16);
+                mpCtx.fillStyle = (i === activeIndex) ? '#111' : '#444';
+                mpCtx.fillText(line, tx + 12, rowY0 + i * rowH);
             });
         }
 
