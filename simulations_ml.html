@@ -407,6 +407,104 @@
             <a href="https://github.com/CohanR/Hodgkin-Huxley_Simulation" target="_blank">View Hodgkin Huxley Simulation Code on GitHub</a>
         </section>
 
+        <!-- ======== ADDED: McCulloch–Pitts section goes directly under Hodgkin–Huxley ======== -->
+        <section>
+            <h2>McCulloch–Pitts Neuron (Binary Threshold Model)</h2>
+
+            <div class="explanation-grid">
+                <div class="exp-col">
+                    <h4>What it is</h4>
+                    <ul>
+                        <li><strong>Inputs:</strong> binary (0/1), like spikes present vs absent.</li>
+                        <li><strong>Weights:</strong> scale each input (excitatory if positive, inhibitory if negative).</li>
+                        <li><strong>Bias:</strong> a constant offset that shifts firing up/down.</li>
+                        <li><strong>Threshold (θ):</strong> fires if the weighted sum reaches it.</li>
+                        <li><strong>Output:</strong> binary (0/1), a simplified “fires / does not fire”.</li>
+                    </ul>
+                </div>
+                <div class="exp-col">
+                    <h4>Why you should care</h4>
+                    <ul>
+                        <li>This is the clean ancestor of the perceptron and modern neural nets.</li>
+                        <li>It shows how logic gates (AND / OR / NOT / NAND) can be implemented with a single unit.</li>
+                        <li><strong>Important limitation:</strong> XOR cannot be done with a single unit; you need multiple layers.</li>
+                        <li><small><em> McCulloch & Pitts (1943) → foundational formalism for neural computation.</em></small></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="sim-container">
+                <div class="canvas-wrapper">
+                    <canvas id="mpCanvas" width="600" height="350"></canvas>
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <h3>Inputs</h3>
+                        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                            <label style="display:flex; gap:8px; align-items:center;">
+                                <input type="checkbox" id="mp_x1" checked>
+                                <span>x1</span>
+                            </label>
+                            <label style="display:flex; gap:8px; align-items:center;">
+                                <input type="checkbox" id="mp_x2" checked>
+                                <span>x2</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Weights + Threshold</h3>
+
+                        <div class="slider-container">
+                            <span class="slider-label">w1</span>
+                            <input type="range" id="mp_w1" min="-5" max="5" step="0.1" value="1">
+                            <span class="slider-value" id="val_mp_w1">1.0</span>
+                        </div>
+
+                        <div class="slider-container">
+                            <span class="slider-label">w2</span>
+                            <input type="range" id="mp_w2" min="-5" max="5" step="0.1" value="1">
+                            <span class="slider-value" id="val_mp_w2">1.0</span>
+                        </div>
+
+                        <div class="slider-container">
+                            <span class="slider-label">bias</span>
+                            <input type="range" id="mp_b" min="-5" max="5" step="0.1" value="0">
+                            <span class="slider-value" id="val_mp_b">0.0</span>
+                        </div>
+
+                        <div class="slider-container">
+                            <span class="slider-label">threshold (θ)</span>
+                            <input type="range" id="mp_th" min="-5" max="5" step="0.1" value="1.5">
+                            <span class="slider-value" id="val_mp_th">1.5</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Logic presets</h3>
+                        <button class="preset-btn" onclick="mpApplyPreset('AND')">AND</button>
+                        <button class="preset-btn" onclick="mpApplyPreset('OR')">OR</button>
+                        <button class="preset-btn" onclick="mpApplyPreset('NAND')">NAND</button>
+                        <button class="preset-btn" onclick="mpApplyPreset('NOT_X1')">NOT x1</button>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Output</h3>
+                        <div id="mp_readout" style="font-weight:700; font-size:1.05em;">
+                            y = 0
+                        </div>
+                        <div style="color:#666; margin-top:6px; font-size:0.95em;" id="mp_math"></div>
+                    </div>
+
+                    <button onclick="mpReset()" style="width:100%; padding:10px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.9em; margin-top:10px; font-weight:600;">
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- ======== END ADDED SECTION ======== -->
+
         <hr style="border: 0; height: 1px; background: #ddd; margin: 40px 0;">
 
         <section>
@@ -596,6 +694,244 @@
         }
 
         updateUI(); animate();
+
+        /* =========================
+           McCulloch–Pitts simulation
+           ========================= */
+
+        const mp = {
+            x1: 1, x2: 1,
+            w1: 1.0, w2: 1.0,
+            b: 0.0,
+            th: 1.5
+        };
+
+        const mpEls = {
+            canvas: document.getElementById('mpCanvas'),
+            x1: document.getElementById('mp_x1'),
+            x2: document.getElementById('mp_x2'),
+            w1: document.getElementById('mp_w1'),
+            w2: document.getElementById('mp_w2'),
+            b: document.getElementById('mp_b'),
+            th: document.getElementById('mp_th'),
+            val_w1: document.getElementById('val_mp_w1'),
+            val_w2: document.getElementById('val_mp_w2'),
+            val_b: document.getElementById('val_mp_b'),
+            val_th: document.getElementById('val_mp_th'),
+            readout: document.getElementById('mp_readout'),
+            math: document.getElementById('mp_math')
+        };
+
+        // Defensive: if someone deletes the section later, do nothing instead of throwing errors
+        const mpHasDOM = mpEls.canvas && mpEls.x1 && mpEls.x2 && mpEls.w1 && mpEls.w2 && mpEls.b && mpEls.th;
+
+        let mpCtx = null;
+        if (mpHasDOM) mpCtx = mpEls.canvas.getContext('2d');
+
+        function mpStep(x1, x2, w1, w2, b, th) {
+            const s = (w1 * x1) + (w2 * x2) + b;
+            const y = (s >= th) ? 1 : 0;
+            return { s, y };
+        }
+
+        function mpTruthTable(w1, w2, b, th) {
+            const rows = [
+                { x1:0, x2:0 },
+                { x1:0, x2:1 },
+                { x1:1, x2:0 },
+                { x1:1, x2:1 }
+            ];
+            return rows.map(r => {
+                const out = mpStep(r.x1, r.x2, w1, w2, b, th);
+                return { ...r, s: out.s, y: out.y };
+            });
+        }
+
+        function mpUpdateFromUI() {
+            if (!mpHasDOM) return;
+
+            mp.x1 = mpEls.x1.checked ? 1 : 0;
+            mp.x2 = mpEls.x2.checked ? 1 : 0;
+            mp.w1 = parseFloat(mpEls.w1.value);
+            mp.w2 = parseFloat(mpEls.w2.value);
+            mp.b  = parseFloat(mpEls.b.value);
+            mp.th = parseFloat(mpEls.th.value);
+
+            mpEls.val_w1.textContent = mp.w1.toFixed(1);
+            mpEls.val_w2.textContent = mp.w2.toFixed(1);
+            mpEls.val_b.textContent  = mp.b.toFixed(1);
+            mpEls.val_th.textContent = mp.th.toFixed(1);
+
+            mpRender();
+        }
+
+        function mpApplyPreset(type) {
+            if (!mpHasDOM) return;
+
+            if (type === 'AND')   { mp.w1 = 1;  mp.w2 = 1;  mp.b = 0;  mp.th = 1.5; }
+            if (type === 'OR')    { mp.w1 = 1;  mp.w2 = 1;  mp.b = 0;  mp.th = 0.5; }
+            if (type === 'NAND')  { mp.w1 = -1; mp.w2 = -1; mp.b = 0;  mp.th = -1.5; }
+            if (type === 'NOT_X1'){ mp.w1 = -2; mp.w2 = 0;  mp.b = 0;  mp.th = -1.0; }
+
+            mpEls.w1.value = mp.w1;
+            mpEls.w2.value = mp.w2;
+            mpEls.b.value  = mp.b;
+            mpEls.th.value = mp.th;
+
+            mpUpdateFromUI();
+        }
+
+        function mpReset() {
+            if (!mpHasDOM) return;
+
+            mpEls.x1.checked = true;
+            mpEls.x2.checked = true;
+            mpEls.w1.value = 1;
+            mpEls.w2.value = 1;
+            mpEls.b.value  = 0;
+            mpEls.th.value = 1.5;
+            mpUpdateFromUI();
+        }
+
+        function mpRender() {
+            if (!mpHasDOM) return;
+
+            // match the same responsive behaviour you used above
+            if (mpEls.canvas.width !== mpEls.canvas.offsetWidth) {
+                mpEls.canvas.width = mpEls.canvas.offsetWidth;
+                mpEls.canvas.height = mpEls.canvas.offsetHeight;
+            }
+
+            const W = mpEls.canvas.width;
+            const H = mpEls.canvas.height;
+
+            mpCtx.clearRect(0, 0, W, H);
+
+            const { s, y } = mpStep(mp.x1, mp.x2, mp.w1, mp.w2, mp.b, mp.th);
+
+            mpEls.readout.textContent = `y = ${y}`;
+            mpEls.math.textContent =
+                `s = w1·x1 + w2·x2 + b = ${mp.w1.toFixed(1)}·${mp.x1} + ${mp.w2.toFixed(1)}·${mp.x2} + ${mp.b.toFixed(1)} = ${s.toFixed(2)};  fire if s ≥ θ = ${mp.th.toFixed(1)}`;
+
+            // Layout
+            const xIn = 90;
+            const y1 = H * 0.35;
+            const y2 = H * 0.65;
+            const xN = W * 0.55;
+            const yN = H * 0.50;
+            const rN = Math.min(55, Math.max(40, H * 0.16));
+            const xOut = W - 70;
+            const yOut = yN;
+
+            // Wires
+            mpCtx.lineWidth = 3;
+            mpCtx.strokeStyle = '#222';
+            mpCtx.beginPath();
+            mpCtx.moveTo(xIn, y1); mpCtx.lineTo(xN - rN, yN - 18);
+            mpCtx.moveTo(xIn, y2); mpCtx.lineTo(xN - rN, yN + 18);
+            mpCtx.stroke();
+
+            // Input nodes
+            function drawInput(x, y, label, val) {
+                mpCtx.fillStyle = '#fff';
+                mpCtx.strokeStyle = '#222';
+                mpCtx.lineWidth = 2;
+                mpCtx.beginPath();
+                mpCtx.arc(x, y, 18, 0, Math.PI * 2);
+                mpCtx.fill();
+                mpCtx.stroke();
+
+                mpCtx.fillStyle = '#222';
+                mpCtx.font = 'bold 14px Poppins, sans-serif';
+                mpCtx.fillText(label, x - 12, y - 26);
+
+                mpCtx.font = 'bold 14px Poppins, sans-serif';
+                mpCtx.fillText(String(val), x - 4, y + 5);
+            }
+
+            drawInput(xIn, y1, 'x1', mp.x1);
+            drawInput(xIn, y2, 'x2', mp.x2);
+
+            // Neuron body
+            mpCtx.fillStyle = '#fff';
+            mpCtx.strokeStyle = '#222';
+            mpCtx.lineWidth = 3;
+            mpCtx.beginPath();
+            mpCtx.arc(xN, yN, rN, 0, Math.PI * 2);
+            mpCtx.fill();
+            mpCtx.stroke();
+
+            // Neuron label
+            mpCtx.fillStyle = '#222';
+            mpCtx.font = 'bold 14px Poppins, sans-serif';
+            mpCtx.fillText('Σ + θ', xN - 18, yN + 5);
+
+            // Output wire + node
+            mpCtx.strokeStyle = '#222';
+            mpCtx.lineWidth = 3;
+            mpCtx.beginPath();
+            mpCtx.moveTo(xN + rN, yN); mpCtx.lineTo(xOut - 18, yOut);
+            mpCtx.stroke();
+
+            mpCtx.fillStyle = '#fff';
+            mpCtx.strokeStyle = '#222';
+            mpCtx.lineWidth = 2;
+            mpCtx.beginPath();
+            mpCtx.arc(xOut, yOut, 18, 0, Math.PI * 2);
+            mpCtx.fill();
+            mpCtx.stroke();
+
+            mpCtx.fillStyle = '#222';
+            mpCtx.font = 'bold 14px Poppins, sans-serif';
+            mpCtx.fillText('y', xOut - 4, yOut - 26);
+            mpCtx.fillText(String(y), xOut - 4, yOut + 5);
+
+            // Halo when firing
+            if (y === 1) {
+                mpCtx.globalAlpha = 0.15;
+                mpCtx.fillStyle = '#e74c3c';
+                mpCtx.beginPath();
+                mpCtx.arc(xN, yN, rN + 14, 0, Math.PI * 2);
+                mpCtx.fill();
+                mpCtx.globalAlpha = 1.0;
+            }
+
+            // Truth table
+            const table = mpTruthTable(mp.w1, mp.w2, mp.b, mp.th);
+
+            const tx = 18;
+            const ty = 18;
+            mpCtx.fillStyle = '#444';
+            mpCtx.font = 'bold 12px Poppins, sans-serif';
+            mpCtx.fillText('Truth table', tx, ty);
+
+            mpCtx.font = '12px Poppins, sans-serif';
+            mpCtx.fillText('x1  x2   s     y', tx, ty + 18);
+
+            table.forEach((row, i) => {
+                const sStr = row.s.toFixed(1).padStart(4, ' ');
+                const line = `${row.x1}   ${row.x2}   ${sStr}   ${row.y}`;
+                mpCtx.fillText(line, tx, ty + 36 + i * 16);
+            });
+        }
+
+        if (mpHasDOM) {
+            // Hook up UI listeners
+            ['change', 'input'].forEach(evt => {
+                mpEls.x1.addEventListener(evt, mpUpdateFromUI);
+                mpEls.x2.addEventListener(evt, mpUpdateFromUI);
+                mpEls.w1.addEventListener(evt, mpUpdateFromUI);
+                mpEls.w2.addEventListener(evt, mpUpdateFromUI);
+                mpEls.b.addEventListener(evt, mpUpdateFromUI);
+                mpEls.th.addEventListener(evt, mpUpdateFromUI);
+            });
+
+            // Initialise
+            mpReset();
+
+            // Keep it responsive on resize too (no lag / no surprises)
+            window.addEventListener('resize', () => mpRender());
+        }
     </script>
 </body>
 </html>
