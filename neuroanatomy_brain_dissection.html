@@ -17,7 +17,7 @@
     <meta property="og:type" content="website">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Sheep Brain Anatomy Quiz | Remy Cohan">
+    <meta name="twitter:title" content="Neuroanatomy (Ovine brain) Quiz | Remy Cohan">
     <meta name="twitter:description" content="Interactive sheep brain anatomy quiz using MRI and dissected brain images.">
     <meta name="twitter:image" content="https://neuropsis.org/images/q1_Neuro_RemyC_CohanR.png">
 
@@ -409,7 +409,7 @@
 <body>
 
 <header id="top">
-    <h1 class="seo-header">Sheep Brain Anatomy Quiz</h1>
+    <h1 class="seo-header">Neuroanatomy (Sheep/Ovine brain) Quiz</h1>
     <span class="hidden-text">Sheep brain anatomy quiz</span>
     <span class="hidden-text">Sheep brain MRI neuroanatomy</span>
 </header>
@@ -422,14 +422,14 @@
     <a href="simulations_ml.html">Simulation and ML</a>
     <a href="plots.html">Statistics and Plotting</a>
     <a href="posters.html">Conference Posters</a>
-    <a href="sheep_brain_quiz.html" class="active" aria-current="page">Sheep Brain Quiz</a>
+    <a href="neuroanatomy_brain_dissection.html" class="active" aria-current="page">Neuroanatomy Quiz</a>
 </nav>
 
 <main>
-    <h2>Sheep Brain Anatomy Quiz</h2>
+    <h2>Neuroanatomy (Sheep brain) Quiz</h2>
 
     <p>
-        This quiz uses labelled still images from a dissected sheep (ovine) brain and corresponding ex vivo MRI images.
+        This quiz uses labelled still images from a dissected sheep (ovine) brain and corresponding ex vivo MRI images (from the same specimen).
         Because of the fixation/storage solution, MRI contrast may appear partly reversed compared with conventional in vivo MRI contrast.
     </p>
 
@@ -481,10 +481,7 @@
 
 <script>
     /*
-        HOW TO USE THIS PAGE
-
-        Save this file as:
-        neuroanatomy_brain_dissection.html
+        set up:
 
         Image naming convention:
         images/q1_Neuro_RemyC_CohanR.png
@@ -499,6 +496,8 @@
 
         Correct answers are stored in the JavaScript below.
         There are no visible asterisks next to the correct answers.
+
+        Remy Cohan, April 2026
     */
 
     const passingScore = 23;
@@ -542,7 +541,7 @@
         },
         {
             id: 4,
-            prompt: "Identify the correct membrane/meningeal layer or matter.",
+            prompt: "Identify the correct membrane/meningeal layer or matter. (image A= shiny covering around the braon; image B= thick covering being cut by the scalpel)",
             image: "images/q4_Neuro_RemyC_CohanR.png",
             options: [
                 "Arachnoid (B), pia (A)",
@@ -635,7 +634,7 @@
                 "Optic radiation (red), medulla oblongata (green), pons (blue)",
                 "Optic chiasm (red), spinal cord (green), thalamus (blue)",
                 "Olfactory bulb (red), spinal cord (green), thalamus (blue)",
-                "Optic nerve (red), spinal cord (green), medulla oblongata (blue)"
+                "Optic nerve (red), spinal cord (green), pons (blue)"
             ],
             answer: "Optic nerve (red), spinal cord (green), medulla oblongata (blue)"
         },
