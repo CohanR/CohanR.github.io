@@ -496,9 +496,9 @@
             </p>
 
             <div class="download-grid">
-                <a class="download-card" href="downloads/sheep_brain_teaching_slides.pdf" download>Download slides</a>
-                <a class="download-card" href="downloads/sheep_brain_T1.nii.gz" download>Download T1 NIfTI</a>
-                <a class="download-card" href="downloads/sheep_brain_PD.nii.gz" download>Download PD NIfTI</a>
+                <a class="download-card" href="images/sheep_brain_teaching_slides.pdf" download>Download slides</a>
+                <a class="download-card" href="images/Lady_Baa-Baa_RC_w.nii.gz" download>Download T1 NIfTI</a>
+                <a class="download-card" href="images/Lady_Baa-Baa_RC_PD.nii.gz" download>Download PD NIfTI</a>
             </div>
 
             <p class="small-note">
@@ -720,12 +720,12 @@
             prompt: "What is the structure the red arrow is pointing to?",
             image: "images/q16_Neuro_RemyC_CohanR.png",
             options: [
-                "Head of caudate",
+                "Caudate",
                 "Head of thalamus/pulvinar",
                 "Lateral geniculate nucleus of the thalamus",
                 "Putamen"
             ],
-            answer: "Head of caudate"
+            answer: "Caudate"
         },
         {
             id: 17,
@@ -752,52 +752,81 @@
         },
         {
             id: 19,
-            prompt: "Placeholder question 19. Replace this text with the final question.",
+            prompt: "The paired bulbous structures (red arrows) are the ______, and the cavities (blue arrows) are the ______.",
             image: "images/q19_Neuro_RemyC_CohanR.png",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            answer: "Option A"
+            options: ["Choroid plexus; third ventricle",
+                      "Tail of caudate nuclei; lateral ventricles", 
+                      "Hippocampi; lateral ventricles", 
+                      "Thalami; fourth ventricle"
+            ],
+            answer: "Tail of caudate nuclei; lateral ventricles. And..Nope..it's not choroid plexus! The caudate nucleus is a part of the wall of the lateral ventricle, so in coronal sections it can look like it is bulging into the ventricle (like you saw in question 16). It is not floating inside the ventricular cavity."
         },
         {
             id: 20,
-            prompt: "Placeholder question 20. Replace this text with the final question.",
+            prompt: "What are the structures the arrows pointing to? Choose the correct option that assigns each colour to the correct structure",
             image: "images/q20_Neuro_RemyC_CohanR.png",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            answer: "Option A"
+            options: ["Internal capsule (yellow), putamen (red), globus palidus (blue), striatum (purple)",
+                      "Pulvinar (yellow), head of caudate (red), thalamus (blue), internal capsule (purple)",
+                      "Medial geniculate nucleus (yellow), head of caudate (red), pulvinar (blue), external capsule (purple)",
+                      "Amygdala (yellow), globus palidus (red), substantia nigra (blue), globus palidus pars compacta (purple)"
+            ],
+            answer: "Pulvinar (yellow), head of caudate (red), thalamus (blue), internal capsule (purple)"
         },
         {
             id: 21,
-            prompt: "Placeholder question 21. Replace this text with the final question.",
+            prompt: "Identify the correct structures? Choose the correct option that assigns each colour to the correct structure.",
             image: "images/q21_Neuro_RemyC_CohanR.png",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            answer: "Option A"
+            options: ["amygdala (red), medial geniculate (yellow), globus palidus (blue)",
+                      "Pulvinar (blue), head of caudate (yellow), thalamus (red)",
+                      "Medial geniculate nucleus (yellow), coprus callosum (red), pulvinar (blue)",
+                      "hippocampus (red), lateral geniculate (yellow), internal capsule (blue)"
+            ],
+            answer: "hippocampus (red), lateral geniculate (yellow), internal capsule (blue)"
         },
         {
             id: 22,
-            prompt: "Placeholder question 22. Replace this text with the final question.",
+            prompt: "What is the name and fucntion of this openning?",
             image: "images/q22_Neuro_RemyC_CohanR.png",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            answer: "Option A"
+            options: ["Third ventricle; CSF production ",
+                      "Third ventricle; carries CSF from the third ventricle to the lateral ventricle",
+                      "Fourth ventricle; carries CSF from the third ventricle to the lateral ventricle",
+                      "Third ventricle; CSF production",
+                      "Aqueduct of sylvius; carries CSF from the third ventricle to the fourth ventricle",
+                      "Central foramen; carries CSF from the third ventricle to the fourth ventricle",
+            ],
+            answer: "queduct of sylvius; carries CSF from the third ventricle to the fourth ventricle"
         },
         {
             id: 23,
-            prompt: "Placeholder question 23. Replace this text with the final question.",
+            prompt: "Identify this structure:",
             image: "images/q23_Neuro_RemyC_CohanR.png",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            answer: "Option A"
+            options: ["Optic radiation",
+                      "External capsule", 
+                      "Corpus callosum", 
+                      "Hippocampus"],
+            answer: "Corpus callosum"
         },
         {
             id: 24,
-            prompt: "Placeholder question 24. Replace this text with the final question.",
+            prompt: "The red arrow is pointing at______, and the green arrow is pointing at the ______.",
             image: "images/q24_Neuro_RemyC_CohanR.png",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            answer: "Option A"
+            options: ["thalamus; substantia nigra ",
+                      "putamen; external capsule",
+                      "external capsule; putamen",
+                      "substantia nigra; thalamus"],
+            answer: "external capsule; putamen"
         },
         {
             id: 25,
-            prompt: "Placeholder question 25. Replace this text with the final question.",
+            prompt: "Name the cortical area and the corresponding lobe.",
             image: "images/q25_Neuro_RemyC_CohanR.png",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            answer: "Option A"
+            options: ["A1; Temporal lobe",
+                      "Heschl's gyrus; occipital lobe",
+                      "S1; parietl lobe",
+                      "V1; occipital lobe",
+                      "V5/MT; rostro-medial occipital lobe"
+            ],
+            answer: "V1; occipital lobe"
         }
     ];
 
