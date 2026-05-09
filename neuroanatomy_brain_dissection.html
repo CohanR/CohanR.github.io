@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sheep brain MRI anatomy quiz using ex vivo sheep brain images and anatomical labelling questions.">
+
+    <link rel="canonical" href="https://neuropsis.org/neuroanatomy_brain_dissectio.html">
+
+    <title>Neuroanatomy: Brain Dissection | Ovine Brain Anatomy Quiz | Remy Cohan</title>
+
+    <meta property="og:title" content="Sheep (Ovine) Brain Anatomy Quiz | Remy Cohan">
+    <meta property="og:description" content="Interactive ovine brain anatomy quiz using MRI and dissected brain images.">
+    <meta property="og:image" content="https://neuropsis.org/images/q1_Neuro_RemyC_CohanR.png">
+    <meta property="og:url" content="https://neuropsis.org/neuroanatomy_brain_dissection.html">
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sheep Brain Anatomy Quiz | Remy Cohan">
+    <meta name="twitter:description" content="Interactive sheep brain anatomy quiz using MRI and dissected brain images.">
+    <meta name="twitter:image" content="https://neuropsis.org/images/q1_Neuro_RemyC_CohanR.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            color: #2f2f2f;
+            background: #eef2f7;
+            line-height: 1.65;
+        }
+
+        header {
+            background: url('images/neuron.gif') no-repeat center center;
+            background-size: cover;
+            text-align: center;
+            padding: 5rem 1rem;
+            position: relative;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        header::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 0;
+        }
+
+        header h1 {
+            position: relative;
+            z-index: 1;
+            color: white;
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 0.05em;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding: 18px 0;
+            background-color: #3a4750;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            transition: background-color 0.25s ease;
+            position: relative;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        nav a:hover {
+            background-color: #5f6874;
+        }
+
+        nav a.active {
+            background-color: #2b353d;
+        }
+
+        @media (hover: hover) {
+            nav a::after {
+                content: "";
+                position: absolute;
+                left: 15%;
+                right: 15%;
+                bottom: 6px;
+                height: 2px;
+                background: transparent;
+                transition: background 0.25s ease;
+            }
+
+            nav a:hover::after,
+            nav a.active::after {
+                background: #ffffff;
+            }
+        }
+
+        main {
+            max-width: 980px;
+            margin: 50px auto;
+            background: #ffffff;
+            padding: 50px 45px;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        h2, h3 {
+            font-family: 'Raleway', sans-serif;
+            font-weight: 700;
+        }
+
+        h2 {
+            border-bottom: 2px solid #3a4750;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .notice-box {
+            background: #f4f6f9;
+            border-left: 5px solid #3a4750;
+            padding: 18px 20px;
+            border-radius: 8px;
+            margin: 25px 0 25px;
+        }
+
+        .notice-box strong {
+            color: #2b353d;
+        }
+
+        .top-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0 30px;
+        }
+
+        .top-links a {
+            color: #ffffff;
+            background: #3a4750;
+            text-decoration: none;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .top-links a:hover {
+            background: #5f6874;
+        }
+
+        .quiz-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            margin: 25px 0;
+            padding: 16px 18px;
+            background: #f7f8fa;
+            border: 1px solid #d9dee6;
+            border-radius: 10px;
+            position: sticky;
+            top: 78px;
+            z-index: 9;
+        }
+
+        .score-pill {
+            display: inline-block;
+            font-weight: 700;
+            color: #ffffff;
+            background: #3a4750;
+            padding: 8px 14px;
+            border-radius: 999px;
+        }
+
+        .progress-text {
+            color: #5f6874;
+            font-weight: 700;
+        }
+
+        .question-card {
+            margin: 35px 0;
+            padding: 26px;
+            border: 1px solid #d9dee6;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+            scroll-margin-top: 170px;
+        }
+
+        .question-card h3 {
+            margin-top: 0;
+            color: #2b353d;
+        }
+
+        .question-image-wrap {
+            margin: 18px 0 20px;
+            background: #111820;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2b353d;
+        }
+
+        .question-image-wrap img {
+            width: 100%;
+            max-height: 760px;
+            object-fit: contain;
+            display: block;
+            background: #111820;
+        }
+
+        .question-image-wrap figcaption {
+            color: #ffffff;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            background: #2b353d;
+            text-align: center;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .option-label {
+            display: block;
+            padding: 12px 14px;
+            border: 1px solid #d9dee6;
+            border-radius: 8px;
+            background: #f9fafc;
+            cursor: pointer;
+            transition: background 0.2s ease, border 0.2s ease;
+        }
+
+        .option-label:hover {
+            background: #eef2f7;
+            border-color: #9aa7b5;
+        }
+
+        .option-label input {
+            margin-right: 10px;
+        }
+
+        .option-label.correct-answer {
+            background: #eef7f0;
+            border-color: #77b984;
+        }
+
+        .option-label.wrong-answer {
+            background: #fff1f1;
+            border-color: #c98585;
+        }
+
+        .feedback {
+            margin-top: 14px;
+            font-weight: 700;
+            min-height: 1.5em;
+        }
+
+        .feedback.correct {
+            color: #1f6f43;
+        }
+
+        .feedback.incorrect {
+            color: #9f2f2f;
+        }
+
+        button {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            cursor: pointer;
+            background: #3a4750;
+            color: #ffffff;
+            transition: background 0.25s ease;
+        }
+
+        button:hover {
+            background: #5f6874;
+        }
+
+        button.secondary {
+            background: #6d7782;
+        }
+
+        button.secondary:hover {
+            background: #818b96;
+        }
+
+        #results {
+            margin-top: 35px;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #d9dee6;
+            background: #f7f8fa;
+            scroll-margin-top: 170px;
+        }
+
+        #download-section {
+            display: none;
+            margin-top: 20px;
+            padding: 22px;
+            border-radius: 12px;
+            background: #eef7f0;
+            border: 1px solid #b6d8bd;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .download-card {
+            display: block;
+            text-decoration: none;
+            color: #ffffff;
+            background: #3a4750;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .download-card:hover {
+            background: #5f6874;
+        }
+
+        .locked-note {
+            color: #6a2f2f;
+            font-weight: 700;
+        }
+
+        .small-note {
+            font-size: 0.92rem;
+            color: #5f6874;
+        }
+
+        .hidden-text {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+        }
+
+        .back-to-top {
+            display: inline-block;
+            margin-top: 18px;
+            color: #3a4750;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .back-to-top:hover {
+            color: #5f6874;
+        }
+
+        @media (max-width: 850px) {
+            main {
+                padding: 30px 22px;
+                margin: 25px auto;
+            }
+
+            header h1 {
+                font-size: 2.2rem;
+            }
+
+            nav {
+                position: static;
+            }
+
+            .quiz-controls {
+                position: static;
+            }
+
+            .download-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header id="top">
+    <h1 class="seo-header">Sheep Brain Anatomy Quiz</h1>
+    <span class="hidden-text">Sheep brain anatomy quiz</span>
+    <span class="hidden-text">Sheep brain MRI neuroanatomy</span>
+</header>
+
+<nav>
+    <a href="index.html">Home</a>
+    <a href="Projects.html">Current Projects</a>
+    <a href="nifti_viewer.html">Interactive MRI Viewer</a>
+    <a href="neuro_analysis.html">Neuroimaging Analysis</a>
+    <a href="simulations_ml.html">Simulation and ML</a>
+    <a href="plots.html">Statistics and Plotting</a>
+    <a href="posters.html">Conference Posters</a>
+    <a href="sheep_brain_quiz.html" class="active" aria-current="page">Sheep Brain Quiz</a>
+</nav>
+
+<main>
+    <h2>Sheep Brain Anatomy Quiz</h2>
+
+    <p>
+        This quiz uses labelled still images from a dissected sheep (ovine) brain and corresponding ex vivo MRI images.
+        Because of the fixation/storage solution, MRI contrast may appear partly reversed compared with conventional in vivo MRI contrast.
+    </p>
+
+    <div class="notice-box">
+        <strong>Unlock rule:</strong> score at least <strong>23 out of 25</strong> to unlock the downloadable teaching slides, T1 MRI NIfTI image, and PD MRI NIfTI image.
+        You can then load the MRI files in the interactive NIfTI viewer on this website.
+    </div>
+
+    <div class="top-links" id="question-jump-links"></div>
+
+    <div class="quiz-controls">
+        <div>
+            <span class="score-pill">Passing score: 23 / 25</span>
+            <span class="progress-text" id="progress-text">Answered: 0 / 25</span>
+        </div>
+        <div>
+            <button type="button" onclick="gradeQuiz()">Submit quiz</button>
+            <button type="button" class="secondary" onclick="resetQuiz()">Reset</button>
+        </div>
+    </div>
+
+    <form id="quiz-form"></form>
+
+    <div id="results">
+        <h3>Results</h3>
+        <p id="score-text">Submit the quiz to see your score.</p>
+        <p id="unlock-text" class="locked-note">Downloads are locked until a passing score is reached.</p>
+
+        <div id="download-section">
+            <h3>Downloads unlocked</h3>
+            <p>
+                You passed the quiz. Download the files below and open the MRI files in the interactive NIfTI viewer.
+            </p>
+
+            <div class="download-grid">
+                <a class="download-card" href="downloads/sheep_brain_teaching_slides.pdf" download>Download slides</a>
+                <a class="download-card" href="downloads/sheep_brain_T1.nii.gz" download>Download T1 NIfTI</a>
+                <a class="download-card" href="downloads/sheep_brain_PD.nii.gz" download>Download PD NIfTI</a>
+            </div>
+
+            <p class="small-note">
+                Rename these file paths if your GitHub filenames differ.
+            </p>
+        </div>
+
+        <a href="#top" class="back-to-top">Back to top</a>
+    </div>
+</main>
+
+<script>
+    /*
+        HOW TO USE THIS PAGE
+
+        Save this file as:
+        neuroanatomy_brain_dissection.html
+
+        Image naming convention:
+        images/q1_Neuro_RemyC_CohanR.png
+        images/q2_Neuro_RemyC_CohanR.png
+        ...
+        images/q25_Neuro_RemyC_CohanR.png
+
+        Download file placeholders:
+        downloads/sheep_brain_teaching_slides.pdf
+        downloads/sheep_brain_T1.nii.gz
+        downloads/sheep_brain_PD.nii.gz
+
+        Correct answers are stored in the JavaScript below.
+        There are no visible asterisks next to the correct answers.
+    */
+
+    const passingScore = 23;
+
+    const questions = [
+        {
+            id: 1,
+            prompt: "Choose the correct name of the structure in the red circle, including the correct plane.",
+            image: "images/q1_Neuro_RemyC_CohanR.png",
+            options: [
+                "Infundibulum (caudal)",
+                "Longitudinal fissure (ventral)",
+                "Infundibulum (caudal)",
+                "Optic chiasm (dorsal)",
+                "Optic chiasm (ventral)"
+            ],
+            answer: "Optic chiasm (ventral)"
+        },
+        {
+            id: 2,
+            prompt: "Choose the option that correctly names the structure assigned to each number.",
+            image: "images/q2_Neuro_RemyC_CohanR.png",
+            options: [
+                "Primary motor cortex (2), primary sensory cortex (3), internal capsule (4), longitudinal fissure (1)",
+                "Longitudinal fissure (1), optic radiation (4), primary motor cortex (3), primary sensory cortex (3)",
+                "Sulcus (1), white matter (4), grey matter (3), gyrus (2)",
+                "Hippocampus (3), arcuate fasciculus (4), temporoparietal junction (2), central sulcus (1)"
+            ],
+            answer: "Sulcus (1), white matter (4), grey matter (3), gyrus (2)"
+        },
+        {
+            id: 3,
+            prompt: "Identify the correct plane for each number.",
+            image: "images/q3_Neuro_RemyC_CohanR.png",
+            options: [
+                "Coronal (1, 5, and 6), sagittal (4, 5, and 7), axial (2, 3, and 5)",
+                "Sagittal (3, 4, and 7), axial (6), coronal (1 and 5)",
+                "Axial (6 and 2), coronal (1 and 5), sagittal (4, 3, and 7)"
+            ],
+            answer: "Axial (6 and 2), coronal (1 and 5), sagittal (4, 3, and 7)"
+        },
+        {
+            id: 4,
+            prompt: "Identify the correct membrane/meningeal layer or matter.",
+            image: "images/q4_Neuro_RemyC_CohanR.png",
+            options: [
+                "Arachnoid (B), pia (A)",
+                "Dura (A), arachnoid (B)",
+                "Pia (A), arachnoid (B)",
+                "Pia (A), dura (B)"
+            ],
+            answer: "Pia (A), dura (B)"
+        },
+        {
+            id: 5,
+            prompt: "Choose the option that correctly identifies all the structures.",
+            image: "images/q5_Neuro_RemyC_CohanR.png",
+            options: [
+                "Cerebellum (4), occipital pole (3), central fissure (2), longitudinal gyrus (1)",
+                "Central gyrus (2), longitudinal fissure (1), cerebellum (4), occipital pole (3)",
+                "Central fissure (2), longitudinal gyrus (1), midbrain (4), temporal gyrus (3)",
+                "Midbrain (4), temporal gyrus (3), central gyrus (2), longitudinal fissure (1)"
+            ],
+            answer: "Central gyrus (2), longitudinal fissure (1), cerebellum (4), occipital pole (3)"
+        },
+        {
+            id: 6,
+            prompt: "Name this area.",
+            image: "images/q6_Neuro_RemyC_CohanR.png",
+            options: [
+                "Central gyrus",
+                "Primary motor cortex (M1)",
+                "Temporoparietal gyrus",
+                "Primary sensory cortex (S1)"
+            ],
+            answer: "Primary motor cortex (M1)"
+        },
+        {
+            id: 7,
+            prompt: "Name this area.",
+            image: "images/q7_Neuro_RemyC_CohanR.png",
+            options: [
+                "Central gyrus",
+                "Primary motor cortex (M1)",
+                "Temporoparietal gyrus",
+                "Primary sensory cortex (S1)"
+            ],
+            answer: "Primary sensory cortex (S1)"
+        },
+        {
+            id: 8,
+            prompt: "Name this structure.",
+            image: "images/q8_Neuro_RemyC_CohanR.png",
+            options: [
+                "Infundibulum",
+                "Mammillary bodies",
+                "Optic reticulata",
+                "Optic chiasm",
+                "Hypothalamus"
+            ],
+            answer: "Optic chiasm"
+        },
+        {
+            id: 9,
+            prompt: "Choose the option that correctly identifies each structure assigned to each number.",
+            image: "images/q9_Neuro_RemyC_CohanR.png",
+            options: [
+                "Caudate nucleus (1), pineal gland (3), anterior commissure (2), thalamus (4), pons (5)",
+                "Anterior commissure (1), pineal gland (3), posterior commissure (2), thalamus (4), pons (5)",
+                "Lateral ventricle (1), putamen (3), posterior commissure (2), pons (4), medulla oblongata (5)",
+                "Corpus callosum, splenium (1), corpus callosum, genu (2), thalamus (3), pons (4), medulla oblongata (5)"
+            ],
+            answer: "Corpus callosum, splenium (1), corpus callosum, genu (2), thalamus (3), pons (4), medulla oblongata (5)"
+        },
+        {
+            id: 10,
+            prompt: "Red is the thalamus and blue is the corpus callosum. What is green?",
+            image: "images/q10_Neuro_RemyC_CohanR.png",
+            options: [
+                "Lateral ventricle",
+                "Putamen",
+                "Caudate nucleus",
+                "Cingulate cortex",
+                "Third ventricle",
+                "Optic radiation"
+            ],
+            answer: "Cingulate cortex"
+        },
+        {
+            id: 11,
+            prompt: "Name the structure assigned to each colour: red, green, and blue. The same structure is tagged in different planes.",
+            image: "images/q11_Neuro_RemyC_CohanR.png",
+            options: [
+                "Optic radiation (red), medulla oblongata (green), pons (blue)",
+                "Optic chiasm (red), spinal cord (green), thalamus (blue)",
+                "Olfactory bulb (red), spinal cord (green), thalamus (blue)",
+                "Optic nerve (red), spinal cord (green), medulla oblongata (blue)"
+            ],
+            answer: "Optic nerve (red), spinal cord (green), medulla oblongata (blue)"
+        },
+        {
+            id: 12,
+            prompt: "The structure circled in red is ______, and the dotted line shows ______.",
+            image: "images/q12_Neuro_RemyC_CohanR.png",
+            options: [
+                "Thalamus; medulla oblongata",
+                "Corpus callosum, splenium; pons",
+                "Pineal gland; spinal cord",
+                "Posterior commissure; pons"
+            ],
+            answer: "Thalamus; medulla oblongata"
+        },
+        {
+            id: 13,
+            prompt: "The structure in the red circle is ______, and the structure in the green box is ______.",
+            image: "images/q13_Neuro_RemyC_CohanR.png",
+            options: [
+                "Optic radiation; eyes",
+                "Olfactory bulb; white matter bundles",
+                "Optic nerve; corpus callosum",
+                "Corona radiata; dura mater"
+            ],
+            answer: "Olfactory bulb; white matter bundles"
+        },
+        {
+            id: 14,
+            prompt: "Name the structure assigned to each number.",
+            image: "images/q14_Neuro_RemyC_CohanR.png",
+            options: [
+                "Pineal gland (1), superior olive (2), cerebellum (3)",
+                "Pineal gland (1), hypothalamus (2), cerebellum (3)",
+                "Superior colliculus (1), inferior colliculus (2), arbor vitae (3)",
+                "Superior olive (1), inferior olive (2), cerebellum (3)"
+            ],
+            answer: "Superior colliculus (1), inferior colliculus (2), arbor vitae (3)"
+        },
+        {
+            id: 15,
+            prompt: "Name the structure assigned to each number. Also identify the structures marked with red and blue lines, separated by a dashed green line.",
+            image: "images/q15_Neuro_RemyC_CohanR.png",
+            options: [
+                "Thalamus (1), hypothalamus (2), fourth ventricle (3), hypophysis; red lines = posterior commissure; green lines = anterior commissure",
+                "Substantia nigra (1), hypothalamus (2), fourth ventricle (3), thalamus; red lines = pulvinar; green lines = pineal gland",
+                "Hippocampus; corpora quadrigemina; red lines = superior colliculus; green lines = inferior colliculus"
+            ],
+            answer: "Hippocampus; corpora quadrigemina; red lines = superior colliculus; green lines = inferior colliculus"
+        },
+        {
+            id: 16,
+            prompt: "What is the structure the red arrow is pointing to?",
+            image: "images/q16_Neuro_RemyC_CohanR.png",
+            options: [
+                "Head of caudate",
+                "Head of thalamus/pulvinar",
+                "Lateral geniculate nucleus of the thalamus",
+                "Putamen"
+            ],
+            answer: "Head of caudate"
+        },
+        {
+            id: 17,
+            prompt: "Placeholder question 17. Replace this text with the final question.",
+            image: "images/q17_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 18,
+            prompt: "Placeholder question 18. Replace this text with the final question.",
+            image: "images/q18_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 19,
+            prompt: "Placeholder question 19. Replace this text with the final question.",
+            image: "images/q19_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 20,
+            prompt: "Placeholder question 20. Replace this text with the final question.",
+            image: "images/q20_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 21,
+            prompt: "Placeholder question 21. Replace this text with the final question.",
+            image: "images/q21_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 22,
+            prompt: "Placeholder question 22. Replace this text with the final question.",
+            image: "images/q22_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 23,
+            prompt: "Placeholder question 23. Replace this text with the final question.",
+            image: "images/q23_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 24,
+            prompt: "Placeholder question 24. Replace this text with the final question.",
+            image: "images/q24_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        },
+        {
+            id: 25,
+            prompt: "Placeholder question 25. Replace this text with the final question.",
+            image: "images/q25_Neuro_RemyC_CohanR.png",
+            options: ["Option A", "Option B", "Option C", "Option D"],
+            answer: "Option A"
+        }
+    ];
+
+    function renderJumpLinks() {
+        const jumpLinks = document.getElementById("question-jump-links");
+        jumpLinks.innerHTML = questions.map(q => `<a href="#question-${q.id}">Q${q.id}</a>`).join("");
+    }
+
+    function renderQuiz() {
+        const quizForm = document.getElementById("quiz-form");
+        quizForm.innerHTML = "";
+
+        questions.forEach((q) => {
+            const card = document.createElement("section");
+            card.className = "question-card";
+            card.id = `question-${q.id}`;
+
+            const optionsHTML = q.options.map((option, index) => {
+                const optionId = `q${q.id}_option${index}`;
+                return `
+                    <label class="option-label" for="${optionId}" data-question="${q.id}" data-option="${escapeHTML(option)}">
+                        <input id="${optionId}" type="radio" name="q${q.id}" value="${escapeHTML(option)}" onchange="updateProgress()">
+                        ${escapeHTML(option)}
+                    </label>
+                `;
+            }).join("");
+
+            card.innerHTML = `
+                <h3>Question ${q.id}</h3>
+                <figure class="question-image-wrap">
+                    <img src="${q.image}" alt="Question ${q.id} sheep brain anatomy image" loading="lazy">
+                    <figcaption>Question ${q.id}</figcaption>
+                </figure>
+                <p>${escapeHTML(q.prompt)}</p>
+                <div class="options">
+                    ${optionsHTML}
+                </div>
+                <div class="feedback" id="feedback-${q.id}"></div>
+                <a href="#top" class="back-to-top">Back to top</a>
+            `;
+
+            quizForm.appendChild(card);
+        });
+    }
+
+    function gradeQuiz() {
+        let score = 0;
+        let unanswered = 0;
+
+        clearOptionStyles();
+
+        questions.forEach((q) => {
+            const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+            const feedback = document.getElementById(`feedback-${q.id}`);
+            const correctLabel = document.querySelector(`label[data-question="${q.id}"][data-option="${cssEscape(q.answer)}"]`);
+
+            if (!selected) {
+                unanswered += 1;
+                feedback.textContent = "No answer selected.";
+                feedback.className = "feedback incorrect";
+                if (correctLabel) correctLabel.classList.add("correct-answer");
+                return;
+            }
+
+            if (selected.value === q.answer) {
+                score += 1;
+                feedback.textContent = "Correct.";
+                feedback.className = "feedback correct";
+                const selectedLabel = selected.closest("label");
+                if (selectedLabel) selectedLabel.classList.add("correct-answer");
+            } else {
+                feedback.textContent = `Incorrect. Correct answer: ${q.answer}.`;
+                feedback.className = "feedback incorrect";
+                const selectedLabel = selected.closest("label");
+                if (selectedLabel) selectedLabel.classList.add("wrong-answer");
+                if (correctLabel) correctLabel.classList.add("correct-answer");
+            }
+        });
+
+        const scoreText = document.getElementById("score-text");
+        const unlockText = document.getElementById("unlock-text");
+        const downloadSection = document.getElementById("download-section");
+
+        const percentage = Math.round((score / questions.length) * 100);
+        scoreText.textContent = `Your score: ${score} / ${questions.length} (${percentage}%). Unanswered questions: ${unanswered}.`;
+
+        if (score >= passingScore) {
+            unlockText.textContent = "Passed. Downloads are unlocked.";
+            unlockText.className = "feedback correct";
+            downloadSection.style.display = "block";
+        } else {
+            unlockText.textContent = `Not passed. You need at least ${passingScore} / ${questions.length}. Downloads remain locked.`;
+            unlockText.className = "locked-note";
+            downloadSection.style.display = "none";
+        }
+
+        document.getElementById("results").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function resetQuiz() {
+        document.getElementById("quiz-form").reset();
+
+        questions.forEach((q) => {
+            const feedback = document.getElementById(`feedback-${q.id}`);
+            feedback.textContent = "";
+            feedback.className = "feedback";
+        });
+
+        clearOptionStyles();
+        updateProgress();
+
+        document.getElementById("score-text").textContent = "Submit the quiz to see your score.";
+        document.getElementById("unlock-text").textContent = "Downloads are locked until a passing score is reached.";
+        document.getElementById("unlock-text").className = "locked-note";
+        document.getElementById("download-section").style.display = "none";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateProgress() {
+        const answered = questions.filter(q => document.querySelector(`input[name="q${q.id}"]:checked`)).length;
+        document.getElementById("progress-text").textContent = `Answered: ${answered} / ${questions.length}`;
+    }
+
+    function clearOptionStyles() {
+        document.querySelectorAll(".option-label").forEach(label => {
+            label.classList.remove("correct-answer", "wrong-answer");
+        });
+    }
+
+    function escapeHTML(str) {
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function cssEscape(str) {
+        if (window.CSS && typeof window.CSS.escape === "function") {
+            return window.CSS.escape(str);
+        }
+        return String(str).replace(/"/g, "\\\"");
+    }
+
+    renderJumpLinks();
+    renderQuiz();
+    updateProgress();
+</script>
+
+</body>
+</html>
