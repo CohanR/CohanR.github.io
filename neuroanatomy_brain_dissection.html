@@ -306,6 +306,7 @@
         }
 
         .fun-fact {
+            display: none;
             margin-top: 14px;
             padding: 12px 14px;
             background: #f4f6f9;
@@ -399,18 +400,6 @@
             height: 1px;
             overflow: hidden;
             clip: rect(0, 0, 0, 0);
-        }
-
-        .back-to-top {
-            display: inline-block;
-            margin-top: 18px;
-            color: #3a4750;
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        .back-to-top:hover {
-            color: #5f6874;
         }
 
         @media (max-width: 850px) {
@@ -524,35 +513,6 @@
 </main>
 
 <script>
-    /*
-        set up:
-
-        Image naming convention:
-        images/q1_Neuro_RemyC_CohanR.png
-        images/q2_Neuro_RemyC_CohanR.png
-        ...
-        images/q25_Neuro_RemyC_CohanR.png
-        images/q26_Neuro_RemyC_CohanR.png
-        images/q27_Neuro_RemyC_CohanR.png
-        images/q28_Neuro_RemyC_CohanR.png
-        images/q29_Neuro_RemyC_CohanR.png
-        images/q30_Neuro_RemyC_CohanR.png
-        images/q26_Neuro_RemyC_CohanR.png
-        images/q27_Neuro_RemyC_CohanR.png
-        images/q28_Neuro_RemyC_CohanR.png
-        images/q29_Neuro_RemyC_CohanR.png
-        images/q30_Neuro_RemyC_CohanR.png
-
-        Download file placeholders:
-        downloads/sheep_brain_teaching_slides.pdf
-        downloads/sheep_brain_T1.nii.gz
-        downloads/sheep_brain_PD.nii.gz
-
-        Correct answers are stored in the JavaScript below.
-       
-        Remy Cohan, April 2026
-    */
-
     const passingScore = 27;
 
     const questions = [
@@ -788,7 +748,8 @@
                       "Thalamus (5); suprasplenial cingulate cortex (3)",
                       "Suprasplenial cingulate cortex (3); primary motor cortex (4)"
             ],
-            answer: "Subgenual cingulate cortex (1); DLPFC (2)"
+            answer: "Subgenual cingulate cortex (1); DLPFC (2)",
+            funFact: "The subgenual cingulate cortex has been heavily studied in depression because of its connectivity with mood-regulation networks, including prefrontal regions."
         },
         {
             id: 19,
@@ -800,7 +761,7 @@
                       "Thalami; fourth ventricle"
             ],
             answer: "Tail of caudate nuclei; lateral ventricles",
-            funFact: "The subgenual cingulate cortex has been heavily studied in depression because of its connectivity with mood-regulation networks, including prefrontal regions."
+            funFact: "The caudate nucleus curves around the lateral ventricle, which is why its head, body, and tail can appear at different levels in coronal sections."
         },
         {
             id: 20,
@@ -886,7 +847,7 @@
                 "Hippocampus (red); amygdala (blue)"
             ],
             answer: "Hippocampus (red); amygdala (blue)",
-            funFact: " The amygdala sits immediately anterior to the hippocampus in the medial temporal lobe, which makes anatomical sense: the hippocampus helps encode context and memory, while the amygdala adds emotional salience, especially fear, threat, and reward value. Clinically, amygdala/mesial temporal involvement can produce temporal-lobe seizures with fear, déjà vu, autonomic symptoms, or emotional auras. It also communicates with broader aversion and reward circuits, including pathways that influence the habenula, a key node for negative reward prediction and avoidance behaviour. A classic parasite-related example is Toxoplasma gondii: infected rodents can show reduced aversion to cat odour, probably by disrupting fear and anxiety circuits involving the amygdala rather than literally making them fearless in a cartoonish way."
+            funFact: "The amygdala sits immediately anterior to the hippocampus in the medial temporal lobe, which makes anatomical sense: the hippocampus helps encode context and memory, while the amygdala adds emotional salience, especially fear, threat, and reward value. Clinically, amygdala/mesial temporal involvement can produce temporal-lobe seizures with fear, déjà vu, autonomic symptoms, or emotional auras. It also communicates with broader aversion and reward circuits, including pathways that influence the habenula, a key node for negative reward prediction and avoidance behaviour. A classic parasite-related example is Toxoplasma gondii: infected rodents can show reduced aversion to cat odour, probably by disrupting fear and anxiety circuits involving the amygdala rather than literally making them fearless in a cartoonish way."
         },
         {
             id: 27,
@@ -900,7 +861,7 @@
                 "Posterior commisure"
             ],
             answer: "Anterior commisure",
-            funFact: " The anterior commissure is a small but important white matter tract crossing the midline near the front of the third ventricle. In human neuroimaging, the anterior commissure and posterior commissure define the classic AC-PC line used for image orientation, stereotactic space, and Talairach style coordinate systems. So even though the anterior commissure looks tiny, it became one of the major anatomical landmarks for putting brains into a common coordinate frame."
+            funFact: "The anterior commissure is a small but important white matter tract crossing the midline near the front of the third ventricle. In human neuroimaging, the anterior commissure and posterior commissure define the classic AC-PC line used for image orientation, stereotactic space, and Talairach style coordinate systems. So even though the anterior commissure looks tiny, it became one of the major anatomical landmarks for putting brains into a common coordinate frame."
         },
         {
             id: 28,
@@ -926,7 +887,7 @@
                 "Olfactory bulb (green); medulla oblongata (blue); pons (orange); optic chiasm (red); abducens nerve (purple)"
             ],
             answer: "Olfactory bulb (green); medulla oblongata (blue); pons (orange); optic chiasm (red); abducens nerve (purple)",
-            funFact:"This ventral view shows several structures that are clinically useful landmarks. The optic chiasm is where nasal retinal fibres cross, so lesions here classically cause bitemporal visual field loss. The abducens nerve controls lateral eye movement through the lateral rectus muscle; because it has a long intracranial course, it is vulnerable to raised intracranial pressure and can produce horizontal diplopia. The pons and medulla contain major cranial nerve nuclei and vital autonomic pathways, which is why small brainstem lesions can have major clinical consequences."
+            funFact: "This ventral view shows several structures that are clinically useful landmarks. The optic chiasm is where nasal retinal fibres cross, so lesions here classically cause bitemporal visual field loss. The abducens nerve controls lateral eye movement through the lateral rectus muscle; because it has a long intracranial course, it is vulnerable to raised intracranial pressure and can produce horizontal diplopia. The pons and medulla contain major cranial nerve nuclei and vital autonomic pathways, which is why small brainstem lesions can have major clinical consequences."
         },
         {
             id: 30,
@@ -941,7 +902,6 @@
             answer: "Caudate (1); internal capsule (2); external capsule (3); putamen (4); globus pallidus (5)",
             funFact: "This slice is useful because it shows the relationship between deep grey nuclei and white matter capsules. The caudate and putamen together form the striatum, the major input region of the basal ganglia. The internal capsule is the major white matter highway carrying motor and sensory fibres between cortex, thalamus, brainstem, and spinal cord; small strokes here can cause dense contralateral weakness because so many fibres are tightly packed. The external capsule sits more laterally, between the putamen and claustrum/insula region. For an excellent resource, check out University of Guelph's neuroanatomy material: https://www.uoguelph.ca/psychology/lab/sheep-brain/coronal-cuts#plate11."
         }
-
     ];
 
     function renderJumpLinks() {
@@ -979,8 +939,8 @@
                     ${optionsHTML}
                 </div>
                 <div class="feedback" id="feedback-${q.id}"></div>
-                <div class="fun-fact"><strong>Fun fact:</strong> ${escapeHTML(q.funFact || "")}</div>
-                    `;
+                <div class="fun-fact" id="funfact-${q.id}"></div>
+            `;
 
             quizForm.appendChild(card);
         });
@@ -991,32 +951,36 @@
         let unanswered = 0;
 
         clearOptionStyles();
+        hideFunFacts();
 
         questions.forEach((q) => {
             const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
             const feedback = document.getElementById(`feedback-${q.id}`);
-            const correctLabel = document.querySelector(`label[data-question="${q.id}"][data-option="${cssEscape(q.answer)}"]`);
+            const funFactBox = document.getElementById(`funfact-${q.id}`);
 
             if (!selected) {
                 unanswered += 1;
                 feedback.textContent = "No answer selected.";
                 feedback.className = "feedback incorrect";
-                if (correctLabel) correctLabel.classList.add("correct-answer");
                 return;
             }
+
+            const selectedLabel = selected.closest("label");
 
             if (selected.value === q.answer) {
                 score += 1;
                 feedback.textContent = "Correct.";
                 feedback.className = "feedback correct";
-                const selectedLabel = selected.closest("label");
                 if (selectedLabel) selectedLabel.classList.add("correct-answer");
+
+                if (funFactBox && q.funFact) {
+                    funFactBox.innerHTML = `<strong>Fun fact:</strong> ${escapeHTML(q.funFact)}`;
+                    funFactBox.style.display = "block";
+                }
             } else {
-                feedback.textContent = `Incorrect. Correct answer: ${q.answer}.`;
+                feedback.textContent = "Incorrect. Try that one again before the next attempt.";
                 feedback.className = "feedback incorrect";
-                const selectedLabel = selected.closest("label");
                 if (selectedLabel) selectedLabel.classList.add("wrong-answer");
-                if (correctLabel) correctLabel.classList.add("correct-answer");
             }
         });
 
@@ -1032,7 +996,7 @@
             unlockText.className = "feedback correct";
             downloadSection.style.display = "block";
         } else {
-            unlockText.textContent = `Not passed. You need at least ${passingScore} / ${questions.length}. Downloads remain locked.`;
+            unlockText.textContent = `Not passed. You need at least ${passingScore} / ${questions.length}. Downloads remain locked. Correct answers and fun facts are only revealed for questions answered correctly.`;
             unlockText.className = "locked-note";
             downloadSection.style.display = "none";
         }
@@ -1050,6 +1014,7 @@
         });
 
         clearOptionStyles();
+        hideFunFacts();
         updateProgress();
 
         document.getElementById("score-text").textContent = "Submit the quiz to see your score.";
@@ -1070,6 +1035,13 @@
         });
     }
 
+    function hideFunFacts() {
+        document.querySelectorAll(".fun-fact").forEach(box => {
+            box.innerHTML = "";
+            box.style.display = "none";
+        });
+    }
+
     function escapeHTML(str) {
         return String(str)
             .replace(/&/g, "&amp;")
@@ -1079,16 +1051,10 @@
             .replace(/'/g, "&#039;");
     }
 
-    function cssEscape(str) {
-        if (window.CSS && typeof window.CSS.escape === "function") {
-            return window.CSS.escape(str);
-        }
-        return String(str).replace(/"/g, "\\\"");
-    }
-
     renderJumpLinks();
     renderQuiz();
     updateProgress();
+    hideFunFacts();
 </script>
 
 </body>
