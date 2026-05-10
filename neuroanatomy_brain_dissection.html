@@ -305,6 +305,20 @@
             color: #9f2f2f;
         }
 
+        .fun-fact {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: #f4f6f9;
+            border-left: 4px solid #6d7782;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #3a4750;
+        }
+
+        .fun-fact strong {
+            color: #2b353d;
+        }
+
         button {
             font-family: 'Roboto', sans-serif;
             font-weight: 700;
@@ -448,8 +462,8 @@
 
 <p>
         This quiz uses labelled still images from a dissected sheep (<em>Ovis aries</em>) brain and corresponding ex vivo MRI images from the same specimen.
-        Because of the fixation/storage solution, MRI contrast may appear partly reversed compared with conventional in vivo MRI contrast (e.g., T1 <-> T2).
-        The specimen tissue was fixed in a solution composed of distilled water (94.73%), propylene glycol (3.84%), and phenoxyethanol (1.42%). No formalin! 
+        Because of the fixation/storage solution, MRI contrast may appear partly reversed compared with conventional in vivo MRI contrast.
+        The specimen tissue was fixed in a solution composed of distilled water (94.73%), propylene glycol (3.84%), and phenoxyethanol (1.42%).
     </p>
 
     <p class="small-note">
@@ -465,7 +479,7 @@
     </div>
     
     <div class="notice-box">
-        <strong>Unlock rule:</strong> score at least <strong>23 out of 25</strong> to unlock the downloadable teaching slides, T1/T2 and PD (proton density) nifti MR images.
+        <strong>Unlock rule:</strong> score at least <strong>27 out of 30</strong> to unlock the downloadable teaching slides, T1/T2 and PD (proton density) nifti MR images.
         You can then load the MRI files in the <a href="https://www.neuropsis.org/nifti_viewer.html" target="_blank" rel="noopener noreferrer">interactive NIfTI viewer</a> on this website.
     </div>
 
@@ -473,8 +487,8 @@
 
     <div class="quiz-controls">
         <div>
-            <span class="score-pill">Passing score: 23 / 25</span>
-            <span class="progress-text" id="progress-text">Answered: 0 / 25</span>
+            <span class="score-pill">Passing score: 27 / 30</span>
+            <span class="progress-text" id="progress-text">Answered: 0 / 30</span>
         </div>
         <div>
             <button type="button" onclick="gradeQuiz()">Submit quiz</button>
@@ -497,7 +511,7 @@
 
             <div class="download-grid">
                 <a class="download-card" href="images/sheep_brain_teaching_slides.pdf" download>Download slides</a>
-                <a class="download-card" href="images/Lady_Baa-Baa_RC_T1w.nii.gz" download>Download T1 NIfTI</a>
+                <a class="download-card" href="images/Lady_Baa-Baa_RC_w.nii.gz" download>Download T1 NIfTI</a>
                 <a class="download-card" href="images/Lady_Baa-Baa_RC_PD.nii.gz" download>Download PD NIfTI</a>
             </div>
 
@@ -506,7 +520,6 @@
             </p>
         </div>
 
-        <a href="#top" class="back-to-top">Back to top</a>
     </div>
 </main>
 
@@ -519,6 +532,16 @@
         images/q2_Neuro_RemyC_CohanR.png
         ...
         images/q25_Neuro_RemyC_CohanR.png
+        images/q26_Neuro_RemyC_CohanR.png
+        images/q27_Neuro_RemyC_CohanR.png
+        images/q28_Neuro_RemyC_CohanR.png
+        images/q29_Neuro_RemyC_CohanR.png
+        images/q30_Neuro_RemyC_CohanR.png
+        images/q26_Neuro_RemyC_CohanR.png
+        images/q27_Neuro_RemyC_CohanR.png
+        images/q28_Neuro_RemyC_CohanR.png
+        images/q29_Neuro_RemyC_CohanR.png
+        images/q30_Neuro_RemyC_CohanR.png
 
         Download file placeholders:
         downloads/sheep_brain_teaching_slides.pdf
@@ -530,7 +553,7 @@
         Remy Cohan, April 2026
     */
 
-    const passingScore = 23;
+    const passingScore = 27;
 
     const questions = [
         {
@@ -544,7 +567,8 @@
                 "Optic chiasm (dorsal)",
                 "Optic chiasm (ventral)"
             ],
-            answer: "Optic chiasm (ventral)"
+            answer: "Optic chiasm (ventral)",
+            funFact: "In humans, the optic chiasm is where nasal retinal fibres cross, which is why a chiasmal lesion classically causes bitemporal visual field loss."
         },
         {
             id: 2,
@@ -556,7 +580,8 @@
                 "Sulcus (1), white matter (4), grey matter (3), gyrus (2)",
                 "Hippocampus (3), arcuate fasciculus (4), temporoparietal junction (2), central sulcus (1)"
             ],
-            answer: "Sulcus (1), white matter (4), grey matter (3), gyrus (2)"
+            answer: "Sulcus (1), white matter (4), grey matter (3), gyrus (2)",
+            funFact: "A sulcus is a cortical groove and a gyrus is a cortical ridge; this folding increases cortical surface area without needing a much larger skull."
         },
         {
             id: 3,
@@ -567,7 +592,8 @@
                 "Sagittal (3, 4, and 7), axial (6), coronal (1 and 5)",
                 "Axial (6 and 2), coronal (1 and 5), sagittal (4, 3, and 7)"
             ],
-            answer: "Axial (6 and 2), coronal (1 and 5), sagittal (4, 3, and 7)"
+            answer: "Axial (6 and 2), coronal (1 and 5), sagittal (4, 3, and 7)",
+            funFact: "Plane recognition matters clinically because the same structure can look completely different in axial, coronal, and sagittal views."
         },
         {
             id: 4,
@@ -579,7 +605,8 @@
                 "Pia (A), arachnoid (B)",
                 "Pia (A), dura (B)"
             ],
-            answer: "Pia (A), dura (B)"
+            answer: "Pia (A), dura (B)",
+            funFact: "The dura is the tough outer meningeal layer, while the pia closely invests the brain surface and follows the sulci."
         },
         {
             id: 5,
@@ -591,7 +618,8 @@
                 "Central fissure (2), longitudinal gyrus (1), midbrain (4), temporal gyrus (3)",
                 "Midbrain (4), temporal gyrus (3), central gyrus (2), longitudinal fissure (1)"
             ],
-            answer: "Central gyrus (2), longitudinal fissure (1), cerebellum (4), occipital pole (3)"
+            answer: "Central gyrus (2), longitudinal fissure (1), cerebellum (4), occipital pole (3)",
+            funFact: "The cerebellum is classically associated with coordination, timing, motor learning, and balance rather than primary muscle strength."
         },
         {
             id: 6,
@@ -603,7 +631,8 @@
                 "Temporoparietal gyrus",
                 "Primary sensory cortex (S1)"
             ],
-            answer: "Primary motor cortex (M1)"
+            answer: "Primary motor cortex (M1)",
+            funFact: "In humans, lesions of the primary motor cortex or its descending pathways can cause contralateral weakness, especially for skilled distal movements."
         },
         {
             id: 7,
@@ -615,7 +644,8 @@
                 "Temporoparietal gyrus",
                 "Primary sensory cortex (S1)"
             ],
-            answer: "Primary sensory cortex (S1)"
+            answer: "Primary sensory cortex (S1)",
+            funFact: "The primary sensory cortex receives somatotopic sensory input; focal lesions can cause contralateral loss of discriminative touch, proprioception, and cortical sensory functions."
         },
         {
             id: 8,
@@ -628,7 +658,8 @@
                 "Optic chiasm",
                 "Hypothalamus"
             ],
-            answer: "Optic chiasm"
+            answer: "Optic chiasm",
+            funFact: "The optic chiasm is a major visual pathway crossing point; its anatomy explains why midline sellar/suprasellar lesions can produce temporal visual field loss."
         },
         {
             id: 9,
@@ -640,7 +671,8 @@
                 "Lateral ventricle (1), putamen (3), posterior commissure (2), pons (4), medulla oblongata (5)",
                 "Corpus callosum, splenium (1), corpus callosum, genu (2), thalamus (3), pons (4), medulla oblongata (5)"
             ],
-            answer: "Corpus callosum, splenium (1), corpus callosum, genu (2), thalamus (3), pons (4), medulla oblongata (5)"
+            answer: "Corpus callosum, splenium (1), corpus callosum, genu (2), thalamus (3), pons (4), medulla oblongata (5)",
+            funFact: "The medulla contains major autonomic and long-tract pathways, while the pons is a key bridge between cortex, cerebellum, and brainstem systems."
         },
         {
             id: 10,
@@ -654,7 +686,8 @@
                 "Third ventricle",
                 "Optic radiation"
             ],
-            answer: "Cingulate cortex"
+            answer: "Cingulate cortex",
+            funFact: "The cingulate cortex is part of limbic and control networks and is involved in attention, affect, pain processing, and action monitoring."
         },
         {
             id: 11,
@@ -666,7 +699,8 @@
                 "Olfactory bulb (red), spinal cord (green), thalamus (blue)",
                 "Optic nerve (red), spinal cord (green), pons (blue)"
             ],
-            answer: "Optic nerve (red), spinal cord (green), pons (blue)"
+            answer: "Optic nerve (red), spinal cord (green), pons (blue)",
+            funFact: "The optic nerve is technically a central nervous system tract, not a peripheral nerve, because it is an extension of the diencephalon."
         },
         {
             id: 12,
@@ -678,7 +712,8 @@
                 "Pineal gland; spinal cord",
                 "Posterior commissure; pons"
             ],
-            answer: "Thalamus; medulla oblongata"
+            answer: "Thalamus; medulla oblongata",
+            funFact: "The thalamus is a major relay and integration hub; many sensory, motor, limbic, and cognitive circuits pass through thalamic nuclei."
         },
         {
             id: 13,
@@ -690,7 +725,8 @@
                 "Optic nerve; corpus callosum",
                 "Corona radiata; dura mater"
             ],
-            answer: "White matter bundles; olfactory bulb"
+            answer: "White matter bundles; olfactory bulb",
+            funFact: "Olfactory pathways are unusual because they reach primary olfactory cortex without first relaying through the thalamus."
         },
         {
             id: 14,
@@ -702,7 +738,8 @@
                 "Superior colliculus (1), inferior colliculus (2), arbor vitae (3)",
                 "Superior olive (1), inferior olive (2), cerebellum (3)"
             ],
-            answer: "Superior colliculus (1), inferior colliculus (2), arbor vitae (3)"
+            answer: "Superior colliculus (1), inferior colliculus (2), arbor vitae (3)",
+            funFact: "The superior colliculus is involved in orienting eye/head movements to visual stimuli, while the inferior colliculus is a major auditory midbrain relay."
         },
         {
             id: 15,
@@ -713,7 +750,8 @@
                 "Substantia nigra (1), hypothalamus (2), fourth ventricle (3), thalamus (4); red lines = pulvinar; green lines = pineal gland",
                 "Hippocampus (1); pineal gland (2); lateral ventricle (3); corpora quadrigemina (4); red lines = superior colliculus; green lines = inferior colliculus"
             ],
-            answer: "Hippocampus (1); pineal gland (2); lateral ventricle (3); corpora quadrigemina (4); red lines = superior colliculus; green lines = inferior colliculus"
+            answer: "Hippocampus (1); pineal gland (2); lateral ventricle (3); corpora quadrigemina (4); red lines = superior colliculus; green lines = inferior colliculus",
+            funFact: "The hippocampus is essential for episodic memory formation; bilateral medial temporal damage can produce severe anterograde amnesia."
         },
         {
             id: 16,
@@ -725,7 +763,8 @@
                 "Lateral geniculate nucleus of the thalamus",
                 "Putamen"
             ],
-            answer: "Caudate"
+            answer: "Caudate",
+            funFact: "The caudate nucleus is part of the striatum and contributes to cortico-basal ganglia loops involved in action selection, learning, and cognition."
         },
         {
             id: 17,
@@ -737,7 +776,8 @@
                       "External capsule",
                       "Habenula"
             ],
-            answer: "Habenula"
+            answer: "Habenula",
+            funFact: "The habenula is linked to aversion, reward prediction, and monoaminergic regulation, which is why it attracts interest in depression research."
         },
         {
             id: 18,
@@ -749,7 +789,7 @@
                       "Suprasplenial cingulate cortex (3); primary motor cortex (4)"
             ],
             answer: "Subgenual cingulate cortex (1); DLPFC (2)"
-        },
+        {,
         {
             id: 19,
             prompt: "The paired bulbous structures (red arrows) are the ______, and the cavities (blue arrows) are the ______.",
@@ -759,7 +799,8 @@
                       "Hippocampi; lateral ventricles", 
                       "Thalami; fourth ventricle"
             ],
-            answer: "Tail of caudate nuclei; lateral ventricles"
+            answer: "Tail of caudate nuclei; lateral ventricles",
+            funFact: "The subgenual cingulate cortex has been heavily studied in depression because of its connectivity with mood-regulation networks, including prefrontal regions."
         },
         {
             id: 20,
@@ -770,7 +811,8 @@
                       "Medial geniculate nucleus (yellow), head of caudate (red), pulvinar (blue), external capsule (purple)",
                       "Amygdala (yellow), globus palidus (red), substantia nigra (blue), globus palidus pars compacta (purple)"
             ],
-            answer: "Pulvinar (yellow), head of caudate (red), thalamus (blue), internal capsule (purple)"
+            answer: "Pulvinar (yellow), head of caudate (red), thalamus (blue), internal capsule (purple)",
+            funFact: "The internal capsule is a compact white-matter highway; small strokes here can cause major motor deficits because many fibres are tightly packed."
         },
         {
             id: 21,
@@ -781,7 +823,8 @@
                       "Medial geniculate nucleus (yellow), coprus callosum (red), pulvinar (blue)",
                       "hippocampus (red), lateral geniculate (yellow), internal capsule (blue)"
             ],
-            answer: "hippocampus (red), lateral geniculate (yellow), internal capsule (blue)"
+            answer: "hippocampus (red), lateral geniculate (yellow), internal capsule (blue)",
+            funFact: "The lateral geniculate nucleus is the thalamic relay for visual information travelling from the retina to primary visual cortex."
         },
         {
             id: 22,
@@ -794,7 +837,8 @@
                       "Aqueduct of Sylvius; carries CSF from the third ventricle to the fourth ventricle",
                       "Central foramen; carries CSF from the third ventricle to the fourth ventricle",
             ],
-            answer: "Aqueduct of Sylvius; carries CSF from the third ventricle to the fourth ventricle"
+            answer: "Aqueduct of Sylvius; carries CSF from the third ventricle to the fourth ventricle",
+            funFact: "The Aqueduct of Sylvius is narrow, so obstruction here can block CSF flow between the third and fourth ventricles and contribute to hydrocephalus."
         },
         {
             id: 23,
@@ -804,7 +848,8 @@
                       "External capsule", 
                       "Corpus callosum", 
                       "Hippocampus"],
-            answer: "Corpus callosum"
+            answer: "Corpus callosum",
+            funFact: "The corpus callosum is the largest commissural fibre bundle in humans and allows communication between the two cerebral hemispheres."
         },
         {
             id: 24,
@@ -814,7 +859,8 @@
                       "putamen; external capsule",
                       "external capsule; putamen",
                       "substantia nigra; thalamus"],
-            answer: "external capsule; putamen"
+            answer: "external capsule; putamen",
+            funFact: "The external capsule is a white-matter sheet lateral to the putamen; nearby deep grey and white-matter structures are common landmarks in coronal neuroanatomy."
         },
         {
             id: 25,
@@ -826,8 +872,76 @@
                       "V1; occipital lobe",
                       "V5/MT; rostro-medial occipital lobe"
             ],
-            answer: "V1; occipital lobe"
+            answer: "V1; occipital lobe",
+            funFact: "In humans, lesions of primary visual cortex can produce contralateral homonymous visual field deficits, depending on lesion extent and retinotopic location."
+        },
+        {
+            id: 26,
+            prompt: "Name the structures in the blue and red areas?",
+            image: "images/q26_Neuro_RemyC_CohanR.png",
+            options: [
+                "Lateral geniculate (blue); mammillary bodies (red)",
+                "Medial geniculate (red); lateral geniculate (blue)",
+                "Hipothalamus (red); Habenula (blue)",
+                "Hippocampus (red); amygdala (blue)"
+            ],
+            answer: "amygdala (blue)",
+            funFact: " The amygdala sits immediately anterior to the hippocampus in the medial temporal lobe, which makes anatomical sense: the hippocampus helps encode context and memory, while the amygdala adds emotional salience, especially fear, threat, and reward value. Clinically, amygdala/mesial temporal involvement can produce temporal-lobe seizures with fear, déjà vu, autonomic symptoms, or emotional auras. It also communicates with broader aversion and reward circuits, including pathways that influence the habenula, a key node for negative reward prediction and avoidance behaviour. A classic parasite-related example is Toxoplasma gondii: infected rodents can show reduced aversion to cat odour, probably by disrupting fear and anxiety circuits involving the amygdala rather than literally making them fearless in a cartoonish way.""
+        },
+        {
+            id: 27,
+            prompt: "Name the structure the green arrow is pointing at?",
+            image: "images/q27_Neuro_RemyC_CohanR.png",
+            options: [
+                "Internal capsule",
+                "External capsule",
+                "Anterior commisure",
+                "Optic chiasm",
+                "Posterior commisure"
+            ],
+            answer: "Anterior commisure",
+            funFact: " The anterior commissure is a small but important white matter tract crossing the midline near the front of the third ventricle. In human neuroimaging, the anterior commissure and posterior commissure define the classic AC-PC line used for image orientation, stereotactic space, and Talairach style coordinate systems. So even though the anterior commissure looks tiny, it became one of the major anatomical landmarks for putting brains into a common coordinate frame."
+        },
+        {
+            id: 28,
+            prompt: "What is the name of this bilateral structure?",
+            image: "images/q28_Neuro_RemyC_CohanR.png",
+            options: [
+                "Hippocampus",
+                "Superior colliculus",
+                "Thalamus",
+                "Globus pallidus"
+            ],
+            answer: "Hippocampus",
+            funFact: "The hippocampus is a curved medial temporal structure that follows the arc of the lateral ventricle, so it can appear in different shapes depending on the cut plane. In sagittal views it can resemble the classic ‘seahorse’ shape (hence the name). Like the caudate nucleus and lateral ventricle, it has a C-shaped course, which is why these deep structures seem to reappear across several slices rather than showing up only once. Limited adult neurogenesis has been reported in the dentate gyrus, although the extent of this in adult humans is still debated."
+        },
+        {
+            id: 29,
+            prompt: "Choose the option that correctly identifies the name of each structure?",
+            image: "images/q29_Neuro_RemyC_CohanR.png",
+            options: [
+                "Olfactory peduncle (green); spinal cord (blue); cerebellum (orange); vegus nerve (purple); hypophysis (red) ",
+                "Optic tract (green); medulla oblangata (orange); cerebellum (spinal cord); hypophysis (red); basilar artery (purple)",
+                "Optic tract (green); oculomotor nerve (orange); basilar artery (purple); cerebellum (spinal cord); pituitary gland (red)",
+                "Olfactory bulb (green); medulla oblongata (blue); pons (orange); optic chiasm (red); abducens nerve (purple)"
+            ],
+            answer: "Olfactory bulb (green); medulla oblongata (blue); pons (orange); optic chiasm (red); abducens nerve (purple)",
+            funFact:"This ventral view shows several structures that are clinically useful landmarks. The optic chiasm is where nasal retinal fibres cross, so lesions here classically cause bitemporal visual field loss. The abducens nerve controls lateral eye movement through the lateral rectus muscle; because it has a long intracranial course, it is vulnerable to raised intracranial pressure and can produce horizontal diplopia. The pons and medulla contain major cranial nerve nuclei and vital autonomic pathways, which is why small brainstem lesions can have major clinical consequences."
+        },
+        {
+            id: 30,
+            prompt: "Name each structure in order of the assigned numbers?",
+            image: "images/q30_Neuro_RemyC_CohanR.png",
+            options: [
+                "Thalamus (1); putamen (2); substantia nigra (3); insula (4); corona radiata (5) ",
+                "Thalamic reticular nucleus (1); globus pallidus (2); substantia nigra (3); insula (4); external capule (5)",
+                "Caudate (1); internal capsule (2); external capsule (3); putamen (4); globus pallidus (5)",
+                "Thalamus (1); corona radiata (2); insula (3); substantia nigra (4); putamen (5)"
+            ],
+            answer: "Caudate (1); internal capsule (2); external capsule (3); putamen (4); globus pallidus (5)",
+            funFact: "This slice is useful because it shows the relationship between deep grey nuclei and white matter capsules. The caudate and putamen together form the striatum, the major input region of the basal ganglia. The internal capsule is the major white matter highway carrying motor and sensory fibres between cortex, thalamus, brainstem, and spinal cord; small strokes here can cause dense contralateral weakness because so many fibres are tightly packed. The external capsule sits more laterally, between the putamen and claustrum/insula region. For an excellent resource, check out University of Guelph's neuroanatomy material: https://www.uoguelph.ca/psychology/lab/sheep-brain/coronal-cuts#plate11."
         }
+
     ];
 
     function renderJumpLinks() {
@@ -865,8 +979,7 @@
                     ${optionsHTML}
                 </div>
                 <div class="feedback" id="feedback-${q.id}"></div>
-                <a href="#top" class="back-to-top">Back to top</a>
-            `;
+                    `;
 
             quizForm.appendChild(card);
         });
