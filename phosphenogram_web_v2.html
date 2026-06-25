@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phosphenogram | Remy Cohan</title>
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #dbe3ef;
+      --button: #0f172a;
+      --button-text: #ffffff;
+      --button-secondary: #e5e7eb;
+      --danger: #991b1b;
+      --accent: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 20px 24px 10px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      max-width: 1200px;
+    }
+
+    .developer-banner {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+
+    .developer-banner strong {
+      color: #0f172a;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 16px;
+      padding: 16px;
+      align-items: start;
+    }
+
+    aside,
+    section.canvas-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    aside {
+      padding: 14px;
+      height: fit-content;
+      position: sticky;
+      top: 12px;
+      max-height: calc(100vh - 24px);
+      overflow: auto;
+    }
+
+    section.canvas-wrap {
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin: 16px 0 8px;
+      color: #1e293b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field { margin-bottom: 10px; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    input[type="color"] {
+      min-height: 42px;
+      padding: 4px;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      transform: scale(1.15);
+      margin-right: 8px;
+      padding: 0;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 8px 10px;
+      background: #fff;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .inline-value {
+      margin-top: 3px;
+      font-size: 12px;
+      color: #334155;
+    }
+
+    .small-note,
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .buttons {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      background: var(--button);
+      color: var(--button-text);
+    }
+
+    button.secondary {
+      background: var(--button-secondary);
+      color: #111827;
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .canvas-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .canvas-shell {
+      display: inline-block;
+      position: relative;
+      max-width: 100%;
+      overflow: auto;
+      border-radius: 10px;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 10px;
+      max-width: 100%;
+      height: auto;
+      touch-action: none;
+      cursor: crosshair;
+      border: 1px solid #e5e7eb;
+      background: transparent;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      border: 1px solid #bfdbfe;
+    }
+
+    footer {
+      padding: 14px 24px 22px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .credit-strong {
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1024px) {
+      main { grid-template-columns: 1fr; }
+      aside { position: static; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Phosphenogram</h1>
+    <p class="subtitle">
+      Browser-based phosphene drawing and reconstruction tool. Built for static deployment on GitHub Pages so users can run it in the browser, draw phosphenes, customise the display, upload a still image or animated GIF background, and save local PNG/CSV output without installing Python.
+    </p>
+    <div class="developer-banner">
+      <strong>Designed and developed by Remy Cohan.</strong><br>
+      Perceptual Neuroscience Laboratory · Centre for Integrative and Applied Neuroscience · Centre for Vision Research · York University, Toronto, Canada.
+    </div>
+    <div class="badge-row">
+      <span class="badge">Runs in browser</span>
+      <span class="badge">PNG + CSV export</span>
+      <span class="badge">Still image / GIF background</span>
+      <span class="badge">Quadrant guide controls</span>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <div class="section-title">Canvas and display settings</div>
+      <div class="controls-grid">
+        <div class="field">
+          <label for="canvasWidth">Canvas width, px</label>
+          <input id="canvasWidth" type="number" value="800" min="100" step="1" />
+        </div>
+        <div class="field">
+          <label for="canvasHeight">Canvas height, px</label>
+          <input id="canvasHeight" type="number" value="600" min="100" step="1" />
+        </div>
+        <div class="field">
+          <label for="physicalWidth">Physical width, mm</label>
+          <input id="physicalWidth" type="number" value="530" min="1" step="1" />
+        </div>
+        <div class="field">
+          <label for="physicalHeight">Physical height, mm</label>
+          <input id="physicalHeight" type="number" value="400" min="1" step="1" />
+        </div>
+        <div class="field">
+          <label for="viewingDistance">Viewing distance, cm</label>
+          <input id="viewingDistance" type="number" value="57" min="1" step="0.1" />
+        </div>
+        <div class="field">
+          <label for="brushSize">Brush size, px</label>
+          <input id="brushSize" type="number" value="3" min="1" step="1" />
+        </div>
+      </div>
+
+      <div class="section-title">Study metadata</div>
+      <div class="field">
+        <label for="participantId">Participant / file prefix</label>
+        <input id="participantId" type="text" value="phosphenogram" />
+      </div>
+      <div class="controls-grid">
+        <div class="field">
+          <label for="sessionLabel">Session</label>
+          <input id="sessionLabel" type="text" value="session" placeholder="e.g., S1" />
+        </div>
+        <div class="field">
+          <label for="conditionLabel">Condition</label>
+          <input id="conditionLabel" type="text" value="condition" placeholder="e.g., EO / EC" />
+        </div>
+      </div>
+
+      <div class="section-title">Background</div>
+      <div class="controls-grid">
+        <div class="field">
+          <label for="backgroundColor">Background colour</label>
+          <input id="backgroundColor" type="color" value="#222222" />
+        </div>
+        <div class="field">
+          <label for="backgroundOpacity">Background image opacity</label>
+          <input id="backgroundOpacity" type="range" min="0" max="1" step="0.05" value="1" />
+          <div class="inline-value" id="backgroundOpacityValue">1.00</div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="backgroundFile">Upload background image or GIF</label>
+        <input id="backgroundFile" type="file" accept="image/*,.gif" />
+        <div class="small-note">Still images and animated GIFs are supported. If you save a PNG, the export captures the frame visible at the moment of saving.</div>
+      </div>
+      <div class="button-row">
+        <button id="loadBackground" class="secondary">Load background</button>
+        <button id="removeBackground" class="secondary">Remove background</button>
+      </div>
+
+      <div class="section-title">Drawing and guide lines</div>
+      <div class="controls-grid">
+        <div class="field">
+          <label for="drawColor">Stroke colour</label>
+          <input id="drawColor" type="color" value="#323232" />
+        </div>
+        <div class="field">
+          <label for="drawOpacity">Stroke opacity</label>
+          <input id="drawOpacity" type="range" min="0.05" max="1" step="0.05" value="1" />
+          <div class="inline-value" id="drawOpacityValue">1.00</div>
+        </div>
+        <div class="field">
+          <label for="quadrantColor">Quadrant line colour</label>
+          <input id="quadrantColor" type="color" value="#000000" />
+        </div>
+        <div class="field">
+          <label for="quadrantOpacity">Quadrant line opacity</label>
+          <input id="quadrantOpacity" type="range" min="0" max="1" step="0.05" value="0.75" />
+          <div class="inline-value" id="quadrantOpacityValue">0.75</div>
+        </div>
+      </div>
+      <div class="controls-grid">
+        <div class="field">
+          <label for="quadrantWidth">Quadrant line width, px</label>
+          <input id="quadrantWidth" type="number" min="1" step="1" value="2" />
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <div class="checkbox-row">
+            <input id="showQuadrants" type="checkbox" checked />
+            <label for="showQuadrants">Show quadrant lines</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">CSV reconstruction</div>
+      <div class="field">
+        <label for="plotMode">Label mode for loaded CSV</label>
+        <select id="plotMode">
+          <option value="pixel">Area, px²</option>
+          <option value="physical">Area, mm²</option>
+          <option value="visual_angle">Area, deg²</option>
+          <option value="peri_px">Perimeter, px</option>
+          <option value="peri_mm">Perimeter, mm</option>
+          <option value="peri_deg">Perimeter, deg</option>
+        </select>
+      </div>
+
+      <div class="buttons">
+        <button id="applySettings">Apply canvas settings</button>
+        <button id="saveBoth">Save PNG + CSV</button>
+        <div class="button-row">
+          <button id="savePng" class="secondary">Save PNG only</button>
+          <button id="saveCsv" class="secondary">Save CSV only</button>
+        </div>
+        <div class="button-row">
+          <button id="undo" class="secondary">Undo last stroke</button>
+          <button id="clear" class="danger">Clear drawing</button>
+        </div>
+        <button id="fullscreen" class="secondary">Fullscreen canvas</button>
+        <input id="csvFile" type="file" accept=".csv,text/csv" />
+        <button id="loadCsv" class="secondary">Plot selected CSV</button>
+      </div>
+
+      <p class="hint">
+        Controls: draw with mouse, trackpad, stylus, or touch. Press <strong>S</strong> to save PNG+CSV, <strong>C</strong> to clear, <strong>Z</strong> to undo, and <strong>Esc</strong> to leave fullscreen.
+      </p>
+      <p class="hint">
+        GitHub Pages is static hosting. So users can download saved files locally, but the site cannot collect those files back to your server unless you later add a backend or form service.
+      </p>
+    </aside>
+
+    <section class="canvas-wrap">
+      <div class="canvas-tools">
+        <div class="status" id="status">Ready. Strokes: 0</div>
+      </div>
+      <div class="canvas-shell">
+        <canvas id="drawCanvas" width="800" height="600"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="credit-strong">Remy Cohan · Clinician Scientist · PhD Candidate</div>
+    Perceptual Neuroscience Laboratory; Centre for Integrative and Applied Neuroscience; Centre for Vision Research; York University, Toronto, Canada.<br>
+    Original desktop Python version: July 2022. This browser-based version was adapted for static web deployment, with editable background colour, uploaded still image or GIF backgrounds, quadrant-line visibility controls, adjustable guide-line opacity, and local PNG/CSV export.
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusEl = document.getElementById('status');
+
+    const backgroundOpacityEl = document.getElementById('backgroundOpacity');
+    const backgroundOpacityValueEl = document.getElementById('backgroundOpacityValue');
+    const drawOpacityEl = document.getElementById('drawOpacity');
+    const drawOpacityValueEl = document.getElementById('drawOpacityValue');
+    const quadrantOpacityEl = document.getElementById('quadrantOpacity');
+    const quadrantOpacityValueEl = document.getElementById('quadrantOpacityValue');
+
+    let strokes = [];
+    let drawing = false;
+    let currentStroke = null;
+    let backgroundImage = null;
+    let backgroundImageName = '';
+    let loadedPlotRows = null;
+
+    function sanitiseFilePart(value) {
+      return String(value).trim().replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'phosphenogram';
+    }
+
+    function timestamp() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    }
+
+    function hexToRgba(hex, alpha) {
+      const cleaned = String(hex || '#000000').replace('#', '');
+      const full = cleaned.length === 3 ? cleaned.split('').map(ch => ch + ch).join('') : cleaned;
+      const bigint = parseInt(full, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function updateRangeLabels() {
+      backgroundOpacityValueEl.textContent = Number(backgroundOpacityEl.value).toFixed(2);
+      drawOpacityValueEl.textContent = Number(drawOpacityEl.value).toFixed(2);
+      quadrantOpacityValueEl.textContent = Number(quadrantOpacityEl.value).toFixed(2);
+    }
+
+    function getSettings() {
+      return {
+        width: Number(document.getElementById('canvasWidth').value) || 800,
+        height: Number(document.getElementById('canvasHeight').value) || 600,
+        physicalWidthMm: Number(document.getElementById('physicalWidth').value) || 530,
+        physicalHeightMm: Number(document.getElementById('physicalHeight').value) || 400,
+        viewingDistanceMm: (Number(document.getElementById('viewingDistance').value) || 57) * 10,
+        brushSize: Number(document.getElementById('brushSize').value) || 3,
+        participantId: sanitiseFilePart(document.getElementById('participantId').value || 'phosphenogram'),
+        sessionLabel: sanitiseFilePart(document.getElementById('sessionLabel').value || 'session'),
+        conditionLabel: sanitiseFilePart(document.getElementById('conditionLabel').value || 'condition'),
+        backgroundColor: document.getElementById('backgroundColor').value || '#222222',
+        backgroundOpacity: Number(document.getElementById('backgroundOpacity').value) || 1,
+        drawColor: document.getElementById('drawColor').value || '#323232',
+        drawOpacity: Number(document.getElementById('drawOpacity').value) || 1,
+        quadrantColor: document.getElementById('quadrantColor').value || '#000000',
+        quadrantOpacity: Number(document.getElementById('quadrantOpacity').value) || 0.75,
+        quadrantWidth: Number(document.getElementById('quadrantWidth').value) || 2,
+        showQuadrants: document.getElementById('showQuadrants').checked,
+      };
+    }
+
+    function updateStatus(customText) {
+      statusEl.textContent = customText || `Ready. Strokes: ${strokes.length}`;
+    }
+
+    function drawQuadrantLines(settings) {
+      if (!settings.showQuadrants) return;
+      ctx.save();
+      ctx.strokeStyle = hexToRgba(settings.quadrantColor, settings.quadrantOpacity);
+      ctx.lineWidth = settings.quadrantWidth;
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.moveTo(0, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawStroke(points, colour, lineWidth, alpha = 1, closeShape = false) {
+      if (!points || points.length < 2) return;
+      ctx.save();
+      ctx.strokeStyle = hexToRgba(colour, alpha);
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+      if (closeShape) ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function renderLoadedRows(rows) {
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ef4444';
+      ctx.fillStyle = '#facc15';
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const mode = document.getElementById('plotMode').value;
+      for (const row of rows) {
+        let points;
+        try {
+          points = pointsFromCsvCell(row.points);
+        } catch (_) {
+          continue;
+        }
+        if (!points || points.length < 2) continue;
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+        ctx.closePath();
+        ctx.stroke();
+
+        const cx = points.reduce((sum, p) => sum + p.x, 0) / points.length;
+        const cy = points.reduce((sum, p) => sum + p.y, 0) / points.length;
+        const metric = metricForMode(row, mode);
+        ctx.fillText(`${metric.value.toFixed(2)} ${metric.unit}`, cx, cy);
+      }
+      ctx.restore();
+    }
+
+    function renderScene() {
+      const settings = getSettings();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = settings.backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (backgroundImage) {
+        ctx.save();
+        ctx.globalAlpha = settings.backgroundOpacity;
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+
+      drawQuadrantLines(settings);
+
+      if (loadedPlotRows && loadedPlotRows.length) {
+        renderLoadedRows(loadedPlotRows);
+      } else {
+        for (const stroke of strokes) {
+          drawStroke(stroke.points, settings.drawColor, settings.brushSize, settings.drawOpacity, false);
+        }
+      }
+    }
+
+    function animationLoop() {
+      renderScene();
+      requestAnimationFrame(animationLoop);
+    }
+
+    function getCanvasPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+      const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+      return { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 };
+    }
+
+    function startDraw(event) {
+      event.preventDefault();
+      if (loadedPlotRows) loadedPlotRows = null;
+      if (canvas.setPointerCapture) {
+        try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+      }
+      drawing = true;
+      currentStroke = { points: [getCanvasPoint(event)] };
+      strokes.push(currentStroke);
+      updateStatus(`Drawing... Strokes: ${strokes.length}`);
+    }
+
+    function continueDraw(event) {
+      if (!drawing || !currentStroke) return;
+      event.preventDefault();
+      currentStroke.points.push(getCanvasPoint(event));
+      updateStatus(`Drawing... Strokes: ${strokes.length}`);
+    }
+
+    function endDraw(event) {
+      if (!drawing) return;
+      drawing = false;
+      currentStroke = null;
+      if (canvas.releasePointerCapture) {
+        try { canvas.releasePointerCapture(event.pointerId); } catch (_) {}
+      }
+      updateStatus();
+    }
+
+    function calculateVisualAngleArea(areaMm2, viewingDistanceMm) {
+      if (areaMm2 <= 0) return 0;
+      const S = Math.sqrt(areaMm2);
+      const thetaRad = 2 * Math.atan((S / 2) / viewingDistanceMm);
+      const thetaDeg = thetaRad * (180 / Math.PI);
+      return thetaDeg ** 2;
+    }
+
+    function calculateVisualAnglePerimeter(perimeterMm, viewingDistanceMm) {
+      if (perimeterMm <= 0) return 0;
+      return (perimeterMm / viewingDistanceMm) * (180 / Math.PI);
+    }
+
+    function strokeMetrics(stroke) {
+      const settings = getSettings();
+      const points = stroke.points || [];
+      const ppmmX = canvas.width / settings.physicalWidthMm;
+      const ppmmY = canvas.height / settings.physicalHeightMm;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const p of points) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+      }
+
+      let areaPx2 = 0;
+      if (points.length >= 3) {
+        for (let i = 0; i < points.length; i++) {
+          const p1 = points[i];
+          const p2 = points[(i + 1) % points.length];
+          areaPx2 += p1.x * p2.y - p2.x * p1.y;
+        }
+        areaPx2 = Math.abs(areaPx2) / 2;
+      }
+
+      let perimeterPx = 0;
+      if (points.length >= 2) {
+        for (let i = 0; i < points.length - 1; i++) {
+          perimeterPx += Math.hypot(points[i + 1].x - points[i].x, points[i + 1].y - points[i].y);
+        }
+        perimeterPx += Math.hypot(points[0].x - points[points.length - 1].x, points[0].y - points[points.length - 1].y);
+      }
+
+      const areaMm2 = areaPx2 / (ppmmX * ppmmY);
+      const areaDeg2 = calculateVisualAngleArea(areaMm2, settings.viewingDistanceMm);
+      const perimeterMm = perimeterPx / ((ppmmX + ppmmY) / 2);
+      const perimeterDeg = calculateVisualAnglePerimeter(perimeterMm, settings.viewingDistanceMm);
+
+      return {
+        points,
+        start_x: points[0]?.x ?? '',
+        start_y: points[0]?.y ?? '',
+        end_x: points[points.length - 1]?.x ?? '',
+        end_y: points[points.length - 1]?.y ?? '',
+        min_x: minX === Infinity ? '' : minX,
+        min_y: minY === Infinity ? '' : minY,
+        max_x: maxX === -Infinity ? '' : maxX,
+        max_y: maxY === -Infinity ? '' : maxY,
+        width: (maxX === -Infinity || minX === Infinity) ? '' : (maxX - minX),
+        height: (maxY === -Infinity || minY === Infinity) ? '' : (maxY - minY),
+        area_px2: areaPx2,
+        area_mm2: areaMm2,
+        area_deg2: areaDeg2,
+        perimeter_px: perimeterPx,
+        perimeter_mm: perimeterMm,
+        perimeter_deg: perimeterDeg,
+      };
+    }
+
+    function csvEscape(value) {
+      if (Array.isArray(value)) {
+        value = JSON.stringify(value.map(p => [p.x, p.y]));
+      }
+      const s = String(value ?? '');
+      if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    }
+
+    function makeCsv() {
+      const settings = getSettings();
+      const ts = timestamp();
+      const header = [
+        'timestamp', 'participant_id', 'session', 'condition',
+        'canvas_width_px', 'canvas_height_px', 'physical_width_mm', 'physical_height_mm', 'viewing_distance_mm', 'brush_size_px',
+        'background_color', 'background_image_name', 'background_image_opacity',
+        'show_quadrants', 'quadrant_color', 'quadrant_opacity', 'quadrant_width_px',
+        'stroke_color', 'stroke_opacity',
+        'points', 'start_x', 'start_y', 'end_x', 'end_y', 'min_x', 'min_y', 'max_x', 'max_y', 'width', 'height',
+        'area_px2', 'area_mm2', 'area_deg2', 'perimeter_px', 'perimeter_mm', 'perimeter_deg'
+      ];
+
+      const rows = [header.join(',')];
+
+      for (const stroke of strokes) {
+        const m = strokeMetrics(stroke);
+        rows.push([
+          ts, settings.participantId, settings.sessionLabel, settings.conditionLabel,
+          canvas.width, canvas.height, settings.physicalWidthMm, settings.physicalHeightMm, settings.viewingDistanceMm, settings.brushSize,
+          settings.backgroundColor, backgroundImageName || '', settings.backgroundOpacity,
+          settings.showQuadrants, settings.quadrantColor, settings.quadrantOpacity, settings.quadrantWidth,
+          settings.drawColor, settings.drawOpacity,
+          m.points, m.start_x, m.start_y, m.end_x, m.end_y, m.min_x, m.min_y, m.max_x, m.max_y, m.width, m.height,
+          m.area_px2, m.area_mm2, m.area_deg2, m.perimeter_px, m.perimeter_mm, m.perimeter_deg
+        ].map(csvEscape).join(','));
+      }
+
+      return { csv: rows.join('\n'), ts };
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function baseFilename(ts) {
+      const s = getSettings();
+      return `${s.participantId}_${s.sessionLabel}_${s.conditionLabel}_${ts}`;
+    }
+
+    function saveCsv() {
+      const { csv, ts } = makeCsv();
+      downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `strokes_${baseFilename(ts)}.csv`);
+      updateStatus('CSV saved.');
+    }
+
+    function savePng() {
+      const ts = timestamp();
+      canvas.toBlob(blob => {
+        if (!blob) {
+          updateStatus('PNG export failed.');
+          return;
+        }
+        downloadBlob(blob, `drawing_${baseFilename(ts)}.png`);
+        updateStatus('PNG saved.');
+      }, 'image/png');
+    }
+
+    function saveBoth() {
+      const { csv, ts } = makeCsv();
+      canvas.toBlob(blob => {
+        if (!blob) {
+          updateStatus('PNG export failed.');
+          return;
+        }
+        downloadBlob(blob, `drawing_${baseFilename(ts)}.png`);
+        downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `strokes_${baseFilename(ts)}.csv`);
+        updateStatus('PNG and CSV saved.');
+      }, 'image/png');
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [], cell = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+        if (ch === '"' && inQuotes && next === '"') {
+          cell += '"';
+          i++;
+        } else if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          row.push(cell);
+          cell = '';
+        } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+          if (ch === '\r' && next === '\n') i++;
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = '';
+        } else {
+          cell += ch;
+        }
+      }
+      if (cell.length || row.length) {
+        row.push(cell);
+        rows.push(row);
+      }
+      const header = rows.shift() || [];
+      return rows.filter(r => r.length === header.length).map(r => Object.fromEntries(header.map((h, i) => [h, r[i]])));
+    }
+
+    function getNumeric(row, key) {
+      const n = Number(row[key]);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function pointsFromCsvCell(cell) {
+      const raw = JSON.parse(cell);
+      return raw.map(p => Array.isArray(p) ? { x: Number(p[0]), y: Number(p[1]) } : { x: Number(p.x), y: Number(p.y) });
+    }
+
+    function metricForMode(row, mode) {
+      if (mode === 'pixel') return { value: getNumeric(row, 'area_px2'), unit: 'px²' };
+      if (mode === 'physical') return { value: getNumeric(row, 'area_mm2'), unit: 'mm²' };
+      if (mode === 'visual_angle') return { value: getNumeric(row, 'area_deg2'), unit: 'deg²' };
+      if (mode === 'peri_px') return { value: getNumeric(row, 'perimeter_px'), unit: 'px' };
+      if (mode === 'peri_mm') return { value: getNumeric(row, 'perimeter_mm'), unit: 'mm' };
+      if (mode === 'peri_deg') return { value: getNumeric(row, 'perimeter_deg'), unit: 'deg' };
+      return { value: 0, unit: '' };
+    }
+
+    function applyCsvSettingsFromFirstRow(first) {
+      if (!first) return;
+      if (first.canvas_width_px) document.getElementById('canvasWidth').value = first.canvas_width_px;
+      if (first.canvas_height_px) document.getElementById('canvasHeight').value = first.canvas_height_px;
+      if (first.physical_width_mm) document.getElementById('physicalWidth').value = first.physical_width_mm;
+      if (first.physical_height_mm) document.getElementById('physicalHeight').value = first.physical_height_mm;
+      if (first.viewing_distance_mm) document.getElementById('viewingDistance').value = Number(first.viewing_distance_mm) / 10;
+      if (first.brush_size_px) document.getElementById('brushSize').value = first.brush_size_px;
+      if (first.participant_id) document.getElementById('participantId').value = first.participant_id;
+      if (first.session) document.getElementById('sessionLabel').value = first.session;
+      if (first.condition) document.getElementById('conditionLabel').value = first.condition;
+      if (first.background_color) document.getElementById('backgroundColor').value = first.background_color;
+      if (first.background_image_opacity) document.getElementById('backgroundOpacity').value = first.background_image_opacity;
+      if (first.stroke_color) document.getElementById('drawColor').value = first.stroke_color;
+      if (first.stroke_opacity) document.getElementById('drawOpacity').value = first.stroke_opacity;
+      if (first.quadrant_color) document.getElementById('quadrantColor').value = first.quadrant_color;
+      if (first.quadrant_opacity) document.getElementById('quadrantOpacity').value = first.quadrant_opacity;
+      if (first.quadrant_width_px) document.getElementById('quadrantWidth').value = first.quadrant_width_px;
+      if (first.show_quadrants !== undefined && first.show_quadrants !== '') {
+        document.getElementById('showQuadrants').checked = String(first.show_quadrants).toLowerCase() === 'true';
+      }
+
+      canvas.width = Number(document.getElementById('canvasWidth').value) || canvas.width;
+      canvas.height = Number(document.getElementById('canvasHeight').value) || canvas.height;
+      updateRangeLabels();
+    }
+
+    function plotRows(rows) {
+      if (!rows || !rows.length) {
+        updateStatus('No valid rows found in CSV.');
+        return;
+      }
+
+      applyCsvSettingsFromFirstRow(rows[0]);
+      const loadedStrokes = [];
+      for (const row of rows) {
+        let points;
+        try {
+          points = pointsFromCsvCell(row.points);
+        } catch (_) {
+          continue;
+        }
+        if (!points || points.length < 2) continue;
+        loadedStrokes.push({ points });
+      }
+      strokes = loadedStrokes;
+      loadedPlotRows = rows;
+      updateStatus(`Loaded CSV. Strokes: ${strokes.length}`);
+    }
+
+    async function loadCsv() {
+      const file = document.getElementById('csvFile').files[0];
+      if (!file) {
+        updateStatus('Select a CSV file first.');
+        return;
+      }
+      const text = await file.text();
+      const rows = parseCsv(text);
+      plotRows(rows);
+    }
+
+    function applySettings() {
+      const settings = getSettings();
+      canvas.width = settings.width;
+      canvas.height = settings.height;
+      strokes = [];
+      loadedPlotRows = null;
+      updateStatus('Canvas settings applied. Drawing cleared.');
+    }
+
+    async function loadBackgroundFile() {
+      const file = document.getElementById('backgroundFile').files[0];
+      if (!file) {
+        updateStatus('Select an image or GIF first.');
+        return;
+      }
+
+      const dataURL = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const img = new Image();
+      img.onload = () => {
+        backgroundImage = img;
+        backgroundImageName = file.name;
+        updateStatus(`Background loaded: ${file.name}`);
+      };
+      img.onerror = () => {
+        updateStatus('Could not load the background image.');
+      };
+      img.src = dataURL;
+    }
+
+    function removeBackground() {
+      backgroundImage = null;
+      backgroundImageName = '';
+      document.getElementById('backgroundFile').value = '';
+      updateStatus('Background removed.');
+    }
+
+    function clearDrawing() {
+      strokes = [];
+      loadedPlotRows = null;
+      updateStatus('Drawing cleared.');
+    }
+
+    function undoLastStroke() {
+      if (loadedPlotRows) loadedPlotRows = null;
+      strokes.pop();
+      updateStatus();
+    }
+
+    document.getElementById('applySettings').addEventListener('click', applySettings);
+    document.getElementById('saveBoth').addEventListener('click', saveBoth);
+    document.getElementById('savePng').addEventListener('click', savePng);
+    document.getElementById('saveCsv').addEventListener('click', saveCsv);
+    document.getElementById('undo').addEventListener('click', undoLastStroke);
+    document.getElementById('clear').addEventListener('click', clearDrawing);
+    document.getElementById('fullscreen').addEventListener('click', () => canvas.requestFullscreen?.());
+    document.getElementById('loadCsv').addEventListener('click', loadCsv);
+    document.getElementById('loadBackground').addEventListener('click', loadBackgroundFile);
+    document.getElementById('removeBackground').addEventListener('click', removeBackground);
+
+    [backgroundOpacityEl, drawOpacityEl, quadrantOpacityEl].forEach(el => {
+      el.addEventListener('input', updateRangeLabels);
+    });
+
+    canvas.addEventListener('pointerdown', startDraw);
+    canvas.addEventListener('pointermove', continueDraw);
+    canvas.addEventListener('pointerup', endDraw);
+    canvas.addEventListener('pointercancel', endDraw);
+    canvas.addEventListener('pointerleave', endDraw);
+
+    document.addEventListener('keydown', (event) => {
+      const tag = (document.activeElement?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      const key = event.key.toLowerCase();
+      if (key === 's') {
+        event.preventDefault();
+        saveBoth();
+      }
+      if (key === 'c') {
+        event.preventDefault();
+        clearDrawing();
+      }
+      if (key === 'z') {
+        event.preventDefault();
+        undoLastStroke();
+      }
+    });
+
+    updateRangeLabels();
+    updateStatus();
+    requestAnimationFrame(animationLoop);
+  </script>
+</body>
+</html>
