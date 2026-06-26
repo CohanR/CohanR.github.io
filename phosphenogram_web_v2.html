@@ -75,6 +75,30 @@
       border-bottom: 1px solid var(--border);
     }
 
+    .top-nav {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .home-link:hover {
+      background: #1e293b;
+    }
+
     h1 {
       margin: 0 0 8px;
       font-size: 28px;
@@ -378,6 +402,10 @@
 </head>
 <body>
   <header>
+    <div class="top-nav">
+      <a href="/" class="home-link">← Home</a>
+    </div>
+
     <h1>Phosphenogram</h1>
     <p class="subtitle">
       Browser-based phosphene drawing and reconstruction tool. Draw phosphenes, customise the display, upload a still image or animated gif background, and save local PNG/CSV output without installing Python.
@@ -532,7 +560,7 @@
         Recommended workflow: set the parameters first, then click <strong>Apply settings + start fullscreen drawing</strong>. Controls: draw with mouse, trackpad, stylus, or touch. Press <strong>S</strong> to save PNG+CSV, <strong>C</strong> to clear, <strong>Z</strong> to undo, and <strong>Esc</strong> to leave fullscreen.
       </p>
       <p class="hint">
-        GitHub Pages is static hosting. So users can download saved files locally, but the site cannot collect those files back to your server unless you later add a backend or form service.
+       
       </p>
     </aside>
 
