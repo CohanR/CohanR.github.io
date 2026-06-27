@@ -156,6 +156,19 @@
         .intro p {
             margin: 0;
         }
+        .intro-text {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        
+        .areas-interest {
+            margin-top: 8px;
+        }
+        
+        .areas-interest strong {
+            font-weight: 700;
+        }
 
         /* ================= CONTACT ================= */
         
@@ -337,21 +350,22 @@
 
     <section class="intro">
         <img src="images/RC_profile.png"
-     alt="Remy Cohan portrait"
-     class="profile-pic"
-     width="280"
-     height="280"
-     loading="lazy">
-
-
-        <p>
-            My research focus centres on how the brain changes and reorganises both in health and disease using different neuroimaging techniques including
-            functional MRI, MR spectroscopy, and EEG and non-invasive brain stimulation modalities such as transcranial magnetic stimulation.
-        </p>
-
-        <p>
-            Area of interest: Neuroplasticity; Systems Neuroscience; Neurorehabilitation; Neuroimaging; Neuromodulation 
-        </p>
+             alt="Remy Cohan portrait"
+             class="profile-pic"
+             width="280"
+             height="280"
+             loading="lazy">
+    
+        <div class="intro-text">
+            <p>
+                My research focus centres on how the brain changes and reorganises both in health and disease using different neuroimaging techniques including
+                functional MRI, MR spectroscopy, and EEG and non-invasive brain stimulation modalities such as transcranial magnetic stimulation.
+            </p>
+    
+            <p class="areas-interest">
+                <strong>Area of interest:</strong> Neuroplasticity; Systems Neuroscience; Neurorehabilitation; Neuroimaging; Neuromodulation
+            </p>
+        </div>
     </section>
 
     <section id="projects">
