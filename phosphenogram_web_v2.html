@@ -481,9 +481,10 @@
         </div>
       </div>
       <div class="field">
-        <label for="backgroundFile">Upload background image or GIF</label>
-        <input id="backgroundFile" type="file" accept="image/*,.gif" />
-        <div class="small-note">Still images and animated GIFs are supported. If you save a PNG, the export captures the frame visible at the moment of saving.</div>
+        <label for="backgroundFile">Upload background image, gif, or video</label>
+        <input id="backgroundFile" type="file" accept="image/*,.gif,video/*,.mp4,.webm,.mov" />
+        <div class="small-note">Still images, animated gif files, and short video files are supported. Videos loop automatically. If you save a PNG, the export captures the frame visible at the moment of saving.</div>
+        <div class="small-note">For flashing or moving lattice stimuli, screen participants for photosensitivity and use an appropriate ethics-approved protocol.</div>
       </div>
       <div class="button-row">
         <button id="loadBackground" class="secondary">Load background</button>
@@ -602,7 +603,11 @@
     let drawing = false;
     let currentStroke = null;
     let backgroundImage = null;
+    let backgroundVideo = null;
+    let backgroundMediaElement = null;
+    let backgroundMediaUrl = '';
     let backgroundImageName = '';
+    let backgroundMediaType = '';
     let loadedPlotRows = null;
 
     function sanitiseFilePart(value) {
@@ -691,6 +696,40 @@
       ctx.restore();
     }
 
+    function drawMediaContained(media, alpha) {
+      if (!media) return;
+
+      const mediaWidth = media.videoWidth || media.naturalWidth || media.width;
+      const mediaHeight = media.videoHeight || media.naturalHeight || media.height;
+
+      if (!mediaWidth || !mediaHeight) return;
+
+      const canvasRatio = canvas.width / canvas.height;
+      const mediaRatio = mediaWidth / mediaHeight;
+
+      let drawWidth;
+      let drawHeight;
+      let drawX;
+      let drawY;
+
+      if (mediaRatio > canvasRatio) {
+        drawWidth = canvas.width;
+        drawHeight = canvas.width / mediaRatio;
+        drawX = 0;
+        drawY = (canvas.height - drawHeight) / 2;
+      } else {
+        drawHeight = canvas.height;
+        drawWidth = canvas.height * mediaRatio;
+        drawX = (canvas.width - drawWidth) / 2;
+        drawY = 0;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(media, drawX, drawY, drawWidth, drawHeight);
+      ctx.restore();
+    }
+
     function renderLoadedRows(rows) {
       ctx.save();
       ctx.lineWidth = 2;
@@ -730,11 +769,10 @@
       ctx.fillStyle = settings.backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (backgroundImage) {
-        ctx.save();
-        ctx.globalAlpha = settings.backgroundOpacity;
-        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
+      if (backgroundVideo && backgroundVideo.readyState >= 2) {
+        drawMediaContained(backgroundVideo, settings.backgroundOpacity);
+      } else if (backgroundImage) {
+        drawMediaContained(backgroundImage, settings.backgroundOpacity);
       }
 
       drawQuadrantLines(settings);
@@ -875,7 +913,7 @@
       const header = [
         'timestamp', 'participant_id', 'session', 'condition',
         'canvas_width_px', 'canvas_height_px', 'physical_width_mm', 'physical_height_mm', 'viewing_distance_mm', 'brush_size_px',
-        'background_color', 'background_image_name', 'background_image_opacity',
+        'background_color', 'background_image_name', 'background_media_type', 'background_image_opacity',
         'show_quadrants', 'quadrant_color', 'quadrant_opacity', 'quadrant_width_px',
         'stroke_color', 'stroke_opacity',
         'points', 'start_x', 'start_y', 'end_x', 'end_y', 'min_x', 'min_y', 'max_x', 'max_y', 'width', 'height',
@@ -889,7 +927,7 @@
         rows.push([
           ts, settings.participantId, settings.sessionLabel, settings.conditionLabel,
           canvas.width, canvas.height, settings.physicalWidthMm, settings.physicalHeightMm, settings.viewingDistanceMm, settings.brushSize,
-          settings.backgroundColor, backgroundImageName || '', settings.backgroundOpacity,
+          settings.backgroundColor, backgroundImageName || '', backgroundMediaType || '', settings.backgroundOpacity,
           settings.showQuadrants, settings.quadrantColor, settings.quadrantOpacity, settings.quadrantWidth,
           settings.drawColor, settings.drawOpacity,
           m.points, m.start_x, m.start_y, m.end_x, m.end_y, m.min_x, m.min_y, m.max_x, m.max_y, m.width, m.height,
@@ -1090,32 +1128,105 @@
     async function loadBackgroundFile() {
       const file = document.getElementById('backgroundFile').files[0];
       if (!file) {
-        updateStatus('Select an image or GIF first.');
+        updateStatus('Select an image, gif, or video file first.');
         return;
       }
 
-      const dataURL = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      removeBackground();
+
+      const fileUrl = URL.createObjectURL(file);
+      backgroundMediaUrl = fileUrl;
+      backgroundImageName = file.name;
+
+      const isVideo = file.type.startsWith('video/');
+      const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+
+      if (isVideo) {
+        const video = document.createElement('video');
+        video.src = fileUrl;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.autoplay = true;
+        video.preload = 'auto';
+
+        video.style.position = 'fixed';
+        video.style.left = '-9999px';
+        video.style.top = '-9999px';
+        video.style.width = '1px';
+        video.style.height = '1px';
+        video.style.opacity = '0';
+        video.style.pointerEvents = 'none';
+
+        document.body.appendChild(video);
+
+        video.onloadeddata = async () => {
+          backgroundVideo = video;
+          backgroundMediaElement = video;
+          backgroundMediaType = 'video';
+
+          try {
+            await video.play();
+          } catch (_) {
+            updateStatus('Video loaded. Click Load background again if it does not play automatically.');
+            return;
+          }
+
+          updateStatus(`Looping video background loaded: ${file.name}`);
+        };
+
+        video.onerror = () => {
+          updateStatus('Could not load the video background.');
+        };
+
+        return;
+      }
 
       const img = new Image();
+      img.src = fileUrl;
+
+      img.style.position = 'fixed';
+      img.style.left = '-9999px';
+      img.style.top = '-9999px';
+      img.style.width = '1px';
+      img.style.height = '1px';
+      img.style.opacity = '0';
+      img.style.pointerEvents = 'none';
+
+      document.body.appendChild(img);
+
       img.onload = () => {
         backgroundImage = img;
-        backgroundImageName = file.name;
-        updateStatus(`Background loaded: ${file.name}`);
+        backgroundMediaElement = img;
+        backgroundMediaType = isGif ? 'gif' : 'image';
+        updateStatus(`${isGif ? 'Animated gif' : 'Image'} background loaded: ${file.name}`);
       };
+
       img.onerror = () => {
-        updateStatus('Could not load the background image.');
+        updateStatus('Could not load the background image or gif.');
       };
-      img.src = dataURL;
     }
 
     function removeBackground() {
+      if (backgroundVideo) {
+        backgroundVideo.pause();
+      }
+
+      if (backgroundMediaElement && backgroundMediaElement.parentNode) {
+        backgroundMediaElement.parentNode.removeChild(backgroundMediaElement);
+      }
+
+      if (backgroundMediaUrl) {
+        URL.revokeObjectURL(backgroundMediaUrl);
+      }
+
       backgroundImage = null;
+      backgroundVideo = null;
+      backgroundMediaElement = null;
+      backgroundMediaUrl = '';
       backgroundImageName = '';
+      backgroundMediaType = '';
+
       document.getElementById('backgroundFile').value = '';
       updateStatus('Background removed.');
     }
