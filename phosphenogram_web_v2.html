@@ -298,8 +298,31 @@
       justify-content: center;
     }
 
+    .canvas-stage {
+      display: inline-block;
+      position: relative;
+      max-width: 100%;
+      line-height: 0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .background-media-layer {
+      display: none;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     canvas {
       display: block;
+      position: relative;
+      z-index: 1;
       border-radius: 10px;
       max-width: 100%;
       height: auto;
@@ -321,6 +344,12 @@
       overflow: hidden;
       background: #000000;
       padding: 0;
+    }
+
+    .canvas-shell:fullscreen .canvas-stage {
+      max-width: 100vw;
+      max-height: 100vh;
+      border-radius: 0;
     }
 
     .canvas-shell:fullscreen canvas {
@@ -575,7 +604,11 @@
           <button class="danger" id="fsClear" type="button">Clear</button>
           <button id="fsExit" type="button">Exit</button>
         </div>
-        <canvas id="drawCanvas" width="800" height="600"></canvas>
+        <div class="canvas-stage" id="canvasStage">
+          <img id="backgroundImageLayer" class="background-media-layer" alt="" />
+          <video id="backgroundVideoLayer" class="background-media-layer" muted playsinline loop></video>
+          <canvas id="drawCanvas" width="800" height="600"></canvas>
+        </div>
       </div>
     </section>
   </main>
@@ -589,6 +622,7 @@
   <script>
     const canvas = document.getElementById('drawCanvas');
     const canvasShell = document.getElementById('canvasShell');
+    const canvasStage = document.getElementById('canvasStage');
     const ctx = canvas.getContext('2d');
     const statusEl = document.getElementById('status');
 
@@ -598,13 +632,14 @@
     const drawOpacityValueEl = document.getElementById('drawOpacityValue');
     const quadrantOpacityEl = document.getElementById('quadrantOpacity');
     const quadrantOpacityValueEl = document.getElementById('quadrantOpacityValue');
+    const backgroundImageLayer = document.getElementById('backgroundImageLayer');
+    const backgroundVideoLayer = document.getElementById('backgroundVideoLayer');
 
     let strokes = [];
     let drawing = false;
     let currentStroke = null;
     let backgroundImage = null;
     let backgroundVideo = null;
-    let backgroundMediaElement = null;
     let backgroundMediaUrl = '';
     let backgroundImageName = '';
     let backgroundMediaType = '';
@@ -667,36 +702,36 @@
       statusEl.textContent = customText || `Ready. Strokes: ${strokes.length}`;
     }
 
-    function drawQuadrantLines(settings) {
+    function drawQuadrantLines(settings, targetCtx = ctx, targetCanvas = canvas) {
       if (!settings.showQuadrants) return;
-      ctx.save();
-      ctx.strokeStyle = hexToRgba(settings.quadrantColor, settings.quadrantOpacity);
-      ctx.lineWidth = settings.quadrantWidth;
-      ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2, canvas.height);
-      ctx.moveTo(0, canvas.height / 2);
-      ctx.lineTo(canvas.width, canvas.height / 2);
-      ctx.stroke();
-      ctx.restore();
+      targetCtx.save();
+      targetCtx.strokeStyle = hexToRgba(settings.quadrantColor, settings.quadrantOpacity);
+      targetCtx.lineWidth = settings.quadrantWidth;
+      targetCtx.beginPath();
+      targetCtx.moveTo(targetCanvas.width / 2, 0);
+      targetCtx.lineTo(targetCanvas.width / 2, targetCanvas.height);
+      targetCtx.moveTo(0, targetCanvas.height / 2);
+      targetCtx.lineTo(targetCanvas.width, targetCanvas.height / 2);
+      targetCtx.stroke();
+      targetCtx.restore();
     }
 
-    function drawStroke(points, colour, lineWidth, alpha = 1, closeShape = false) {
+    function drawStroke(points, colour, lineWidth, alpha = 1, closeShape = false, targetCtx = ctx) {
       if (!points || points.length < 2) return;
-      ctx.save();
-      ctx.strokeStyle = hexToRgba(colour, alpha);
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-      if (closeShape) ctx.closePath();
-      ctx.stroke();
-      ctx.restore();
+      targetCtx.save();
+      targetCtx.strokeStyle = hexToRgba(colour, alpha);
+      targetCtx.lineWidth = lineWidth;
+      targetCtx.lineCap = 'round';
+      targetCtx.lineJoin = 'round';
+      targetCtx.beginPath();
+      targetCtx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) targetCtx.lineTo(points[i].x, points[i].y);
+      if (closeShape) targetCtx.closePath();
+      targetCtx.stroke();
+      targetCtx.restore();
     }
 
-    function drawMediaContained(media, alpha) {
+    function drawMediaContained(media, alpha, targetCtx = ctx, targetCanvas = canvas) {
       if (!media) return;
 
       const mediaWidth = media.videoWidth || media.naturalWidth || media.width;
@@ -704,7 +739,7 @@
 
       if (!mediaWidth || !mediaHeight) return;
 
-      const canvasRatio = canvas.width / canvas.height;
+      const canvasRatio = targetCanvas.width / targetCanvas.height;
       const mediaRatio = mediaWidth / mediaHeight;
 
       let drawWidth;
@@ -713,31 +748,31 @@
       let drawY;
 
       if (mediaRatio > canvasRatio) {
-        drawWidth = canvas.width;
-        drawHeight = canvas.width / mediaRatio;
+        drawWidth = targetCanvas.width;
+        drawHeight = targetCanvas.width / mediaRatio;
         drawX = 0;
-        drawY = (canvas.height - drawHeight) / 2;
+        drawY = (targetCanvas.height - drawHeight) / 2;
       } else {
-        drawHeight = canvas.height;
-        drawWidth = canvas.height * mediaRatio;
-        drawX = (canvas.width - drawWidth) / 2;
+        drawHeight = targetCanvas.height;
+        drawWidth = targetCanvas.height * mediaRatio;
+        drawX = (targetCanvas.width - drawWidth) / 2;
         drawY = 0;
       }
 
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.drawImage(media, drawX, drawY, drawWidth, drawHeight);
-      ctx.restore();
+      targetCtx.save();
+      targetCtx.globalAlpha = alpha;
+      targetCtx.drawImage(media, drawX, drawY, drawWidth, drawHeight);
+      targetCtx.restore();
     }
 
-    function renderLoadedRows(rows) {
-      ctx.save();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#ef4444';
-      ctx.fillStyle = '#facc15';
-      ctx.font = '14px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+    function renderLoadedRows(rows, targetCtx = ctx) {
+      targetCtx.save();
+      targetCtx.lineWidth = 2;
+      targetCtx.strokeStyle = '#ef4444';
+      targetCtx.fillStyle = '#facc15';
+      targetCtx.font = '14px Arial';
+      targetCtx.textAlign = 'center';
+      targetCtx.textBaseline = 'middle';
 
       const mode = document.getElementById('plotMode').value;
       for (const row of rows) {
@@ -749,30 +784,31 @@
         }
         if (!points || points.length < 2) continue;
 
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-        ctx.closePath();
-        ctx.stroke();
+        targetCtx.beginPath();
+        targetCtx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) targetCtx.lineTo(points[i].x, points[i].y);
+        targetCtx.closePath();
+        targetCtx.stroke();
 
         const cx = points.reduce((sum, p) => sum + p.x, 0) / points.length;
         const cy = points.reduce((sum, p) => sum + p.y, 0) / points.length;
         const metric = metricForMode(row, mode);
-        ctx.fillText(`${metric.value.toFixed(2)} ${metric.unit}`, cx, cy);
+        targetCtx.fillText(`${metric.value.toFixed(2)} ${metric.unit}`, cx, cy);
       }
-      ctx.restore();
+      targetCtx.restore();
     }
 
     function renderScene() {
       const settings = getSettings();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = settings.backgroundColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      canvasStage.style.backgroundColor = settings.backgroundColor;
+      backgroundImageLayer.style.opacity = settings.backgroundOpacity;
+      backgroundVideoLayer.style.opacity = settings.backgroundOpacity;
 
-      if (backgroundVideo && backgroundVideo.readyState >= 2) {
-        drawMediaContained(backgroundVideo, settings.backgroundOpacity);
-      } else if (backgroundImage) {
-        drawMediaContained(backgroundImage, settings.backgroundOpacity);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!backgroundMediaType) {
+        ctx.fillStyle = settings.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
       drawQuadrantLines(settings);
@@ -784,6 +820,35 @@
           drawStroke(stroke.points, settings.drawColor, settings.brushSize, settings.drawOpacity, false);
         }
       }
+    }
+
+    function renderExportCanvas() {
+      const settings = getSettings();
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const exportCtx = exportCanvas.getContext('2d');
+
+      exportCtx.fillStyle = settings.backgroundColor;
+      exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+      if (backgroundVideo && backgroundVideo.readyState >= 2) {
+        drawMediaContained(backgroundVideo, settings.backgroundOpacity, exportCtx, exportCanvas);
+      } else if (backgroundImage) {
+        drawMediaContained(backgroundImage, settings.backgroundOpacity, exportCtx, exportCanvas);
+      }
+
+      drawQuadrantLines(settings, exportCtx, exportCanvas);
+
+      if (loadedPlotRows && loadedPlotRows.length) {
+        renderLoadedRows(loadedPlotRows, exportCtx);
+      } else {
+        for (const stroke of strokes) {
+          drawStroke(stroke.points, settings.drawColor, settings.brushSize, settings.drawOpacity, false, exportCtx);
+        }
+      }
+
+      return exportCanvas;
     }
 
     function animationLoop() {
@@ -962,7 +1027,8 @@
 
     function savePng() {
       const ts = timestamp();
-      canvas.toBlob(blob => {
+      const exportCanvas = renderExportCanvas();
+      exportCanvas.toBlob(blob => {
         if (!blob) {
           updateStatus('PNG export failed.');
           return;
@@ -974,7 +1040,8 @@
 
     function saveBoth() {
       const { csv, ts } = makeCsv();
-      canvas.toBlob(blob => {
+      const exportCanvas = renderExportCanvas();
+      exportCanvas.toBlob(blob => {
         if (!blob) {
           updateStatus('PNG export failed.');
           return;
@@ -1142,31 +1209,21 @@
       const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
 
       if (isVideo) {
-        const video = document.createElement('video');
-        video.src = fileUrl;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.autoplay = true;
-        video.preload = 'auto';
+        backgroundVideoLayer.src = fileUrl;
+        backgroundVideoLayer.loop = true;
+        backgroundVideoLayer.muted = true;
+        backgroundVideoLayer.playsInline = true;
+        backgroundVideoLayer.autoplay = true;
+        backgroundVideoLayer.preload = 'auto';
+        backgroundVideoLayer.style.display = 'block';
+        backgroundImageLayer.style.display = 'none';
+        backgroundVideo = backgroundVideoLayer;
+        backgroundImage = null;
+        backgroundMediaType = 'video';
 
-        video.style.position = 'fixed';
-        video.style.left = '-9999px';
-        video.style.top = '-9999px';
-        video.style.width = '1px';
-        video.style.height = '1px';
-        video.style.opacity = '0';
-        video.style.pointerEvents = 'none';
-
-        document.body.appendChild(video);
-
-        video.onloadeddata = async () => {
-          backgroundVideo = video;
-          backgroundMediaElement = video;
-          backgroundMediaType = 'video';
-
+        backgroundVideoLayer.onloadeddata = async () => {
           try {
-            await video.play();
+            await backgroundVideoLayer.play();
           } catch (_) {
             updateStatus('Video loaded. Click Load background again if it does not play automatically.');
             return;
@@ -1175,45 +1232,40 @@
           updateStatus(`Looping video background loaded: ${file.name}`);
         };
 
-        video.onerror = () => {
+        backgroundVideoLayer.onerror = () => {
           updateStatus('Could not load the video background.');
         };
 
         return;
       }
 
-      const img = new Image();
-      img.src = fileUrl;
+      backgroundImageLayer.src = fileUrl;
+      backgroundImageLayer.style.display = 'block';
+      backgroundVideoLayer.style.display = 'none';
+      backgroundImage = backgroundImageLayer;
+      backgroundVideo = null;
+      backgroundMediaType = isGif ? 'gif' : 'image';
 
-      img.style.position = 'fixed';
-      img.style.left = '-9999px';
-      img.style.top = '-9999px';
-      img.style.width = '1px';
-      img.style.height = '1px';
-      img.style.opacity = '0';
-      img.style.pointerEvents = 'none';
-
-      document.body.appendChild(img);
-
-      img.onload = () => {
-        backgroundImage = img;
-        backgroundMediaElement = img;
-        backgroundMediaType = isGif ? 'gif' : 'image';
+      backgroundImageLayer.onload = () => {
         updateStatus(`${isGif ? 'Animated gif' : 'Image'} background loaded: ${file.name}`);
       };
 
-      img.onerror = () => {
+      backgroundImageLayer.onerror = () => {
         updateStatus('Could not load the background image or gif.');
       };
     }
 
     function removeBackground() {
-      if (backgroundVideo) {
-        backgroundVideo.pause();
+      if (backgroundVideoLayer) {
+        backgroundVideoLayer.pause();
+        backgroundVideoLayer.removeAttribute('src');
+        backgroundVideoLayer.load();
+        backgroundVideoLayer.style.display = 'none';
       }
 
-      if (backgroundMediaElement && backgroundMediaElement.parentNode) {
-        backgroundMediaElement.parentNode.removeChild(backgroundMediaElement);
+      if (backgroundImageLayer) {
+        backgroundImageLayer.removeAttribute('src');
+        backgroundImageLayer.style.display = 'none';
       }
 
       if (backgroundMediaUrl) {
@@ -1222,7 +1274,6 @@
 
       backgroundImage = null;
       backgroundVideo = null;
-      backgroundMediaElement = null;
       backgroundMediaUrl = '';
       backgroundImageName = '';
       backgroundMediaType = '';
