@@ -153,6 +153,7 @@
       max-width: 100%;
       margin: 0 auto;
       overflow: visible;
+      position: relative;
     }
 
     /* --- papaya UI customisation...not a big fan! Fix this bloody thing, papaya! --- */
@@ -178,6 +179,10 @@
       padding: 5px !important;
       /* Ensure it sits on top */
       z-index: 100;
+    }
+
+    .papaya-control-tucked {
+      z-index: 999999 !important;
     }
 
     /* --- mobile styles --- */
@@ -341,21 +346,126 @@
       }
     }
 
+    function tuckPapayaControls() {
+      const container = document.getElementById('papayaContainer');
+
+      if (!container || window.innerWidth <= 768) {
+        return;
+      }
+
+      const rect = container.getBoundingClientRect();
+
+      const menuBar = container.querySelector('.papaya-menu-bar');
+      const displayBar = container.querySelector('.papaya-display');
+
+      const imageTop = menuBar ? menuBar.getBoundingClientRect().bottom : rect.top + 24;
+      const imageBottom = displayBar ? displayBar.getBoundingClientRect().top : rect.bottom - 42;
+
+      const rightPaneLeft = rect.left + (rect.width * 0.666);
+      const upperPaneBottom = imageTop + ((imageBottom - imageTop) / 2);
+
+      const buttons = Array.from(
+        container.querySelectorAll('button, input[type="button"], input[type="submit"]')
+      );
+
+      function buttonText(btn) {
+        return (btn.value || btn.textContent || btn.getAttribute('title') || '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function placeFixed(btn, x, y) {
+        btn.classList.add('papaya-control-tucked');
+        btn.style.position = 'fixed';
+        btn.style.left = x + 'px';
+        btn.style.top = y + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+        btn.style.margin = '0';
+        btn.style.zIndex = '999999';
+        btn.style.pointerEvents = 'auto';
+      }
+
+      const goCenter = buttons.find(btn => {
+        const txt = buttonText(btn).toLowerCase();
+        return txt.includes('go to center') || txt.includes('go to centre');
+      });
+
+      const goOrigin = buttons.find(btn => {
+        return buttonText(btn).toLowerCase().includes('go to origin');
+      });
+
+      const swapView = buttons.find(btn => {
+        return buttonText(btn).toLowerCase().includes('swap view');
+      });
+
+      const plusButton = buttons.find(btn => buttonText(btn) === '+');
+      const minusButton = buttons.find(btn => buttonText(btn) === '-' || buttonText(btn) === '−');
+
+      /*
+        Main axial window buttons:
+        Move them from the centre-bottom of the brain to the lower-left corner.
+      */
+      if (goCenter) {
+        const y = imageBottom - goCenter.offsetHeight - 8;
+        placeFixed(goCenter, rect.left + 8, y);
+
+        if (goOrigin) {
+          placeFixed(goOrigin, rect.left + 8 + goCenter.offsetWidth + 6, y);
+        }
+      }
+
+      /*
+        Swap View:
+        Move it to the lower-left corner of the right-side viewing window.
+      */
+      if (swapView) {
+        const y = imageBottom - swapView.offsetHeight - 8;
+        placeFixed(swapView, rightPaneLeft + 8, y);
+      }
+
+      /*
+        Sagittal zoom buttons:
+        Move + / - away from the top-right feature icons and tuck them into the
+        lower-left corner of the sagittal panel.
+      */
+      if (plusButton && minusButton) {
+        const x = rightPaneLeft + 8;
+        const y = upperPaneBottom - plusButton.offsetHeight - minusButton.offsetHeight - 14;
+
+        placeFixed(plusButton, x, y);
+        placeFixed(minusButton, x, y + plusButton.offsetHeight + 6);
+      }
+    }
+
+    function schedulePapayaControlTuck() {
+      setTimeout(tuckPapayaControls, 150);
+    }
+
     window.onload = function() {
       papaya.Container.addViewer('papayaContainer', params);
 
       // AUTO-RESIZE:
-      // This is the key. I trigger a resize after the layout settles. because this stupid thing is not cooperating!
+      // This is the key. I trigger a resize after the layout settles. because thi stupid thing is not cooperating!
       setTimeout(function() {
         resizePapaya();
         fixScrollBehavior();
+        tuckPapayaControls();
       }, 500);
 
-      setTimeout(resizePapaya, 1000);
+      setTimeout(function() {
+        resizePapaya();
+        tuckPapayaControls();
+      }, 1000);
+
+      setTimeout(tuckPapayaControls, 1500);
     };
 
     window.addEventListener('resize', function() {
-      setTimeout(resizePapaya, 150);
+      setTimeout(function() {
+        resizePapaya();
+        tuckPapayaControls();
+      }, 150);
     });
 
     function fixScrollBehavior() {
@@ -374,6 +484,9 @@
           e.preventDefault();
         }
       }, { passive: false });
+
+      container.addEventListener('click', schedulePapayaControlTuck);
+      container.addEventListener('mouseup', schedulePapayaControlTuck);
     }
   </script>
 </body>
