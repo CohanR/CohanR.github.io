@@ -16,22 +16,16 @@
   <script type="text/javascript" src="papaya.js?build=1456"></script>
 
   <style>
+    /* --- CSS reset & base...what a fiasco! --- */
     :root {
       --primary-color: #007bff;
-      --bg-color: #e5e5e5;
+      --bg-color: #e5e5e5; /* Neutral grey background because I'm cool! */
       --sidebar-bg: #ffffff;
       --text-color: #333;
-      --sidebar-width: 320px;
-      --desktop-padding: 20px;
-      --viewer-ratio: 1.38;
+      --viewer-width-ratio: 1.30;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
+    body, html {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -39,21 +33,22 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      overflow: hidden;
+      overflow: hidden; /* Stop page scroll */
     }
 
+    /* --- layout container, took me a week to figure this thing out dont just copy and paste my code! I'm talking to you, the scraper or the junior developer! --- */
     .app-container {
       display: flex;
       flex-direction: row;
-      width: 100vw;
       height: 100vh;
-      height: 100dvh;
+      width: 100vw;
       overflow: hidden;
     }
 
+    /* --- Added sidebar for my patients and resarch participants so they know how to view their images --- */
     .sidebar {
-      width: var(--sidebar-width);
-      flex: 0 0 var(--sidebar-width);
+      width: 320px;
+      flex-shrink: 0;
       background: var(--sidebar-bg);
       padding: 2rem;
       border-right: 1px solid #ccc;
@@ -112,20 +107,6 @@
       background-color: #0056b3;
     }
 
-    .tool-button {
-      margin-top: 0;
-      width: 100%;
-      max-width: 100%;
-      min-height: 78px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      line-height: 1.35;
-      white-space: normal;
-      overflow-wrap: normal;
-    }
-
     .signature {
       margin-top: auto;
       padding-top: 20px;
@@ -134,51 +115,47 @@
       border-top: 1px solid #eee;
     }
 
+    /* --- Viewer Content Area --- */
     .content {
-      flex: 1 1 auto;
+      flex-grow: 1;
       min-width: 0;
-      min-height: 0;
-      height: 100vh;
-      height: 100dvh;
       position: relative;
       background-color: var(--bg-color);
 
+      /* Bloody ell!I finally settled for flexbox to centre the viewer, but give it padding */
       display: flex;
       justify-content: center;
       align-items: center;
 
-      padding: var(--desktop-padding);
+      /* This padding gives the ungrateful viewer a better proportion and never touches the edge,
+         preventing the bottom bar from being cut off, let's hope */
+      padding: 20px;
+      box-sizing: border-box;
       overflow: hidden;
     }
 
     /*
-      Desktop fix:
-      Do not let Papaya scale only from the huge desktop width.
-      The viewer width is capped by available viewport height, which prevents
-      the bottom information bar from being cut off on large displays.
+      This is the important part:
+      The shell is constrained by viewport height, but Papaya itself is NOT forced
+      into a fake height. Papaya gets a sane width, then calculates its own layout.
     */
-    #papayaContainer {
-      width: min(100%, calc((100vh - 40px) * var(--viewer-ratio))) !important;
-      height: calc(100vh - 40px) !important;
-      max-width: 100% !important;
-      max-height: calc(100vh - 40px) !important;
+    .viewer-shell {
+      width: min(100%, calc((100vh - 40px) * var(--viewer-width-ratio)));
+      max-width: 1280px;
       margin: 0 auto;
-      overflow: hidden;
+      overflow: visible;
     }
 
-    @supports (height: 100dvh) {
-      #papayaContainer {
-        width: min(100%, calc((100dvh - 40px) * var(--viewer-ratio))) !important;
-        height: calc(100dvh - 40px) !important;
-        max-height: calc(100dvh - 40px) !important;
-      }
-    }
-
-    .papaya-wrapper {
+    /* --- the viewer container --- */
+    /* Do NOT force height here. That is what stretches Papaya and messes with zoom mode. */
+    #papayaContainer {
       width: 100%;
-      height: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      overflow: visible;
     }
 
+    /* --- papaya UI customisation...not a big fan! Fix this bloody thing, papaya! --- */
     .papaya-menu-bar {
       background-color: #444 !important;
       border-bottom: 1px solid #555 !important;
@@ -192,42 +169,52 @@
       background-color: #666 !important;
     }
 
+    /* force bottom info bar visibility & contrast */
     .papaya-display {
       background-color: #000 !important;
       border-top: 1px solid #555 !important;
       color: #fff !important;
       font-size: 14px !important;
       padding: 5px !important;
+      /* Ensure it sits on top */
       z-index: 100;
     }
 
+    /* --- mobile styles --- */
     .mobile-header {
       display: none;
     }
 
+    @supports (height: 100dvh) {
+      .app-container {
+        height: 100dvh;
+      }
+
+      .viewer-shell {
+        width: min(100%, calc((100dvh - 40px) * var(--viewer-width-ratio)));
+      }
+    }
+
     @media (max-width: 768px) {
-      html,
-      body {
+      body, html {
         overflow: auto;
       }
 
       .app-container {
         flex-direction: column;
-        width: 100%;
         height: auto;
         min-height: 100vh;
-        min-height: 100dvh;
         overflow: visible;
       }
 
       .sidebar {
         width: 100%;
-        flex: none;
         height: auto;
         order: 2;
         padding: 1.5rem;
         border-right: none;
         border-top: 1px solid #ccc;
+        box-sizing: border-box;
       }
 
       .home-button {
@@ -235,14 +222,16 @@
       }
 
       .content {
-        flex: none;
-        width: 100%;
-        height: 60vh;
-        height: 60dvh;
-        min-height: 420px;
+        height: 60vh; /* fixed height on mobile to ensure viewability */
         order: 1;
-        padding: 0;
+        padding: 0; /* remove padding on mobile for max size */
         background-color: #000;
+      }
+
+      .viewer-shell {
+        width: 100%;
+        height: 100%;
+        max-width: none;
       }
 
       #papayaContainer {
@@ -271,6 +260,7 @@
 </head>
 
 <body>
+
   <div class="mobile-header">
     <strong>MRI Viewer</strong>
     <a href="index.html" class="mobile-home-btn">Exit</a>
@@ -281,10 +271,7 @@
       <a href="index.html" class="home-button">← Back to Home</a>
 
       <h3>Instructions</h3>
-      <p>
-        This viewer is pre-loaded with the MNI 152 standard brain.
-        <strong>Scroll/click/hover over the brain</strong> to see anatomical labels and coordinates
-      </p>
+      <p>This viewer is pre-loaded with the MNI 152 standard brain. <strong>Scroll/click/hover over the brain</strong> to see anatomical labels and coordinates</p>
 
       <h3>To load your own image:</h3>
       <ol>
@@ -301,33 +288,32 @@
       </p>
 
       <a href="SkullCortex_3D.html"
-         class="home-button tool-button"
-         style="background-color: #6f42c1;">
+         class="home-button"
+         style="background-color: #6f42c1; margin-top: 0; width: 100%; max-width: 100%; min-height: 78px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.35; box-sizing: border-box; white-space: normal; overflow-wrap: normal;">
         💀 3D Head/Cortex Visualiser
       </a>
 
       <a href="neuroanatomy_brain_dissection.html"
-         class="home-button tool-button"
-         style="background-color: #00897b;">
+         class="home-button"
+         style="background-color: #00897b; margin-top: 0; width: 100%; max-width: 100%; min-height: 78px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.35; box-sizing: border-box; white-space: normal; overflow-wrap: normal;">
         Neuroanatomy, Brain Dissection<br>
         and Ex Vivo MRI
       </a>
 
       <a href="phosphenogram_web_v2.html"
-         class="home-button tool-button"
-         style="background-color: #222222;">
+         class="home-button"
+         style="background-color: #222222; margin-top: 0; width: 100%; max-width: 100%; min-height: 78px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.35; box-sizing: border-box; white-space: normal; overflow-wrap: normal;">
         ✨ Phosphenogram<br>
         Phosphene Drawing Tool
       </a>
 
-      <p class="signature">
-        Remy Cohan<br>
-        <small>remycohan@neuropsis.org</small>
-      </p>
+      <p class="signature">Remy Cohan<br><small>remycohan@neuropsis.org</small></p>
     </div>
 
     <div class="content">
-      <div id="papayaContainer"></div>
+      <div class="viewer-shell">
+        <div id="papayaContainer"></div>
+      </div>
     </div>
   </div>
 
@@ -338,7 +324,7 @@
       showControls: true,
       kioskMode: false,
       allowBodyScroll: false,
-      expandable: true,
+      expandable: true,       // ALLOWS IT TO FILL CONTAINER
       mainView: 'axial',
       coordinate: [0, 0, 0]
     };
@@ -354,6 +340,23 @@
         window.dispatchEvent(new Event('resize'));
       }
     }
+
+    window.onload = function() {
+      papaya.Container.addViewer('papayaContainer', params);
+
+      // AUTO-RESIZE:
+      // This is the key. I trigger a resize after the layout settles. because this stupid thing is not cooperating!
+      setTimeout(function() {
+        resizePapaya();
+        fixScrollBehavior();
+      }, 500);
+
+      setTimeout(resizePapaya, 1000);
+    };
+
+    window.addEventListener('resize', function() {
+      setTimeout(resizePapaya, 150);
+    });
 
     function fixScrollBehavior() {
       const container = document.getElementById('papayaContainer');
@@ -371,36 +374,6 @@
           e.preventDefault();
         }
       }, { passive: false });
-    }
-
-    window.onload = function() {
-      papaya.Container.addViewer('papayaContainer', params);
-
-      setTimeout(function() {
-        resizePapaya();
-        fixScrollBehavior();
-      }, 500);
-
-      setTimeout(resizePapaya, 1000);
-      setTimeout(resizePapaya, 1500);
-    };
-
-    window.addEventListener('resize', function() {
-      setTimeout(resizePapaya, 150);
-    });
-
-    if ('ResizeObserver' in window) {
-      var papayaResizeObserver = new ResizeObserver(function() {
-        resizePapaya();
-      });
-
-      window.addEventListener('load', function() {
-        var container = document.getElementById('papayaContainer');
-
-        if (container) {
-          papayaResizeObserver.observe(container);
-        }
-      });
     }
   </script>
 </body>
