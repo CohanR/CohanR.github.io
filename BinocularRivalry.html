@@ -6,8 +6,8 @@
   <meta name="color-scheme" content="dark">
 
   <!-- seo -->
-  <title>Binocular Rivalry: Neuro-Ophthalmology | Remy Cohan</title>
-  <meta name="description" content="A browser-based binocular rivalry experiment for neuro-ophthalmology with configurable dichoptic gratings, colour stimuli, image or GIF presentation, continuous percept reporting, local recovery and legacy Excel export.">
+  <title>Binocular Rivalry Experiment: Original | Neuro-Ophthalmology | Remy Cohan</title>
+  <meta name="description" content="A browser-based binocular rivalry for neuro-ophthalmology experiments with configurable dichoptic gratings, colour stimuli, image or GIF presentation, continuous percept reporting, local recovery and legacy Excel export.">
   <meta name="author" content="Remy Cohan">
   <meta name="keywords" content="binocular rivalry, dichoptic stimulation, visual perception, psychophysics, neuroscience, visual cortex, mirror stereoscope, perceptual alternation, neuro-ophthalmology, Remy Cohan, Neuropsis">
   <meta name="robots" content="index, follow">
@@ -17,7 +17,7 @@
 
   <!-- open graph -->
   <meta property="og:title" content="Binocular Rivalry Experiment: Original | Remy Cohan">
-  <meta property="og:description" content="A configurable browser-based binocular rivalry experiment for dichoptic neuro-ophthalmology research.">
+  <meta property="og:description" content="A configurable browser-based binocular rivalry for neuro-ophthalmology experiment for dichoptic visual-perception research.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://neuropsis.org/BinocularRivalry.html">
   <meta property="og:site_name" content="Neuropsis">
@@ -25,7 +25,7 @@
   <!-- twitter -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Binocular Rivalry Experiment: Original | Remy Cohan">
-  <meta name="twitter:description" content="A configurable browser-based binocular rivalry experiment for dichoptic visual-perception research.">
+  <meta name="twitter:description" content="A configurable browser-based binocular rivalry experiment for dichoptic neuro-ophthalmology research.">
 
   <!-- structured data -->
   <script type="application/ld+json">
@@ -36,7 +36,7 @@
     "softwareVersion": "Original",
     "applicationCategory": "ResearchApplication",
     "operatingSystem": "Any modern web browser",
-    "description": "A browser-based binocular rivalry neuro-ophthalmology experiment with configurable dichoptic stimuli, continuous percept reporting, trial timing, local recovery and legacy Excel export.",
+    "description": "A browser-based binocular rivalry experiment with configurable dichoptic stimuli, continuous percept reporting, trial timing, local recovery and legacy Excel export.",
     "author": {
       "@type": "Person",
       "name": "Remy Cohan",
@@ -422,8 +422,9 @@
             <input id="stimulusSize" type="number" min="40" max="3000" step="1" value="396">
           </div>
           <div class="field">
-            <label for="eyeSeparation">Eye-centre separation (display px)</label>
-            <input id="eyeSeparation" type="number" min="0" max="6000" step="1" value="960">
+            <label for="eyeSeparation">Gap between stimulus edges (display px)</label>
+            <input id="eyeSeparation" type="number" min="0" max="6000" step="1" value="564">
+            <small>The centre spacing increases automatically when the stimulus size increases.</small>
           </div>
           <div class="field">
             <label for="fixationSize">Fixation half-size (display px)</label>
@@ -586,7 +587,7 @@
   const APP = Object.freeze({
     name: 'Binocular Rivalry Experiment',
     edition: 'Original',
-    version: '1.0.0'
+    version: '1.0.1'
   });
 
   const HEADERS = ['grating ID', 'SF', 'orientation', 'button', 'start', 'duration'];
@@ -687,7 +688,7 @@
       insertZeroRows: $('insertZeroRows').checked,
       showTrialNumber: $('showTrialNumber').checked,
       stimulusSizePx: integerValue('stimulusSize', 'Stimulus size', 40, 3000),
-      eyeSeparationPx: numberValue('eyeSeparation', 'Eye separation', 0, 6000),
+      eyeGapPx: numberValue('eyeSeparation', 'Stimulus edge gap', 0, 6000),
       fixationHalfSizePx: numberValue('fixationSize', 'Fixation size', 1, 100),
       fixationWidthPx: numberValue('fixationWidth', 'Fixation width', 1, 20),
       screenWidthCm: numberValue('screenWidthCm', 'Screen width', 5, 500),
@@ -906,7 +907,9 @@
   }
 
   function layoutEyeTargets(config) {
-    const separationCss = pxToCss(config.eyeSeparationPx, config);
+    // keep a fixed clear gap between the two stimuli. bigger circles should not slowly invade each other's personal space.
+    const centreSeparationPx = config.stimulusSizePx + config.eyeGapPx;
+    const separationCss = pxToCss(centreSeparationPx, config);
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
 
