@@ -4,13 +4,57 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="color-scheme" content="dark">
-  <title>Binocular Rivalry Experiment</title>
 
-  <!--
-    SheetJS is used only to create a genuine legacy Excel .xls workbook.
-    For a production/offline deployment, download xlsx.full.min.js and replace
-    this URL with: <script src="xlsx.full.min.js"></script>
-  -->
+  <!-- seo -->
+  <title>Binocular Rivalry Neuro-Ophth: Original | Remy Cohan</title>
+  <meta name="description" content="A browser-based binocular rivalry experiment with configurable dichoptic gratings, colour stimuli, image or GIF presentation, continuous percept reporting, local recovery and legacy Excel export.">
+  <meta name="author" content="Remy Cohan">
+  <meta name="keywords" content="binocular rivalry, dichoptic stimulation, visual perception, psychophysics, neuroscience, visual cortex, mirror stereoscope, perceptual alternation, neuro-ophthalmology, Remy Cohan, Neuropsis">
+  <meta name="robots" content="index, follow">
+  <meta name="application-name" content="Binocular Rivalry Experiment: Original">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="canonical" href="https://neuropsis.org/BinocularRivalry.html">
+
+  <!-- open graph -->
+  <meta property="og:title" content="Binocular Rivalry Experiment: Original | Remy Cohan">
+  <meta property="og:description" content="A configurable browser-based binocular rivalry experiment for dichoptic neuro-ophthalmology research.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://neuropsis.org/BinocularRivalry.html">
+  <meta property="og:site_name" content="Neuropsis">
+
+  <!-- twitter -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Binocular Rivalry Experiment: Original | Remy Cohan">
+  <meta name="twitter:description" content="A configurable browser-based binocular rivalry experiment for dichoptic visual-perception research.">
+
+  <!-- structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Binocular Rivalry Experiment: Original",
+    "softwareVersion": "Original",
+    "applicationCategory": "ResearchApplication",
+    "operatingSystem": "Any modern web browser",
+    "description": "A browser-based binocular rivalry neuro-ophthalmology experiment with configurable dichoptic stimuli, continuous percept reporting, trial timing, local recovery and legacy Excel export.",
+    "author": {
+      "@type": "Person",
+      "name": "Remy Cohan",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "York University"
+      }
+    },
+    "creator": {
+      "@type": "Person",
+      "name": "Remy Cohan"
+    },
+    "url": "https://neuropsis.org/BinocularRivalry.html",
+    "isAccessibleForFree": true
+  }
+  </script>
+
+  <!-- excel export. excel 97-2003 is somehow still alive, so here we are. -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -89,6 +133,17 @@
     }
 
     h1 { margin: 0 0 8px; font-size: 30px; }
+    .edition {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 3px 8px;
+      border: 1px solid #4f87d3;
+      border-radius: 999px;
+      color: #b9d6ff;
+      font-size: 13px;
+      font-weight: normal;
+      vertical-align: middle;
+    }
     h2 { margin: 0 0 14px; font-size: 19px; }
     p { line-height: 1.45; }
     .subtle { color: var(--muted); }
@@ -302,7 +357,7 @@
 <body>
   <section id="setupScreen" class="screen active">
     <div class="setup-wrap">
-      <h1>Binocular Rivalry Experiment</h1>
+      <h1>Binocular Rivalry Experiment <span class="edition">Original</span></h1>
       <p class="subtle">
         Hold <strong>A</strong> for the left percept, <strong>S</strong> for mixed/piecemeal,
         and <strong>D</strong> for the right percept. Press <strong>SPACE</strong> between trials.
@@ -415,11 +470,12 @@
           <div class="field">
             <label for="spatialMode">Spatial-frequency calculation</label>
             <select id="spatialMode">
-              <option value="legacy">Replicate MATLAB calculation</option>
+              <option value="original">Original</option>
               <option value="standard">Standard visual-angle calculation</option>
               <option value="cycles">Direct cycles per stimulus</option>
             </select>
           </div>
+          <p class="subtle">Original preserves the spatial-frequency calculation used in the first version of this experiment.</p>
           <div class="field">
             <label for="sf">Spatial frequency (cpd)</label>
             <input id="sf" type="number" min="0.01" max="30" step="0.01" value="0.5">
@@ -526,6 +582,13 @@
 (() => {
   'use strict';
 
+  // application constants
+  const APP = Object.freeze({
+    name: 'Binocular Rivalry Experiment',
+    edition: 'Original',
+    version: '1.0.0'
+  });
+
   const HEADERS = ['grating ID', 'SF', 'orientation', 'button', 'start', 'duration'];
   const ZERO_ROW = [0, 0, 0, 0, 0, 0];
   const RESPONSE_CODES = {
@@ -534,6 +597,7 @@
     KeyD: { button: 3, label: 'right' }
   };
 
+  // dom references
   const $ = (id) => document.getElementById(id);
 
   const elements = {
@@ -557,6 +621,7 @@
     downloadRecoveryButton: $('downloadRecoveryButton')
   };
 
+  // runtime state
   let state = {
     phase: 'setup',
     config: null,
@@ -575,6 +640,7 @@
     longFrameCount: 0
   };
 
+  // interface helpers
   function setScreen(name) {
     elements.setup.classList.toggle('active', name === 'setup');
     elements.experiment.classList.toggle('active', name === 'experiment');
@@ -608,6 +674,7 @@
     return filename;
   }
 
+  // configuration
   function readConfig() {
     const mode = $('stimulusMode').value;
     const config = {
@@ -628,7 +695,7 @@
       useDevicePixels: $('devicePixels').checked,
       stimulusMode: mode,
       maskMode: $('maskMode').value,
-      spatialMode: $('spatialMode').value,
+      spatialMode: $('spatialMode').value === 'legacy' ? 'original' : $('spatialMode').value,
       spatialFrequencyCpd: numberValue('sf', 'Spatial frequency', 0.01, 30),
       cyclesPerStimulus: numberValue('cyclesPerStimulus', 'Cycles per stimulus', 0.1, 100),
       orientationA: numberValue('orientationA', 'Orientation A', -360, 360),
@@ -672,6 +739,7 @@
     $('cyclesField').classList.toggle('visible', $('spatialMode').value === 'cycles');
   }
 
+  // stimulus geometry and generation
   function hexToRgb(hex) {
     const clean = hex.replace('#', '');
     return {
@@ -689,8 +757,8 @@
     const displayWidthPx = currentDisplayWidthPx(config);
     let screenWidthDeg;
 
-    if (config.spatialMode === 'legacy') {
-      // Exact equation used in the old MATLAB script:
+    if (config.spatialMode === 'original') {
+      // original experiment equation. not textbook geometry, but changing it would change the stimulus.
       // 2 * atan(screen_width / viewing_distance), followed by cpd * 0.62.
       screenWidthDeg = 2 * Math.atan(config.screenWidthCm / config.viewingDistanceCm) * 180 / Math.PI;
       const degPerPx = screenWidthDeg / displayWidthPx;
@@ -887,6 +955,7 @@
     return Number(value.toFixed(7));
   }
 
+  // workbook and recovery saving
   function buildWorkbook() {
     if (!window.XLSX) throw new Error('SheetJS did not load; cannot create the .xls workbook.');
     const config = state.config || readConfig();
@@ -1001,6 +1070,7 @@
     }
   }
 
+  // response timing
   function getEventTimeMs(event) {
     const now = performance.now();
     const ts = Number(event.timeStamp);
@@ -1070,6 +1140,7 @@
     recordResponseEnd(event.code, getEventTimeMs(event), 'keyup');
   }
 
+  // experiment lifecycle
   function startTrial(index) {
     if (index >= state.config.trials) {
       finishExperiment();
@@ -1092,8 +1163,8 @@
     elements.timingWarning.style.display = 'none';
     setScreen('experiment');
 
-    // First callback prepares the frame. The second callback timestamp follows
-    // the first paint containing the stimuli and is used as trial time zero.
+    // the first callback prepares the frame. the second timestamp follows the first paint.
+    // two callbacks because browsers enjoy being mysterious about when pixels actually appear.
     requestAnimationFrame(() => {
       requestAnimationFrame((timestamp) => {
         if (state.phase !== 'trial') return;
@@ -1240,6 +1311,7 @@
     updateRuntimeInfo();
   }
 
+  // recovery and setup controls
   function findRecoveries() {
     const recoveries = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -1290,12 +1362,13 @@
 
   function checkLibrary() {
     if (window.XLSX) {
-      setStatus(elements.libraryStatus, `Excel export ready (SheetJS ${XLSX.version}).`, 'ok');
+      setStatus(elements.libraryStatus, `${APP.name} · ${APP.edition} ${APP.version} · Excel export ready (SheetJS ${XLSX.version}).`, 'ok');
     } else {
       setStatus(elements.libraryStatus, 'Excel export library failed to load. The page needs internet access, or xlsx.full.min.js must be hosted beside this HTML file.', 'error');
     }
   }
 
+  // event wiring
   $('stimulusMode').addEventListener('change', updateConditionalControls);
   $('spatialMode').addEventListener('change', updateConditionalControls);
   elements.prepareOutputButton.addEventListener('click', prepareOutput);
