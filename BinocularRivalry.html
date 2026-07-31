@@ -358,9 +358,10 @@
   <section id="setupScreen" class="screen active">
     <div class="setup-wrap">
       <h1>Binocular Rivalry Experiment <span class="edition">Original</span></h1>
-      <p class="subtle">
-        Hold <strong>A</strong> for the left percept, <strong>S</strong> for mixed/piecemeal,
-        and <strong>D</strong> for the right percept. Press <strong>SPACE</strong> between trials.
+      <p id="responseInstruction" class="subtle">
+        Hold <strong id="leftKeyLabel">A</strong> for the left percept,
+        <strong id="mixedKeyLabel">S</strong> for mixed/piecemeal, and
+        <strong id="rightKeyLabel">D</strong> for the right percept. Press <strong>SPACE</strong> between trials.
       </p>
 
       <div id="libraryStatus" class="status">Checking Excel export support…</div>
@@ -380,18 +381,27 @@
             <input id="filename" value="sub-012_mt_post.xls" autocomplete="off">
           </div>
           <div class="field">
-            <label for="dominantEye">Dominant eye</label>
+            <label for="dominantEye">Physical dominant eye</label>
             <select id="dominantEye">
               <option value="right">Right eye</option>
               <option value="left">Left eye</option>
             </select>
           </div>
           <div class="field">
-            <label for="eyeAssignment">Stimulus assignment</label>
-            <select id="eyeAssignment">
-              <option value="dominant">A to dominant eye</option>
-              <option value="physical">A to physical left eye</option>
+            <label for="dominantScreenSide">Dominant eye views</label>
+            <select id="dominantScreenSide">
+              <option value="right">Right screen stimulus</option>
+              <option value="left">Left screen stimulus</option>
             </select>
+            <small>Set this from the actual mirror-stereoscope routing, not from the participant's handedness or vibes.</small>
+          </div>
+          <div class="field">
+            <label for="stimulusATarget">Stimulus A presented to</label>
+            <select id="stimulusATarget">
+              <option value="dominant">Dominant eye</option>
+              <option value="nondominant">Non-dominant eye</option>
+            </select>
+            <small>Stimulus A is orientation A, colour A or media file A, depending on the selected mode.</small>
           </div>
           <div class="field">
             <label for="trials">Number of trials</label>
@@ -493,13 +503,16 @@
             <label for="orientationB">Orientation B (deg)</label>
             <input id="orientationB" type="number" min="-360" max="360" step="1" value="135">
           </div>
-          <div class="field">
-            <label for="deContrast">Dominant-eye contrast (0–1)</label>
-            <input id="deContrast" type="number" min="0" max="1" step="0.01" value="1">
-          </div>
-          <div class="field">
-            <label for="ndeContrast">Non-dominant-eye contrast (0–1)</label>
-            <input id="ndeContrast" type="number" min="0" max="1" step="0.01" value="1">
+          <div id="grayscaleContrastFields">
+            <div class="field">
+              <label for="grayscaleContrastA">Grayscale A contrast (0–1)</label>
+              <input id="grayscaleContrastA" type="number" min="0" max="1" step="0.01" value="1">
+            </div>
+            <div class="field">
+              <label for="grayscaleContrastB">Grayscale B contrast (0–1)</label>
+              <input id="grayscaleContrastB" type="number" min="0" max="1" step="0.01" value="1">
+            </div>
+            <p class="subtle">With both values at 1, grayscale contrast is equal. Eye dominance then only determines which orientation is routed to which eye.</p>
           </div>
         </div>
 
@@ -535,6 +548,26 @@
             <input id="mediaB" type="file" accept="image/*,.gif">
           </div>
           <p class="subtle">Files remain local in the browser. Animated GIF timing is controlled by the browser and is not suitable for precision flicker timing.</p>
+        </div>
+
+        <div class="card">
+          <h2>Response keys</h2>
+          <div class="field">
+            <label for="leftKey">Left percept</label>
+            <select id="leftKey" data-default="KeyA"></select>
+          </div>
+          <div class="field">
+            <label for="mixedKey">Mixed/piecemeal percept</label>
+            <select id="mixedKey" data-default="KeyS"></select>
+          </div>
+          <div class="field">
+            <label for="rightKey">Right percept</label>
+            <select id="rightKey" data-default="KeyD"></select>
+          </div>
+          <p class="subtle">
+            The three keys must be different. The Excel button codes never change:
+            1 = left, 2 = mixed, 3 = right.
+          </p>
         </div>
 
         <div class="card">
@@ -587,16 +620,24 @@
   const APP = Object.freeze({
     name: 'Binocular Rivalry Experiment',
     edition: 'Original',
-    version: '1.0.1'
+    version: '1.1.0'
   });
 
   const HEADERS = ['grating ID', 'SF', 'orientation', 'button', 'start', 'duration'];
   const ZERO_ROW = [0, 0, 0, 0, 0, 0];
-  const RESPONSE_CODES = {
-    KeyA: { button: 1, label: 'left' },
-    KeyS: { button: 2, label: 'mixed' },
-    KeyD: { button: 3, label: 'right' }
-  };
+  const RESPONSE_TYPES = Object.freeze({
+    left: Object.freeze({ button: 1, label: 'left' }),
+    mixed: Object.freeze({ button: 2, label: 'mixed' }),
+    right: Object.freeze({ button: 3, label: 'right' })
+  });
+
+  const RESPONSE_KEY_OPTIONS = Object.freeze([
+    ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter) => ({ code: `Key${letter}`, label: letter })),
+    ...'1234567890'.split('').map((digit) => ({ code: `Digit${digit}`, label: digit })),
+    { code: 'ArrowLeft', label: 'left arrow' },
+    { code: 'ArrowDown', label: 'down arrow' },
+    { code: 'ArrowRight', label: 'right arrow' }
+  ]);
 
   // dom references
   const $ = (id) => document.getElementById(id);
@@ -675,13 +716,76 @@
     return filename;
   }
 
+  // response-key configuration
+  function keyLabel(code) {
+    return RESPONSE_KEY_OPTIONS.find((option) => option.code === code)?.label || code;
+  }
+
+  function populateResponseKeySelectors() {
+    for (const id of ['leftKey', 'mixedKey', 'rightKey']) {
+      const select = $(id);
+      const defaultCode = select.dataset.default;
+      select.replaceChildren();
+      for (const optionData of RESPONSE_KEY_OPTIONS) {
+        const option = document.createElement('option');
+        option.value = optionData.code;
+        option.textContent = optionData.label;
+        select.append(option);
+      }
+      select.value = defaultCode;
+    }
+  }
+
+  function readResponseKeys() {
+    const responseKeys = {
+      left: $('leftKey').value,
+      mixed: $('mixedKey').value,
+      right: $('rightKey').value
+    };
+
+    const uniqueCodes = new Set(Object.values(responseKeys));
+    if (uniqueCodes.size !== 3) {
+      throw new Error('Left, mixed and right percepts must use three different response keys.');
+    }
+
+    return responseKeys;
+  }
+
+  function buildResponseCodeMap(responseKeys) {
+    return {
+      [responseKeys.left]: RESPONSE_TYPES.left,
+      [responseKeys.mixed]: RESPONSE_TYPES.mixed,
+      [responseKeys.right]: RESPONSE_TYPES.right
+    };
+  }
+
+  function responseForCode(code) {
+    return state.config?.responseCodeMap?.[code] || null;
+  }
+
+  function responseInstruction(config = null) {
+    const keys = config?.responseKeys || {
+      left: $('leftKey').value,
+      mixed: $('mixedKey').value,
+      right: $('rightKey').value
+    };
+    return `${keyLabel(keys.left)} = left percept · ${keyLabel(keys.mixed)} = mixed/piecemeal · ${keyLabel(keys.right)} = right percept`;
+  }
+
+  function updateResponseInstruction() {
+    $('leftKeyLabel').textContent = keyLabel($('leftKey').value);
+    $('mixedKeyLabel').textContent = keyLabel($('mixedKey').value);
+    $('rightKeyLabel').textContent = keyLabel($('rightKey').value);
+  }
+
   // configuration
   function readConfig() {
     const mode = $('stimulusMode').value;
     const config = {
       filename: normalizeFilename($('filename').value),
       dominantEye: $('dominantEye').value,
-      eyeAssignment: $('eyeAssignment').value,
+      dominantScreenSide: $('dominantScreenSide').value,
+      stimulusATarget: $('stimulusATarget').value,
       trials: integerValue('trials', 'Number of trials', 1, 100),
       trialDurationS: numberValue('trialDuration', 'Trial duration', 1, 3600),
       practice: $('practice').checked,
@@ -701,8 +805,9 @@
       cyclesPerStimulus: numberValue('cyclesPerStimulus', 'Cycles per stimulus', 0.1, 100),
       orientationA: numberValue('orientationA', 'Orientation A', -360, 360),
       orientationB: numberValue('orientationB', 'Orientation B', -360, 360),
-      deContrast: numberValue('deContrast', 'Dominant-eye contrast', 0, 1),
-      ndeContrast: numberValue('ndeContrast', 'Non-dominant-eye contrast', 0, 1),
+      grayscaleContrastA: numberValue('grayscaleContrastA', 'Grayscale A contrast', 0, 1),
+      grayscaleContrastB: numberValue('grayscaleContrastB', 'Grayscale B contrast', 0, 1),
+      responseKeys: readResponseKeys(),
       colourA: $('colourA').value,
       colourB: $('colourB').value,
       colourContrastA: numberValue('colourContrastA', 'Stimulus A contrast', 0, 1),
@@ -710,6 +815,8 @@
       mediaA: $('mediaA').files[0] || null,
       mediaB: $('mediaB').files[0] || null
     };
+
+    config.responseCodeMap = buildResponseCodeMap(config.responseKeys);
 
     if (mode === 'media' && (!config.mediaA || !config.mediaB)) {
       throw new Error('Choose both stimulus files for image/GIF mode.');
@@ -735,6 +842,7 @@
 
   function updateConditionalControls() {
     const mode = $('stimulusMode').value;
+    $('grayscaleContrastFields').style.display = mode === 'grayscale' ? 'block' : 'none';
     $('colourCard').classList.toggle('visible', mode === 'colour');
     $('mediaCard').classList.toggle('visible', mode === 'media');
     $('cyclesField').classList.toggle('visible', $('spatialMode').value === 'cycles');
@@ -885,25 +993,19 @@
       stimulusA = createGratingCanvas(config, config.orientationA, config.colourContrastA, config.colourA);
       stimulusB = createGratingCanvas(config, config.orientationB, config.colourContrastB, config.colourB);
     } else {
-      stimulusA = createGratingCanvas(config, config.orientationA, config.deContrast, null);
-      stimulusB = createGratingCanvas(config, config.orientationB, config.ndeContrast, null);
+      stimulusA = createGratingCanvas(config, config.orientationA, config.grayscaleContrastA, null);
+      stimulusB = createGratingCanvas(config, config.orientationB, config.grayscaleContrastB, null);
     }
 
-    let leftStimulus;
-    let rightStimulus;
+    // the stereoscope decides which screen position reaches the dominant eye.
+    // stimulus assignment should not have to guess what the mirrors are doing today.
+    const dominantSide = config.dominantScreenSide;
+    const nonDominantSide = dominantSide === 'left' ? 'right' : 'left';
+    const stimulusASide = config.stimulusATarget === 'dominant' ? dominantSide : nonDominantSide;
 
-    if (config.eyeAssignment === 'physical') {
-      leftStimulus = stimulusA;
-      rightStimulus = stimulusB;
-    } else if (config.dominantEye === 'left') {
-      leftStimulus = stimulusA;
-      rightStimulus = stimulusB;
-    } else {
-      leftStimulus = stimulusB;
-      rightStimulus = stimulusA;
-    }
-
-    return { leftStimulus, rightStimulus };
+    return stimulusASide === 'left'
+      ? { leftStimulus: stimulusA, rightStimulus: stimulusB }
+      : { leftStimulus: stimulusB, rightStimulus: stimulusA };
   }
 
   function layoutEyeTargets(config) {
@@ -1085,7 +1187,7 @@
     const startMs = state.activeResponses.get(code);
     state.activeResponses.delete(code);
 
-    const response = RESPONSE_CODES[code];
+    const response = responseForCode(code);
     const trialNumber = state.trialIndex + 1;
     const relativeStartS = Math.max(0, (startMs - state.trialStartMs) / 1000);
     const durationS = Math.max(0, (endMs - startMs) / 1000);
@@ -1112,22 +1214,28 @@
   }
 
   function onKeyDown(event) {
-    if (['Space', 'KeyA', 'KeyS', 'KeyD', 'Escape'].includes(event.code)) event.preventDefault();
+    if (['Space', 'Escape'].includes(event.code) || responseForCode(event.code)) event.preventDefault();
 
     if (event.code === 'Escape' && state.phase !== 'setup') {
       abortExperiment('Experiment ended with ESCAPE.');
       return;
     }
 
-    if (state.phase === 'trial' && RESPONSE_CODES[event.code]) {
-      if (event.repeat || state.activeResponses.has(event.code)) return;
-      const t = getEventTimeMs(event);
-      state.activeResponses.set(event.code, Math.max(t, state.trialStartMs));
+    if (state.phase === 'trial' && responseForCode(event.code)) {
+      if (event.repeat || state.activeResponses.has(event.code) || state.trialStartMs === null) return;
+
+      const t = Math.max(getEventTimeMs(event), state.trialStartMs);
+
+      // percept reports are mutually exclusive. if the participant rolls from one
+      // key onto another, close the old report at the new key-down time. otherwise
+      // two perceptions get counted at once, which is creative but physiologically awkward.
+      closeAllResponses(t, 'response_switch');
+      state.activeResponses.set(event.code, t);
       return;
     }
 
     if (event.code === 'Space') {
-      if (state.phase === 'practice') {
+      if (state.phase === 'practice' || state.phase === 'ready') {
         startTrial(0);
       } else if (state.phase === 'intertrial') {
         startTrial(state.trialIndex + 1);
@@ -1138,7 +1246,7 @@
   }
 
   function onKeyUp(event) {
-    if (state.phase !== 'trial' || !RESPONSE_CODES[event.code]) return;
+    if (state.phase !== 'trial' || !responseForCode(event.code)) return;
     event.preventDefault();
     recordResponseEnd(event.code, getEventTimeMs(event), 'keyup');
   }
@@ -1277,10 +1385,11 @@
         state.phase = 'practice';
         renderStimuli(config);
         elements.trialLabel.style.display = 'none';
-        showExperimentInstruction('Practice', 'Inspect the stimuli, then press SPACE to begin trial 1.');
+        showExperimentInstruction('Practice', `${responseInstruction(config)}. Hold one key at a time. Press SPACE to begin trial 1.`);
         setScreen('experiment');
       } else {
-        startTrial(0);
+        state.phase = 'ready';
+        showMessage('Ready', `${responseInstruction(config)}. Hold one key at a time. Press SPACE to begin trial 1.`);
       }
     } catch (error) {
       setStatus(elements.outputStatus, error.message, 'error');
@@ -1296,7 +1405,9 @@
       await requestFullscreen();
       renderStimuli(config);
       elements.trialLabel.style.display = 'none';
-      showExperimentInstruction('Stimulus preview', 'Press SPACE to return to setup.');
+      const dominantEyeLabel = config.dominantEye === 'left' ? 'left' : 'right';
+      const targetLabel = config.stimulusATarget === 'dominant' ? 'dominant' : 'non-dominant';
+      showExperimentInstruction('Stimulus preview', `${dominantEyeLabel} eye is dominant · dominant eye views the ${config.dominantScreenSide} screen stimulus · stimulus A goes to the ${targetLabel} eye · press SPACE to return.`);
       setScreen('experiment');
     } catch (error) {
       setStatus(elements.outputStatus, error.message, 'error');
@@ -1372,6 +1483,9 @@
   }
 
   // event wiring
+  for (const id of ['leftKey', 'mixedKey', 'rightKey']) {
+    $(id).addEventListener('change', updateResponseInstruction);
+  }
   $('stimulusMode').addEventListener('change', updateConditionalControls);
   $('spatialMode').addEventListener('change', updateConditionalControls);
   elements.prepareOutputButton.addEventListener('click', prepareOutput);
@@ -1397,13 +1511,15 @@
     }
   });
   window.addEventListener('beforeunload', (event) => {
-    if (['trial', 'saving', 'intertrial', 'practice'].includes(state.phase)) {
+    if (['trial', 'saving', 'intertrial', 'practice', 'ready'].includes(state.phase)) {
       saveRecovery();
       event.preventDefault();
       event.returnValue = '';
     }
   });
 
+  populateResponseKeySelectors();
+  updateResponseInstruction();
   updateConditionalControls();
   updateRuntimeInfo();
   findRecoveries();
