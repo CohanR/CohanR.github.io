@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="color-scheme" content="dark">
+  <title>Binocular Rivalry Experiment</title>
+
+  <!--
+    SheetJS is used only to create a genuine legacy Excel .xls workbook.
+    For a production/offline deployment, download xlsx.full.min.js and replace
+    this URL with: <script src="xlsx.full.min.js"></script>
+  -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #111;
+      --panel: #1d1d1d;
+      --line: #404040;
+      --text: #f2f2f2;
+      --muted: #b5b5b5;
+      --accent: #8ab4f8;
+      --danger: #ff8a80;
+      --stim-bg: rgb(128, 128, 128);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid #666;
+      border-radius: 7px;
+      background: #2c2c2c;
+      color: var(--text);
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    button:hover { background: #383838; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.primary { background: #245aa5; border-color: #4f87d3; }
+    button.primary:hover { background: #2e69ba; }
+
+    input, select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #555;
+      border-radius: 5px;
+      background: #111;
+      color: var(--text);
+      padding: 7px 8px;
+    }
+
+    input[type="checkbox"] { width: auto; }
+    input[type="color"] { height: 38px; padding: 2px; }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: none;
+    }
+
+    .screen.active { display: block; }
+
+    #setupScreen {
+      overflow: auto;
+      padding: 24px;
+      background: #121212;
+    }
+
+    .setup-wrap {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding-bottom: 60px;
+    }
+
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    h2 { margin: 0 0 14px; font-size: 19px; }
+    p { line-height: 1.45; }
+    .subtle { color: var(--muted); }
+
+    .status {
+      margin: 14px 0;
+      padding: 10px 12px;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background: #181818;
+      white-space: pre-wrap;
+    }
+
+    .status.error { border-color: #a74747; color: #ffd0d0; }
+    .status.ok { border-color: #39724a; color: #c9ffd5; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel);
+      padding: 16px;
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: minmax(135px, 1fr) minmax(110px, 1fr);
+      gap: 10px;
+      align-items: center;
+      margin: 9px 0;
+    }
+
+    .field label { color: #e3e3e3; }
+    .field small { grid-column: 1 / -1; color: var(--muted); }
+
+    .check-row {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    .runtime-info {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 14px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .runtime-info div {
+      border: 1px solid #3a3a3a;
+      padding: 8px;
+      border-radius: 5px;
+      background: #171717;
+    }
+
+    .conditional { display: none; }
+    .conditional.visible { display: block; }
+
+    #experimentScreen,
+    #messageScreen {
+      background: var(--stim-bg);
+      cursor: none;
+      user-select: none;
+    }
+
+    #eyeStage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .eye-target {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stimulus-holder {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .stimulus-holder canvas,
+    .stimulus-holder img {
+      display: block;
+      max-width: none;
+      max-height: none;
+    }
+
+    .fixation {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .fixation .h,
+    .fixation .v {
+      position: absolute;
+      background: #000;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #trialLabel {
+      position: absolute;
+      left: 18px;
+      top: 14px;
+      color: #fff;
+      font-weight: bold;
+      font-size: 24px;
+      text-shadow: 0 1px 2px #000;
+      display: none;
+    }
+
+    #timingWarning {
+      position: absolute;
+      right: 15px;
+      bottom: 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      display: none;
+    }
+
+    #instructionOverlay {
+      position: absolute;
+      left: 50%;
+      top: 28px;
+      transform: translateX(-50%);
+      z-index: 30;
+      display: none;
+      text-align: center;
+      color: #fff;
+      font-size: 26px;
+      line-height: 1.35;
+      font-weight: bold;
+      text-shadow: 0 1px 3px #000;
+      pointer-events: none;
+    }
+
+    #instructionOverlay .small {
+      display: block;
+      margin-top: 6px;
+      font-size: 17px;
+      font-weight: normal;
+    }
+
+    #messageScreen {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #fff;
+    }
+
+    #messageScreen.active { display: flex; }
+
+    .message-box {
+      width: min(850px, 90vw);
+      font-size: 30px;
+      line-height: 1.4;
+      text-shadow: 0 1px 2px #333;
+    }
+
+    .message-box .small {
+      margin-top: 18px;
+      font-size: 18px;
+      color: #efefef;
+    }
+
+    #finishButtons {
+      display: none;
+      margin-top: 24px;
+      gap: 12px;
+      justify-content: center;
+      cursor: default;
+    }
+
+    #finishButtons.visible { display: flex; }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .runtime-info { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section id="setupScreen" class="screen active">
+    <div class="setup-wrap">
+      <h1>Binocular Rivalry Experiment</h1>
+      <p class="subtle">
+        Hold <strong>A</strong> for the left percept, <strong>S</strong> for mixed/piecemeal,
+        and <strong>D</strong> for the right percept. Press <strong>SPACE</strong> between trials.
+      </p>
+
+      <div id="libraryStatus" class="status">Checking Excel export support…</div>
+
+      <div class="runtime-info">
+        <div>Browser viewport: <span id="viewportInfo"></span></div>
+        <div>Device-pixel ratio: <span id="dprInfo"></span></div>
+        <div>Estimated display pixels: <span id="displayPixelInfo"></span></div>
+        <div>Fullscreen: <span id="fullscreenInfo">No</span></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Run</h2>
+          <div class="field">
+            <label for="filename">Output filename</label>
+            <input id="filename" value="sub-012_mt_post.xls" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="dominantEye">Dominant eye</label>
+            <select id="dominantEye">
+              <option value="right">Right eye</option>
+              <option value="left">Left eye</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="eyeAssignment">Stimulus assignment</label>
+            <select id="eyeAssignment">
+              <option value="dominant">A to dominant eye</option>
+              <option value="physical">A to physical left eye</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="trials">Number of trials</label>
+            <input id="trials" type="number" min="1" max="100" step="1" value="6">
+          </div>
+          <div class="field">
+            <label for="trialDuration">Trial duration (s)</label>
+            <input id="trialDuration" type="number" min="1" max="3600" step="0.1" value="60">
+          </div>
+          <div class="check-row">
+            <input id="practice" type="checkbox" checked>
+            <label for="practice">Show practice screen</label>
+          </div>
+          <div class="check-row">
+            <input id="insertZeroRows" type="checkbox" checked>
+            <label for="insertZeroRows">Zero row between trials</label>
+          </div>
+          <div class="check-row">
+            <input id="showTrialNumber" type="checkbox">
+            <label for="showTrialNumber">Show trial number during viewing</label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Display and geometry</h2>
+          <div class="field">
+            <label for="stimulusSize">Stimulus size (display px)</label>
+            <input id="stimulusSize" type="number" min="40" max="3000" step="1" value="396">
+          </div>
+          <div class="field">
+            <label for="eyeSeparation">Eye-centre separation (display px)</label>
+            <input id="eyeSeparation" type="number" min="0" max="6000" step="1" value="960">
+          </div>
+          <div class="field">
+            <label for="fixationSize">Fixation half-size (display px)</label>
+            <input id="fixationSize" type="number" min="1" max="100" step="1" value="10">
+          </div>
+          <div class="field">
+            <label for="fixationWidth">Fixation width (display px)</label>
+            <input id="fixationWidth" type="number" min="1" max="20" step="1" value="3">
+          </div>
+          <div class="field">
+            <label for="screenWidthCm">Screen width (cm)</label>
+            <input id="screenWidthCm" type="number" min="5" max="500" step="0.1" value="60">
+          </div>
+          <div class="field">
+            <label for="viewDistanceCm">Viewing distance (cm)</label>
+            <input id="viewDistanceCm" type="number" min="5" max="500" step="0.1" value="67">
+          </div>
+          <div class="check-row">
+            <input id="devicePixels" type="checkbox" checked>
+            <label for="devicePixels">Treat pixel values as physical display pixels</label>
+          </div>
+          <small class="subtle">
+            Fullscreen Chrome at 100% operating-system scaling is preferred. The app reports the current device-pixel ratio above.
+          </small>
+        </div>
+
+        <div class="card">
+          <h2>Stimulus</h2>
+          <div class="field">
+            <label for="stimulusMode">Mode</label>
+            <select id="stimulusMode">
+              <option value="grayscale">Grayscale gratings</option>
+              <option value="colour">Red/green gratings or Gabors</option>
+              <option value="media">Separate image/GIF files</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="maskMode">Aperture</label>
+            <select id="maskMode">
+              <option value="circle">Circular</option>
+              <option value="gaussian">Gaussian (Gabor)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="spatialMode">Spatial-frequency calculation</label>
+            <select id="spatialMode">
+              <option value="legacy">Replicate MATLAB calculation</option>
+              <option value="standard">Standard visual-angle calculation</option>
+              <option value="cycles">Direct cycles per stimulus</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sf">Spatial frequency (cpd)</label>
+            <input id="sf" type="number" min="0.01" max="30" step="0.01" value="0.5">
+          </div>
+          <div class="field conditional" id="cyclesField">
+            <label for="cyclesPerStimulus">Cycles per stimulus</label>
+            <input id="cyclesPerStimulus" type="number" min="0.1" max="100" step="0.1" value="4">
+          </div>
+          <div class="field">
+            <label for="orientationA">Orientation A (deg)</label>
+            <input id="orientationA" type="number" min="-360" max="360" step="1" value="45">
+          </div>
+          <div class="field">
+            <label for="orientationB">Orientation B (deg)</label>
+            <input id="orientationB" type="number" min="-360" max="360" step="1" value="135">
+          </div>
+          <div class="field">
+            <label for="deContrast">Dominant-eye contrast (0–1)</label>
+            <input id="deContrast" type="number" min="0" max="1" step="0.01" value="1">
+          </div>
+          <div class="field">
+            <label for="ndeContrast">Non-dominant-eye contrast (0–1)</label>
+            <input id="ndeContrast" type="number" min="0" max="1" step="0.01" value="1">
+          </div>
+        </div>
+
+        <div class="card conditional" id="colourCard">
+          <h2>Colour mode</h2>
+          <div class="field">
+            <label for="colourA">Stimulus A colour</label>
+            <input id="colourA" type="color" value="#ff0000">
+          </div>
+          <div class="field">
+            <label for="colourB">Stimulus B colour</label>
+            <input id="colourB" type="color" value="#00ff00">
+          </div>
+          <div class="field">
+            <label for="colourContrastA">Stimulus A contrast</label>
+            <input id="colourContrastA" type="number" min="0" max="1" step="0.01" value="0.44">
+          </div>
+          <div class="field">
+            <label for="colourContrastB">Stimulus B contrast</label>
+            <input id="colourContrastB" type="number" min="0" max="1" step="0.01" value="0.52">
+          </div>
+          <p class="subtle">Numeric RGB values are not luminance-equated. Use your calibrated display values for an actual experiment.</p>
+        </div>
+
+        <div class="card conditional" id="mediaCard">
+          <h2>Image/GIF mode</h2>
+          <div class="field">
+            <label for="mediaA">Stimulus A</label>
+            <input id="mediaA" type="file" accept="image/*,.gif">
+          </div>
+          <div class="field">
+            <label for="mediaB">Stimulus B</label>
+            <input id="mediaB" type="file" accept="image/*,.gif">
+          </div>
+          <p class="subtle">Files remain local in the browser. Animated GIF timing is controlled by the browser and is not suitable for precision flicker timing.</p>
+        </div>
+
+        <div class="card">
+          <h2>Saving</h2>
+          <p class="subtle">
+            On Chrome/Edge over HTTPS, select the output file before starting. The workbook is then rewritten after every trial. Other browsers retain a recovery copy locally and download the workbook at the end.
+          </p>
+          <div class="actions">
+            <button id="prepareOutputButton">Select output file</button>
+            <button id="downloadRecoveryButton" disabled>Download recovered run</button>
+          </div>
+          <div id="outputStatus" class="status">No output file selected.</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="previewButton">Preview stimuli</button>
+        <button id="startButton" class="primary" disabled>Start experiment</button>
+        <button id="resetButton">Reset defaults</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="experimentScreen" class="screen">
+    <div id="eyeStage">
+      <div id="leftEyeTarget" class="eye-target"><div id="leftStimulus" class="stimulus-holder"></div></div>
+      <div id="rightEyeTarget" class="eye-target"><div id="rightStimulus" class="stimulus-holder"></div></div>
+      <div id="trialLabel"></div>
+      <div id="instructionOverlay"></div>
+      <div id="timingWarning"></div>
+    </div>
+  </section>
+
+  <section id="messageScreen" class="screen">
+    <div class="message-box">
+      <div id="messageMain"></div>
+      <div id="messageSmall" class="small"></div>
+      <div id="finishButtons">
+        <button id="downloadButton">Download .xls</button>
+        <button id="returnButton">Return to setup</button>
+      </div>
+    </div>
+  </section>
+
+<script>
+(() => {
+  'use strict';
+
+  const HEADERS = ['grating ID', 'SF', 'orientation', 'button', 'start', 'duration'];
+  const ZERO_ROW = [0, 0, 0, 0, 0, 0];
+  const RESPONSE_CODES = {
+    KeyA: { button: 1, label: 'left' },
+    KeyS: { button: 2, label: 'mixed' },
+    KeyD: { button: 3, label: 'right' }
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  const elements = {
+    setup: $('setupScreen'),
+    experiment: $('experimentScreen'),
+    message: $('messageScreen'),
+    messageMain: $('messageMain'),
+    messageSmall: $('messageSmall'),
+    finishButtons: $('finishButtons'),
+    leftTarget: $('leftEyeTarget'),
+    rightTarget: $('rightEyeTarget'),
+    leftStimulus: $('leftStimulus'),
+    rightStimulus: $('rightStimulus'),
+    trialLabel: $('trialLabel'),
+    timingWarning: $('timingWarning'),
+    instructionOverlay: $('instructionOverlay'),
+    libraryStatus: $('libraryStatus'),
+    outputStatus: $('outputStatus'),
+    startButton: $('startButton'),
+    prepareOutputButton: $('prepareOutputButton'),
+    downloadRecoveryButton: $('downloadRecoveryButton')
+  };
+
+  let state = {
+    phase: 'setup',
+    config: null,
+    trialIndex: 0,
+    rowsByTrial: [],
+    activeResponses: new Map(),
+    trialStartMs: null,
+    trialEndMs: null,
+    animationId: null,
+    fileHandle: null,
+    outputPrepared: false,
+    previewOnly: false,
+    aborted: false,
+    mediaUrls: [],
+    lastFrameMs: null,
+    longFrameCount: 0
+  };
+
+  function setScreen(name) {
+    elements.setup.classList.toggle('active', name === 'setup');
+    elements.experiment.classList.toggle('active', name === 'experiment');
+    elements.message.classList.toggle('active', name === 'message');
+  }
+
+  function setStatus(element, text, type = '') {
+    element.textContent = text;
+    element.className = `status ${type}`.trim();
+  }
+
+  function numberValue(id, label, min = -Infinity, max = Infinity) {
+    const value = Number($(id).value);
+    if (!Number.isFinite(value) || value < min || value > max) {
+      throw new Error(`${label} must be between ${min} and ${max}.`);
+    }
+    return value;
+  }
+
+  function integerValue(id, label, min, max) {
+    const value = numberValue(id, label, min, max);
+    if (!Number.isInteger(value)) throw new Error(`${label} must be a whole number.`);
+    return value;
+  }
+
+  function normalizeFilename(value) {
+    let filename = value.trim();
+    if (!filename) throw new Error('Enter an output filename.');
+    filename = filename.replace(/[\\/:*?"<>|]/g, '_');
+    if (!filename.toLowerCase().endsWith('.xls')) filename += '.xls';
+    return filename;
+  }
+
+  function readConfig() {
+    const mode = $('stimulusMode').value;
+    const config = {
+      filename: normalizeFilename($('filename').value),
+      dominantEye: $('dominantEye').value,
+      eyeAssignment: $('eyeAssignment').value,
+      trials: integerValue('trials', 'Number of trials', 1, 100),
+      trialDurationS: numberValue('trialDuration', 'Trial duration', 1, 3600),
+      practice: $('practice').checked,
+      insertZeroRows: $('insertZeroRows').checked,
+      showTrialNumber: $('showTrialNumber').checked,
+      stimulusSizePx: integerValue('stimulusSize', 'Stimulus size', 40, 3000),
+      eyeSeparationPx: numberValue('eyeSeparation', 'Eye separation', 0, 6000),
+      fixationHalfSizePx: numberValue('fixationSize', 'Fixation size', 1, 100),
+      fixationWidthPx: numberValue('fixationWidth', 'Fixation width', 1, 20),
+      screenWidthCm: numberValue('screenWidthCm', 'Screen width', 5, 500),
+      viewingDistanceCm: numberValue('viewDistanceCm', 'Viewing distance', 5, 500),
+      useDevicePixels: $('devicePixels').checked,
+      stimulusMode: mode,
+      maskMode: $('maskMode').value,
+      spatialMode: $('spatialMode').value,
+      spatialFrequencyCpd: numberValue('sf', 'Spatial frequency', 0.01, 30),
+      cyclesPerStimulus: numberValue('cyclesPerStimulus', 'Cycles per stimulus', 0.1, 100),
+      orientationA: numberValue('orientationA', 'Orientation A', -360, 360),
+      orientationB: numberValue('orientationB', 'Orientation B', -360, 360),
+      deContrast: numberValue('deContrast', 'Dominant-eye contrast', 0, 1),
+      ndeContrast: numberValue('ndeContrast', 'Non-dominant-eye contrast', 0, 1),
+      colourA: $('colourA').value,
+      colourB: $('colourB').value,
+      colourContrastA: numberValue('colourContrastA', 'Stimulus A contrast', 0, 1),
+      colourContrastB: numberValue('colourContrastB', 'Stimulus B contrast', 0, 1),
+      mediaA: $('mediaA').files[0] || null,
+      mediaB: $('mediaB').files[0] || null
+    };
+
+    if (mode === 'media' && (!config.mediaA || !config.mediaB)) {
+      throw new Error('Choose both stimulus files for image/GIF mode.');
+    }
+
+    return config;
+  }
+
+  function pxToCss(px, config) {
+    return config.useDevicePixels ? px / window.devicePixelRatio : px;
+  }
+
+  function currentDisplayWidthPx(config) {
+    return window.innerWidth * (config.useDevicePixels ? window.devicePixelRatio : 1);
+  }
+
+  function updateRuntimeInfo() {
+    $('viewportInfo').textContent = `${window.innerWidth} × ${window.innerHeight} CSS px`;
+    $('dprInfo').textContent = window.devicePixelRatio.toFixed(3);
+    $('displayPixelInfo').textContent = `${Math.round(window.innerWidth * window.devicePixelRatio)} × ${Math.round(window.innerHeight * window.devicePixelRatio)}`;
+    $('fullscreenInfo').textContent = document.fullscreenElement ? 'Yes' : 'No';
+  }
+
+  function updateConditionalControls() {
+    const mode = $('stimulusMode').value;
+    $('colourCard').classList.toggle('visible', mode === 'colour');
+    $('mediaCard').classList.toggle('visible', mode === 'media');
+    $('cyclesField').classList.toggle('visible', $('spatialMode').value === 'cycles');
+  }
+
+  function hexToRgb(hex) {
+    const clean = hex.replace('#', '');
+    return {
+      r: parseInt(clean.slice(0, 2), 16),
+      g: parseInt(clean.slice(2, 4), 16),
+      b: parseInt(clean.slice(4, 6), 16)
+    };
+  }
+
+  function computeCyclesPerPixel(config) {
+    if (config.spatialMode === 'cycles') {
+      return config.cyclesPerStimulus / config.stimulusSizePx;
+    }
+
+    const displayWidthPx = currentDisplayWidthPx(config);
+    let screenWidthDeg;
+
+    if (config.spatialMode === 'legacy') {
+      // Exact equation used in the old MATLAB script:
+      // 2 * atan(screen_width / viewing_distance), followed by cpd * 0.62.
+      screenWidthDeg = 2 * Math.atan(config.screenWidthCm / config.viewingDistanceCm) * 180 / Math.PI;
+      const degPerPx = screenWidthDeg / displayWidthPx;
+      return config.spatialFrequencyCpd * 0.62 * degPerPx;
+    }
+
+    screenWidthDeg = 2 * Math.atan((config.screenWidthCm / 2) / config.viewingDistanceCm) * 180 / Math.PI;
+    const degPerPx = screenWidthDeg / displayWidthPx;
+    return config.spatialFrequencyCpd * degPerPx;
+  }
+
+  function createGratingCanvas(config, orientationDeg, contrast, colourHex = null) {
+    const size = config.stimulusSizePx;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    canvas.style.width = `${pxToCss(size, config)}px`;
+    canvas.style.height = `${pxToCss(size, config)}px`;
+
+    const ctx = canvas.getContext('2d', { alpha: true });
+    const image = ctx.createImageData(size, size);
+    const data = image.data;
+    const centre = (size - 1) / 2;
+    const radius = size / 2;
+    const theta = orientationDeg * Math.PI / 180;
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+    const cyclesPerPx = computeCyclesPerPixel(config);
+    const tint = colourHex ? hexToRgb(colourHex) : null;
+    const sigma = size / 6;
+
+    let p = 0;
+    for (let y = 0; y < size; y++) {
+      const dy = y - centre;
+      for (let x = 0; x < size; x++) {
+        const dx = x - centre;
+        const r2 = dx * dx + dy * dy;
+        const inside = r2 <= radius * radius;
+        let alpha = 0;
+
+        if (config.maskMode === 'circle') {
+          alpha = inside ? 255 : 0;
+        } else {
+          alpha = Math.round(255 * Math.exp(-r2 / (2 * sigma * sigma)));
+          if (!inside) alpha = 0;
+        }
+
+        const rotatedX = dx * cosT + dy * sinT;
+        const wave = Math.cos(2 * Math.PI * cyclesPerPx * rotatedX);
+        const level = Math.max(0, Math.min(1, 0.5 + 0.5 * contrast * wave));
+
+        if (tint) {
+          data[p] = Math.round(tint.r * level);
+          data[p + 1] = Math.round(tint.g * level);
+          data[p + 2] = Math.round(tint.b * level);
+        } else {
+          const gray = Math.round(255 * level);
+          data[p] = gray;
+          data[p + 1] = gray;
+          data[p + 2] = gray;
+        }
+        data[p + 3] = alpha;
+        p += 4;
+      }
+    }
+
+    ctx.putImageData(image, 0, 0);
+    return canvas;
+  }
+
+  function createFixation(config) {
+    const fix = document.createElement('div');
+    fix.className = 'fixation';
+
+    const half = pxToCss(config.fixationHalfSizePx, config);
+    const width = Math.max(1, pxToCss(config.fixationWidthPx, config));
+    fix.style.width = `${2 * half}px`;
+    fix.style.height = `${2 * half}px`;
+
+    const h = document.createElement('div');
+    h.className = 'h';
+    h.style.width = `${2 * half}px`;
+    h.style.height = `${width}px`;
+
+    const v = document.createElement('div');
+    v.className = 'v';
+    v.style.width = `${width}px`;
+    v.style.height = `${2 * half}px`;
+
+    fix.append(h, v);
+    return fix;
+  }
+
+  function clearMediaUrls() {
+    for (const url of state.mediaUrls) URL.revokeObjectURL(url);
+    state.mediaUrls = [];
+  }
+
+  function createMediaElement(file, config) {
+    const img = document.createElement('img');
+    const url = URL.createObjectURL(file);
+    state.mediaUrls.push(url);
+    img.src = url;
+    img.alt = '';
+    img.draggable = false;
+    img.style.width = `${pxToCss(config.stimulusSizePx, config)}px`;
+    img.style.height = `${pxToCss(config.stimulusSizePx, config)}px`;
+    img.style.objectFit = 'contain';
+    if (config.maskMode === 'circle') img.style.borderRadius = '50%';
+    return img;
+  }
+
+  function makeStimulusPair(config) {
+    clearMediaUrls();
+
+    let stimulusA;
+    let stimulusB;
+
+    if (config.stimulusMode === 'media') {
+      stimulusA = createMediaElement(config.mediaA, config);
+      stimulusB = createMediaElement(config.mediaB, config);
+    } else if (config.stimulusMode === 'colour') {
+      stimulusA = createGratingCanvas(config, config.orientationA, config.colourContrastA, config.colourA);
+      stimulusB = createGratingCanvas(config, config.orientationB, config.colourContrastB, config.colourB);
+    } else {
+      stimulusA = createGratingCanvas(config, config.orientationA, config.deContrast, null);
+      stimulusB = createGratingCanvas(config, config.orientationB, config.ndeContrast, null);
+    }
+
+    let leftStimulus;
+    let rightStimulus;
+
+    if (config.eyeAssignment === 'physical') {
+      leftStimulus = stimulusA;
+      rightStimulus = stimulusB;
+    } else if (config.dominantEye === 'left') {
+      leftStimulus = stimulusA;
+      rightStimulus = stimulusB;
+    } else {
+      leftStimulus = stimulusB;
+      rightStimulus = stimulusA;
+    }
+
+    return { leftStimulus, rightStimulus };
+  }
+
+  function layoutEyeTargets(config) {
+    const separationCss = pxToCss(config.eyeSeparationPx, config);
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+
+    elements.leftTarget.style.left = `${cx - separationCss / 2}px`;
+    elements.leftTarget.style.top = `${cy}px`;
+    elements.rightTarget.style.left = `${cx + separationCss / 2}px`;
+    elements.rightTarget.style.top = `${cy}px`;
+  }
+
+  function renderStimuli(config) {
+    elements.leftStimulus.replaceChildren();
+    elements.rightStimulus.replaceChildren();
+
+    const pair = makeStimulusPair(config);
+    elements.leftStimulus.append(pair.leftStimulus, createFixation(config));
+    elements.rightStimulus.append(pair.rightStimulus, createFixation(config));
+    layoutEyeTargets(config);
+  }
+
+  function showExperimentInstruction(main = '', small = '') {
+    if (!main) {
+      elements.instructionOverlay.style.display = 'none';
+      elements.instructionOverlay.replaceChildren();
+      return;
+    }
+    const mainNode = document.createElement('span');
+    mainNode.textContent = main;
+    elements.instructionOverlay.replaceChildren(mainNode);
+    if (small) {
+      const smallNode = document.createElement('span');
+      smallNode.className = 'small';
+      smallNode.textContent = small;
+      elements.instructionOverlay.append(smallNode);
+    }
+    elements.instructionOverlay.style.display = 'block';
+  }
+
+  function showMessage(main, small = '', finish = false) {
+    elements.messageMain.textContent = main;
+    elements.messageSmall.textContent = small;
+    elements.finishButtons.classList.toggle('visible', finish);
+    setScreen('message');
+  }
+
+  function rounded(value) {
+    return Number(value.toFixed(7));
+  }
+
+  function buildWorkbook() {
+    if (!window.XLSX) throw new Error('SheetJS did not load; cannot create the .xls workbook.');
+    const config = state.config || readConfig();
+    const rows = [HEADERS.slice()];
+
+    for (let trial = 0; trial < state.rowsByTrial.length; trial++) {
+      const trialRows = [...state.rowsByTrial[trial]].sort((a, b) => a[4] - b[4]);
+      for (const row of trialRows) rows.push(row.slice());
+      if (config.insertZeroRows && trial < state.rowsByTrial.length - 1) rows.push(ZERO_ROW.slice());
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [
+      { wch: 12 }, { wch: 10 }, { wch: 13 },
+      { wch: 10 }, { wch: 15 }, { wch: 15 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    return wb;
+  }
+
+  function workbookBytes() {
+    return XLSX.write(buildWorkbook(), { bookType: 'xls', type: 'array' });
+  }
+
+  async function writeToSelectedFile() {
+    if (!state.fileHandle) return false;
+    const writable = await state.fileHandle.createWritable();
+    await writable.write(workbookBytes());
+    await writable.close();
+    return true;
+  }
+
+  function recoveryKey(filename) {
+    return `binocular-rivalry-recovery:${filename}`;
+  }
+
+  function saveRecovery() {
+    if (!state.config) return;
+    const payload = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      config: {
+        ...state.config,
+        mediaA: null,
+        mediaB: null
+      },
+      rowsByTrial: state.rowsByTrial
+    };
+    localStorage.setItem(recoveryKey(state.config.filename), JSON.stringify(payload));
+  }
+
+  function clearRecovery() {
+    if (state.config) localStorage.removeItem(recoveryKey(state.config.filename));
+  }
+
+  async function saveProgress() {
+    saveRecovery();
+    if (state.fileHandle) {
+      try {
+        await writeToSelectedFile();
+        return;
+      } catch (error) {
+        console.error(error);
+        state.fileHandle = null;
+      }
+    }
+  }
+
+  function downloadWorkbook() {
+    try {
+      const wb = buildWorkbook();
+      XLSX.writeFile(wb, state.config.filename, { bookType: 'xls' });
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function prepareOutput() {
+    try {
+      if (!window.XLSX) throw new Error('The Excel-export library did not load. Check the internet connection or host xlsx.full.min.js locally.');
+      const config = readConfig();
+      $('filename').value = config.filename;
+
+      if ('showSaveFilePicker' in window && window.isSecureContext) {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: config.filename,
+          types: [{
+            description: 'Excel 97–2003 Workbook',
+            accept: { 'application/vnd.ms-excel': ['.xls'] }
+          }],
+          excludeAcceptAllOption: false
+        });
+        state.fileHandle = handle;
+        state.outputPrepared = true;
+        state.config = config;
+        state.rowsByTrial = [];
+        await writeToSelectedFile();
+        setStatus(elements.outputStatus, `Selected: ${handle.name}\nThe file will be rewritten after every completed trial.`, 'ok');
+      } else {
+        state.fileHandle = null;
+        state.outputPrepared = true;
+        state.config = config;
+        setStatus(elements.outputStatus, 'Direct autosave is unavailable in this browser/context. A recovery copy will be stored locally and the .xls will download at the end.', 'ok');
+      }
+      elements.startButton.disabled = false;
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+      setStatus(elements.outputStatus, error.message, 'error');
+      elements.startButton.disabled = true;
+    }
+  }
+
+  function getEventTimeMs(event) {
+    const now = performance.now();
+    const ts = Number(event.timeStamp);
+    return Number.isFinite(ts) && Math.abs(ts - now) < 60000 ? ts : now;
+  }
+
+  function recordResponseEnd(code, endMs, closure = 'keyup') {
+    if (!state.activeResponses.has(code) || state.trialStartMs === null) return;
+    const startMs = state.activeResponses.get(code);
+    state.activeResponses.delete(code);
+
+    const response = RESPONSE_CODES[code];
+    const trialNumber = state.trialIndex + 1;
+    const relativeStartS = Math.max(0, (startMs - state.trialStartMs) / 1000);
+    const durationS = Math.max(0, (endMs - startMs) / 1000);
+
+    const row = [
+      trialNumber,
+      state.config.spatialFrequencyCpd,
+      state.config.orientationA,
+      response.button,
+      rounded(relativeStartS),
+      rounded(durationS)
+    ];
+
+    if (!state.rowsByTrial[state.trialIndex]) state.rowsByTrial[state.trialIndex] = [];
+    state.rowsByTrial[state.trialIndex].push(row);
+
+    if (closure !== 'keyup') console.info(`Response ${code} closed by ${closure}.`);
+  }
+
+  function closeAllResponses(endMs, closure) {
+    for (const code of [...state.activeResponses.keys()]) {
+      recordResponseEnd(code, endMs, closure);
+    }
+  }
+
+  function onKeyDown(event) {
+    if (['Space', 'KeyA', 'KeyS', 'KeyD', 'Escape'].includes(event.code)) event.preventDefault();
+
+    if (event.code === 'Escape' && state.phase !== 'setup') {
+      abortExperiment('Experiment ended with ESCAPE.');
+      return;
+    }
+
+    if (state.phase === 'trial' && RESPONSE_CODES[event.code]) {
+      if (event.repeat || state.activeResponses.has(event.code)) return;
+      const t = getEventTimeMs(event);
+      state.activeResponses.set(event.code, Math.max(t, state.trialStartMs));
+      return;
+    }
+
+    if (event.code === 'Space') {
+      if (state.phase === 'practice') {
+        startTrial(0);
+      } else if (state.phase === 'intertrial') {
+        startTrial(state.trialIndex + 1);
+      } else if (state.phase === 'preview') {
+        endPreview();
+      }
+    }
+  }
+
+  function onKeyUp(event) {
+    if (state.phase !== 'trial' || !RESPONSE_CODES[event.code]) return;
+    event.preventDefault();
+    recordResponseEnd(event.code, getEventTimeMs(event), 'keyup');
+  }
+
+  function startTrial(index) {
+    if (index >= state.config.trials) {
+      finishExperiment();
+      return;
+    }
+
+    state.phase = 'trial';
+    state.trialIndex = index;
+    state.activeResponses.clear();
+    state.trialStartMs = null;
+    state.trialEndMs = null;
+    state.lastFrameMs = null;
+    state.longFrameCount = 0;
+    if (!state.rowsByTrial[index]) state.rowsByTrial[index] = [];
+
+    showExperimentInstruction();
+    renderStimuli(state.config);
+    elements.trialLabel.textContent = String(index + 1);
+    elements.trialLabel.style.display = state.config.showTrialNumber ? 'block' : 'none';
+    elements.timingWarning.style.display = 'none';
+    setScreen('experiment');
+
+    // First callback prepares the frame. The second callback timestamp follows
+    // the first paint containing the stimuli and is used as trial time zero.
+    requestAnimationFrame(() => {
+      requestAnimationFrame((timestamp) => {
+        if (state.phase !== 'trial') return;
+        state.trialStartMs = timestamp;
+        state.lastFrameMs = timestamp;
+        state.animationId = requestAnimationFrame(trialFrame);
+      });
+    });
+  }
+
+  function trialFrame(timestamp) {
+    if (state.phase !== 'trial') return;
+
+    const frameDelta = timestamp - state.lastFrameMs;
+    state.lastFrameMs = timestamp;
+    if (frameDelta > 50) state.longFrameCount += 1;
+
+    if (timestamp - state.trialStartMs >= state.config.trialDurationS * 1000) {
+      endTrial(timestamp);
+      return;
+    }
+
+    state.animationId = requestAnimationFrame(trialFrame);
+  }
+
+  async function endTrial(endMs) {
+    if (state.phase !== 'trial') return;
+    state.phase = 'saving';
+    state.trialEndMs = endMs;
+    closeAllResponses(endMs, 'trial_end');
+    cancelAnimationFrame(state.animationId);
+    state.animationId = null;
+
+    await saveProgress();
+
+    if (state.longFrameCount > 0) {
+      console.warn(`Trial ${state.trialIndex + 1}: ${state.longFrameCount} frame interval(s) exceeded 50 ms.`);
+    }
+
+    if (state.trialIndex + 1 >= state.config.trials) {
+      finishExperiment();
+    } else {
+      state.phase = 'intertrial';
+      showMessage(
+        `Trial ${state.trialIndex + 1} of ${state.config.trials} complete.`,
+        'When you are ready for the next trial, press SPACE.'
+      );
+    }
+  }
+
+  async function finishExperiment() {
+    state.phase = 'finished';
+    await saveProgress();
+
+    if (state.fileHandle) clearRecovery();
+    if (document.fullscreenElement) {
+      try { await document.exitFullscreen(); } catch (_) {}
+    }
+
+    showMessage(
+      state.aborted ? 'Experiment ended.' : 'Experiment complete.',
+      state.fileHandle
+        ? `Saved to ${state.fileHandle.name}`
+        : `Click Download .xls to save ${state.config.filename}. A recovery copy remains in this browser until removed.`,
+      true
+    );
+  }
+
+  async function abortExperiment(reason) {
+    if (state.phase === 'setup' || state.phase === 'finished') return;
+    state.aborted = true;
+    const end = performance.now();
+    if (state.phase === 'trial') {
+      closeAllResponses(end, 'abort');
+    }
+    if (state.animationId !== null) cancelAnimationFrame(state.animationId);
+    await saveProgress();
+    await finishExperiment();
+    elements.messageMain.textContent = reason;
+  }
+
+  async function requestFullscreen() {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+    }
+  }
+
+  async function startExperiment() {
+    try {
+      if (!state.outputPrepared) throw new Error('Select or prepare the output before starting.');
+      const config = readConfig();
+      if (state.fileHandle && state.fileHandle.name !== config.filename) {
+        throw new Error(`The selected file is ${state.fileHandle.name}, but the filename field now says ${config.filename}. Select the output file again.`);
+      }
+
+      state.config = config;
+      state.rowsByTrial = [];
+      state.trialIndex = 0;
+      state.activeResponses.clear();
+      state.aborted = false;
+      saveRecovery();
+
+      await requestFullscreen();
+      updateRuntimeInfo();
+
+      if (config.practice) {
+        state.phase = 'practice';
+        renderStimuli(config);
+        elements.trialLabel.style.display = 'none';
+        showExperimentInstruction('Practice', 'Inspect the stimuli, then press SPACE to begin trial 1.');
+        setScreen('experiment');
+      } else {
+        startTrial(0);
+      }
+    } catch (error) {
+      setStatus(elements.outputStatus, error.message, 'error');
+    }
+  }
+
+  async function previewStimuli() {
+    try {
+      const config = readConfig();
+      state.config = config;
+      state.phase = 'preview';
+      state.previewOnly = true;
+      await requestFullscreen();
+      renderStimuli(config);
+      elements.trialLabel.style.display = 'none';
+      showExperimentInstruction('Stimulus preview', 'Press SPACE to return to setup.');
+      setScreen('experiment');
+    } catch (error) {
+      setStatus(elements.outputStatus, error.message, 'error');
+    }
+  }
+
+  async function endPreview() {
+    state.phase = 'setup';
+    showExperimentInstruction();
+    clearMediaUrls();
+    if (document.fullscreenElement) {
+      try { await document.exitFullscreen(); } catch (_) {}
+    }
+    setScreen('setup');
+    updateRuntimeInfo();
+  }
+
+  function findRecoveries() {
+    const recoveries = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('binocular-rivalry-recovery:')) continue;
+      try {
+        const payload = JSON.parse(localStorage.getItem(key));
+        if (payload && Array.isArray(payload.rowsByTrial)) recoveries.push({ key, payload });
+      } catch (_) {}
+    }
+    recoveries.sort((a, b) => String(b.payload.savedAt).localeCompare(String(a.payload.savedAt)));
+    elements.downloadRecoveryButton.disabled = recoveries.length === 0;
+    return recoveries;
+  }
+
+  function downloadLatestRecovery() {
+    const recoveries = findRecoveries();
+    if (!recoveries.length) return;
+    const { key, payload } = recoveries[0];
+    state.config = payload.config;
+    state.rowsByTrial = payload.rowsByTrial;
+    downloadWorkbook();
+    if (confirm('Recovered workbook downloaded. Remove this recovery copy from the browser?')) {
+      localStorage.removeItem(key);
+      findRecoveries();
+    }
+  }
+
+  function resetDefaults() {
+    if (!confirm('Reset all controls to their original defaults?')) return;
+    location.reload();
+  }
+
+  function returnToSetup() {
+    state.phase = 'setup';
+    state.fileHandle = null;
+    state.outputPrepared = false;
+    state.rowsByTrial = [];
+    state.activeResponses.clear();
+    showExperimentInstruction();
+    clearMediaUrls();
+    elements.startButton.disabled = true;
+    setStatus(elements.outputStatus, 'No output file selected.');
+    setScreen('setup');
+    updateRuntimeInfo();
+    findRecoveries();
+  }
+
+  function checkLibrary() {
+    if (window.XLSX) {
+      setStatus(elements.libraryStatus, `Excel export ready (SheetJS ${XLSX.version}).`, 'ok');
+    } else {
+      setStatus(elements.libraryStatus, 'Excel export library failed to load. The page needs internet access, or xlsx.full.min.js must be hosted beside this HTML file.', 'error');
+    }
+  }
+
+  $('stimulusMode').addEventListener('change', updateConditionalControls);
+  $('spatialMode').addEventListener('change', updateConditionalControls);
+  elements.prepareOutputButton.addEventListener('click', prepareOutput);
+  elements.startButton.addEventListener('click', startExperiment);
+  $('previewButton').addEventListener('click', previewStimuli);
+  $('resetButton').addEventListener('click', resetDefaults);
+  $('downloadButton').addEventListener('click', downloadWorkbook);
+  $('returnButton').addEventListener('click', returnToSetup);
+  elements.downloadRecoveryButton.addEventListener('click', downloadLatestRecovery);
+
+  window.addEventListener('keydown', onKeyDown, { capture: true });
+  window.addEventListener('keyup', onKeyUp, { capture: true });
+  window.addEventListener('resize', () => {
+    updateRuntimeInfo();
+    if (state.config && (state.phase === 'trial' || state.phase === 'preview' || state.phase === 'practice')) {
+      layoutEyeTargets(state.config);
+    }
+  });
+  document.addEventListener('fullscreenchange', updateRuntimeInfo);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state.phase === 'trial') {
+      abortExperiment('Experiment stopped because the browser tab or window lost visibility.');
+    }
+  });
+  window.addEventListener('beforeunload', (event) => {
+    if (['trial', 'saving', 'intertrial', 'practice'].includes(state.phase)) {
+      saveRecovery();
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
+
+  updateConditionalControls();
+  updateRuntimeInfo();
+  findRecoveries();
+  window.addEventListener('load', checkLibrary);
+  setTimeout(checkLibrary, 1200);
+})();
+</script>
+</body>
+</html>
